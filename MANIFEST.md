@@ -37,11 +37,14 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
 
 Medição atual da redução de verbosidade:
-- 20 comandos: **~15.300 linhas** (após dedup de boilerplate)
-- `commands/references/`: 20 referências lazy-loaded, **1.088 linhas**
-- `framework/_shared/agent-instructions.md`: instruções compartilhadas (HOW TO READ + regras AskUserQuestion) — **1 referência** substituindo 18 cópias
-- `sdd.start.md`: 1.689 → 1.355 linhas
-- `sdd.spec.md`: 2.223 → 2.002 linhas
+- 20 comandos: **~13.900 linhas** (caminho comum enxuto; ramos raros lazy-loaded)
+- `commands/references/`: **36 referências** lazy-loaded (~2.550 linhas)
+- `framework/_shared/agent-instructions.md`: instruções compartilhadas — **1 referência** substituindo 18 cópias
+- `sdd.start.md`: 1.689 → **~856 linhas**
+- `sdd.spec.md`: 2.223 → **~1.440 linhas**
+- `sdd.check.md`: ~800 → **~305 linhas** (workflows raros em `check-rare-workflows.md`)
+- `sdd.project.md`: **~1.200 linhas** (`--hub`/`--view` extraídos)
+- **Gap funcional corrigido**: headers vazios de `--audio`/`--batch` preenchidos ou lazy-loaded
 
 ### framework/
 

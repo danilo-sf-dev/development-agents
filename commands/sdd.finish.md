@@ -1,4 +1,4 @@
-﻿---
+---
 name: sdd.finish
 description: Complete feature implementation, run final validations, and archive. Use when all tasks are done, CI passes, and you're ready to move the feature from wip/ to features/.
 model: sonnet
@@ -264,16 +264,7 @@ fi
 
 > **CRITICAL**: CI must pass first. All other validations are meaningless if pipeline fails.
 
-**If `IS_MOBILE = true`** — run mobile tests instead of the CI pipeline:
-```bash
-# Android
-./gradlew test  # must pass; same as /sdd.build Step A for mobile
-
-# iOS
-xcodebuild test -workspace *.xcworkspace -scheme <scheme> \
-  -destination 'platform=iOS Simulator,name=iPhone 16'
-```
-If mobile tests already passed in `/sdd.build` this session → **Skip** (already validated).
+> **Lazy-loaded**: When `IS_MOBILE = true`, Read `references/finish-mobile-validation.md` § CI validation.
 
 **If `IS_MOBILE = false`** — use the project's configured CI command (same as build.md Step 6D):
 - If build.md Step 6D already passed in this session → **Skip** (already validated)
@@ -317,11 +308,7 @@ fi
 > **Mobile projects (`platform = android | ios`) run mobile validation — NOT .**
 > Mobile apps don't have Dockerfiles, /ping endpoints, or project services.
 
-**If `IS_MOBILE = true`** — run mobile compliance via `sdd-validator` skill:
-```
-Skill(skill="sdd-validator")
-```
-The validator auto-detects mobile and runs: build check (`./gradlew assembleDebug` or `xcodebuild build`), unit tests, and design system/mobile SDK compliance scan (no banned libs).
+> **Lazy-loaded**: When `IS_MOBILE = true`, Read `references/finish-mobile-validation.md` § Platform compliance.
 
 **If `IS_MOBILE = false`** — run  platform compliance:
 ```bash
@@ -635,6 +622,15 @@ AI: ⚡ Express Mode - Auto-finalizing
 
     🎉 Complete! → sdd/features/user-auth/
 ```
+
+---
+
+## Optional conditions (lazy-loaded)
+
+| Condition | Reference |
+|-----------|-----------|
+| `PROFILE == TECHNICAL_ONLY` or `NON_TECHNICAL_ONLY` | `references/output-examples-by-profile.md` |
+| `IS_MOBILE = true` | `references/finish-mobile-validation.md` |
 
 ---
 

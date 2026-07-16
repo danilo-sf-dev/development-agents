@@ -333,17 +333,14 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
 | Playbook formal | Arquivo dedicado do "primeiro dia" |
 | Integração PR automática | Abertura de PR via `gh` — fora do escopo atual |
 
-### Redução de verbosidade — concluída nesta etapa
+### Redução de verbosidade — item 3 concluído (ramos raros)
 
-- Fluxos condicionais de `/sdd.start` e `/sdd.spec` foram extraídos para
-  `commands/references/` e carregados sob demanda.
-- Resíduos vendor nas skills e docs do framework foram generalizados.
-- O fluxo canônico tests-first foi alinhado nos docs: `plan → test → build`.
-- Boilerplate duplicado (`HOW TO READ THIS SKILL` + regras `AskUserQuestion`)
-  centralizado em `framework/_shared/agent-instructions.md` — 18 comandos agora
-  apontam para um único arquivo.
-- Medição atual: 20 comandos com ~15.300 linhas, 20 referências lazy-loaded com
-  1.088 linhas e 1 arquivo compartilhado de instruções do agente.
+- Fluxos condicionais extraídos para `commands/references/` com lazy-load por flag/condição.
+- **10 comandos** com seção `Optional flags (lazy-loaded)` + roteamento flag-first onde aplicável.
+- Ramo comum (~90% das chamadas) permanece no arquivo principal; flags (`--reopen`, `--rename`, `--from-backlog`, `--audio`, `--hub`, `--view`, `--batch`, `--focus`, mobile, etc.) só carregam referência quando batem.
+- `audio-capture-flow.md` compartilhado entre 7 comandos com `--audio`.
+- `start-mobile-claude.md` reutilizado por `/sdd.start` e `/sdd.reverse-eng`.
+- Medição: ~13.900 linhas nos 20 comandos + 36 referências (~2.550 linhas) lazy-loaded.
 
 ---
 

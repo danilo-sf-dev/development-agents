@@ -329,8 +329,6 @@ mv sdd/cancelled/[feature-name]_YYYYMMDD sdd/wip/[feature-name]
 2. Do NOT execute cancel logic
 3. Keep response concise (~15 lines)
 
-### --audio Flag Detection
-
 ### Key Rules
 1. **Always require reason** - Don't cancel without documented reason
 2. **Preserve all work** - Never delete, always archive
@@ -348,3 +346,9 @@ mv sdd/cancelled/[feature-name]_YYYYMMDD sdd/wip/[feature-name]
 - `/sdd.rollback` - Go back to previous phase instead
 
 ---
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--audio` | `references/audio-capture-flow.md` |

@@ -106,61 +106,7 @@ AskUserQuestion(
 | **VIEW STATUS** | `sdd/extracted/` exists | Show summary of current extraction, no changes |
 | **ENHANCE SPECS** | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs |
 
-### `--focus` Behavior (CRITICAL)
-
-> **RULE**: `--focus` ALWAYS updates base spec files. It NEVER creates `-{component}.md` suffixed files.
-
-| Scenario | Files Updated |
-|----------|---------------|
-| Fresh repo + `--focus ComponentA` | Creates `functional-spec.md`, `technical-spec.md` |
-| Existing specs + `--focus ComponentB` | Updates existing `functional-spec.md`, `technical-spec.md` |
-| Re-run with same `--focus` | Updates same files (UPDATE MODE) |
-| Re-run with different `--focus` | Enriches same files with new component detail |
-
-**What `--focus` does**:
-1. Extracts deep detail about the specified component
-2. **Merges** that detail into existing specs (or creates if none exist)
-3. Marks sections as `[Focused: ComponentName]` for traceability
-
-**What `--focus` does NOT do**:
-- Create `functional-spec-{component}.md` files
-- Create parallel spec versions
-- Delete existing content from other components
-
-### Files to Update on Re-extraction
-
-> **CRITICAL**: When re-running `/sdd.reverse-eng`, ALL these files MUST be **REPLACED** (not suffixed):
-
-| File | What to Update | Location |
-|------|----------------|----------|
-| `functional-spec.md` | Use cases, actors, business rules | `sdd/extracted/` AND `sdd/specs/` |
-| `technical-spec.md` | Architecture, APIs, integrations | `sdd/extracted/` AND `sdd/specs/` |
-| `DISCREPANCIES_REPORT.md` | New/resolved discrepancies | `sdd/extracted/` |
-| `DOCUMENTATION_GAPS.md` | Coverage analysis | `sdd/extracted/` |
-| `raw/README.md` | Extraction date, sources, metadata | `sdd/extracted/raw/` |
-| `PATTERNS.md` | Discovered project patterns | `sdd/extracted/` AND `sdd/specs/` |
-
-### ⚠️ ANTI-PATTERN: No `-UPDATED` Suffixes
-
-> **WRONG**: Creating `functional-spec-UPDATED.md` alongside original
-> **CORRECT**: Replace `functional-spec.md` directly
-
-```
-❌ WRONG (creates confusion):
-sdd/specs/
-├── functional-spec.md           # Old version
-├── functional-spec-UPDATED.md   # New version - user must manually rename
-
-✅ CORRECT (clean update):
-sdd/specs/
-├── functional-spec.md           # Replaced with new version
-```
-
-**Update Mode MUST**:
-1. Show diff summary of changes
-2. Ask for confirmation if >20% changes detected
-3. **REPLACE files directly** - no suffixes, no side-by-side versions
-4. Update both `sdd/extracted/` AND `sdd/specs/`
+> **Lazy-loaded**: When `--focus` is present, Read `references/reverse-eng-focus.md` (includes anti-pattern rules for `-UPDATED` suffixes).
 
 ---
 
@@ -387,66 +333,7 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 - Respect the phased workflow — don't skip phases
 ```
 
-> **CONDITIONAL — Mobile Implementation Rule** (append ONLY when `platform = android` or `platform = ios`):
->
-> After the base template above, if the detected platform (from `detect-stack.sh` or project files) is
-> `android` or `ios`, append a **platform-specific** section to CLAUDE.md.
-> Do NOT append for backend, web, or empty platform.
-> Do NOT include the other platform's skill name — keep it project-specific.
-
-**If platform = android**, append:
-
-```markdown
-## Mobile Implementation Rule
-
-This project is **Android** — MANDATORY before any Kotlin/Android code:
-
-1. Invoke `Skill("mobile-android-expert")`
-2. Read `$SKILL_PATH/SKILL.md` — single source of truth for all documentation navigation
-3. Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK and design system
-4. Build Confirmed Imports Registry from the skill docs before writing any code
-
-**When it applies**: spec creation, task planning, implementation, code review — any step that touches Kotlin/Android.
-
-**For subagents**: include as step 0 in the prompt of any subagent that works on Android code:
-```
-⚠️ STEP 0 — MANDATORY:
-Skill("mobile-android-expert")
-cat "$SKILL_PATH/SKILL.md"
-Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK libraries and design system components.
-Build Confirmed Imports Registry. Only then read the task and write code.
-```
-
-`mobile-android-expert` is the ONLY authoritative source for mobile SDK library APIs and design system
-component APIs. Pre-training knowledge about Android libraries MUST be overridden by the skill docs.
-```
-
-**If platform = ios**, append:
-
-```markdown
-## Mobile Implementation Rule
-
-This project is **iOS** — MANDATORY before any Swift/iOS code:
-
-1. Invoke `Skill("mobile-ios-expert")`
-2. Read `$SKILL_PATH/SKILL.md` — single source of truth for all documentation navigation
-3. Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK and design system
-4. Build Confirmed Imports Registry from the skill docs before writing any code
-
-**When it applies**: spec creation, task planning, implementation, code review — any step that touches Swift/iOS.
-
-**For subagents**: include as step 0 in the prompt of any subagent that works on iOS code:
-```
-⚠️ STEP 0 — MANDATORY:
-Skill("mobile-ios-expert")
-cat "$SKILL_PATH/SKILL.md"
-Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK libraries and design system components.
-Build Confirmed Imports Registry. Only then read the task and write code.
-```
-
-`mobile-ios-expert` is the ONLY authoritative source for mobile SDK library APIs and design system
-component APIs. Pre-training knowledge about iOS libraries MUST be overridden by the skill docs.
-```
+> **Lazy-loaded**: When `platform = android` or `platform = ios`, Read `references/start-mobile-claude.md` before appending the Mobile Implementation Rule to `CLAUDE.md`.
 
 ---
 
@@ -1096,7 +983,14 @@ When `sdd/specs/` already exists (re-extraction):
 2. Do NOT execute reverse-eng logic
 3. Keep response concise (~15 lines)
 
-### --audio Flag Detection (with --focus)
+## Optional flags (lazy-loaded)
+
+| Flag / condition | Reference |
+|------------------|-----------|
+| `--focus` | `references/reverse-eng-focus.md` |
+| `--focus --audio` | `references/audio-capture-flow.md` + `references/reverse-eng-focus.md` |
+| mode FULL or ENHANCE (code ownership) | `references/code-ownership.md` |
+| `platform = android \| ios` (CLAUDE.md) | `references/start-mobile-claude.md` |
 
 ### Phase 0: Repository State Detection Rules
 

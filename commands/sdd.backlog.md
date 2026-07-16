@@ -429,8 +429,6 @@ Continuing with TASK-005...
 2. Do NOT execute backlog logic
 3. Keep response concise (~15 lines)
 
-### --audio Flag Detection (with add)
-
 ### Key Rules
 
 1. **Centralized file**: Always use `sdd/backlog.md`
@@ -532,3 +530,11 @@ User: Y
 AI: ✅ Feature created!
     Run /sdd.spec to continue.
 ```
+
+## Optional flags (lazy-loaded)
+
+| Flag / condition | Reference |
+|------------------|-----------|
+| `--audio` (with `add`) | `references/audio-capture-flow.md` |
+| DEBT/TODO workflow modes | `references/workflow-modes.md` |
+| modes 2/3 auto-generation | `references/auto-spec-template.md` |

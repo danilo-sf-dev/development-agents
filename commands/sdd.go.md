@@ -143,8 +143,6 @@ When `/sdd.go` is invoked:
 2. **DO reference and execute the standard commands**
 3. **DO apply express rules as overrides**
 
-### --audio Flag Detection
-
 ### Step 0: Input Validation
 
 If input is valid kebab-case name → use directly
@@ -231,3 +229,9 @@ Inherited from standard commands - see `spec.md`. Map external tech to project s
 > **Standard commands are the single source of truth.**
 > `/sdd.go` only defines: express rules, orchestration flow, error handling.
 > For implementation details, read the corresponding command file.
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--audio` | `references/audio-capture-flow.md` |

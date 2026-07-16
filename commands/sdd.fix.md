@@ -1,4 +1,4 @@
-﻿---
+---
 name: sdd.fix
 description: Fix validation errors and horizontal consistency issues across spec layers. Use when /sdd.check reports errors, specs are misaligned, or tasks don't match the technical spec.
 model: opus
@@ -83,7 +83,7 @@ The `--batch` flag MUST spawn one subagent per fix. Processing multiple fixes in
 - By fix #3, context is typically >70% → depth drops
 - Fixes #4+ are often resolved superficially or incorrectly
 
-See [--batch Flag Detection](#--batch-flag-detection-v170) for the subagent implementation.
+See `references/fix-batch.md` for the subagent implementation.
 
 ---
 
@@ -379,7 +379,7 @@ IF N > 1:
 
   ❌ WRONG: TodoWrite with N items + process each inline in this session
   ✅ CORRECT: N × Task() calls, one per fix, each subagent gets fresh context
-  → Full template: see [--batch Flag Detection](#--batch-flag-detection-v170)
+  → Full template: see `references/fix-batch.md`
 
 IF N = 1:
   Check context: Skill("context-guardian")
@@ -1429,28 +1429,7 @@ Apply this horizontal fix? (y/n)
 | `--code-only` | ⚠️ DANGEROUS: Fix code only | `/sdd.fix --code-only "error"` |
 | `--layer` | ⚠️ DANGEROUS: Fix specific layer only | `/sdd.fix --layer technical "error"` |
 
-### ⚠️ Dangerous Flags Warning
-
-**`--code-only` and `--layer` flags can cause spec drift:**
-
-| Flag | What Happens | Risk |
-|------|--------------|------|
-| `--code-only` | Only updates code, skips all specs | Specs become outdated, future features built on wrong assumptions |
-| `--layer technical` | Only updates technical spec | Functional spec and tasks become inconsistent |
-
-**When are these flags "safe"?**
-- **Almost never.** If your fix changes behavior, specs should be updated.
-- The ONLY safe use case: pure implementation bug with no spec impact (e.g., fix a typo in variable name)
-
-**If you're tempted to use these flags**, ask yourself:
-1. Does this fix add ANY new behavior? → If yes, don't use these flags
-2. Does this fix change ANY API response? → If yes, don't use these flags
-3. Does this fix affect ANY user-visible output? → If yes, don't use these flags
-
-**Consequences of misuse:**
-- `/sdd.check --sync` will later detect inconsistencies
-- Future developers will be confused by undocumented behavior
-- Tests may fail when specs are eventually updated
+> **Lazy-loaded**: When `--code-only` or `--layer` is present, Read `references/fix-dangerous-flags.md` before proceeding.
 
 ---
 
@@ -1488,7 +1467,7 @@ Apply this horizontal fix? (y/n)
 2. Do NOT execute fix logic
 3. Keep response concise (~15 lines)
 
-### --batch Flag Detection ⭐ v1.7.0
+> **Lazy-loaded**: When `--batch` is present (or Step -1 detects N > 1), Read `references/fix-batch.md`.
 
 ### Key Rules
 
@@ -1844,3 +1823,12 @@ If the user confirms, call `/sdd.backlog add` with the suggested item.
 - `/sdd.backlog` - Manage backlog (debts, ideas, todos)
 
 ---
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--batch` | `references/fix-batch.md` |
+| `--audio` | `references/audio-capture-flow.md` |
+| `--code-only`, `--layer` | `references/fix-dangerous-flags.md` |
+| Classification / Plan Mode | `references/classification-guide.md`, `references/fix-templates.md` (see lazy-load pointers in workflow) |
