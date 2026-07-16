@@ -160,7 +160,7 @@ Valida, gera documentação, move `sdd/wip/` → `sdd/features/`.
 /sdd.pr
 ```
 
-1. Agent monta `pr-draft.md` (template do repo ou pack)
+1. Agent monta `pr-draft.md` — **template do projeto** (GitHub/GitLab/outro) se existir; senão template do pack
 2. Você **aprova**, **nega** ou pede ajuste (**Outros**)
 3. Agent pergunta **branch base** (`master`, `main`, `develop`, ou Outros)
 4. Publica com `gh pr create` (se autorizado)

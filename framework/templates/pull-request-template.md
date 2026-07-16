@@ -1,3 +1,8 @@
+<!--
+  FALLBACK ONLY — use when the target project has no PR/MR template.
+  If the project defines one (GitHub .github/, GitLab .gitlab/, root, PROJECT.md), /sdd.pr uses that instead.
+-->
+
 ## Resumo
 
 <!-- Objetivo do PR em 2–4 linhas. Preencher a partir da functional-spec / card Jira. -->

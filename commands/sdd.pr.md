@@ -62,16 +62,23 @@ Não substitui review de código nem merge — apenas cria o PR com corpo consis
 > **ONLY IF** needing gh/auth/branch details:
 > Read `references/pr-prechecks.md`.
 
-### Step 3: Resolve template
+### Step 3: Resolve template (project first)
 
-Ordem:
+**Regra:** o projeto pode ter template próprio (GitHub, GitLab, Azure DevOps, Bitbucket ou path custom). **Se existir → usar o do projeto.** Só se **nenhum** for encontrado → template do pack.
 
-1. `.github/pull_request_template.md` no **projeto alvo** (se existir — base estrutural)
-2. Senão → `development-agents/framework/templates/pull-request-template.md`
+Ordem de descoberta (primeiro hit vence):
 
-Mesclar seções SDD (Contexto, Testes) mesmo quando o template do repo for minimalista.
+1. Path declarado em `sdd/PROJECT.md` (se houver campo `pr_template` / merge request template)
+2. GitHub: `.github/pull_request_template.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/PULL_REQUEST_TEMPLATE/`
+3. GitLab: `.gitlab/merge_request_templates/Default.md` (ou único `.md` na pasta)
+4. Genérico na raiz: `pull_request_template.md`, `PULL_REQUEST_TEMPLATE.md`, `docs/pull_request_template.md`
+5. **Fallback pack:** `development-agents/framework/templates/pull-request-template.md`
 
-> **ONLY IF** needing fill rules per section:
+Com template do **projeto**: respeitar estrutura e seções **dele** — preencher com dados SDD onde couber; **não** substituir pelo template do pack.
+
+Com template do **pack** (fallback): incluir seções SDD (Contexto, Testes tests-first, checklist gitignore).
+
+> **ONLY IF** needing discovery order + fill rules:
 > Read `references/pr-generate-draft.md`.
 
 ### Step 4: Generate draft
@@ -176,8 +183,8 @@ Opcional: anotar link em `meta.md` notes ou `implementation-summary.md`.
 
 1. Draft first, publish last — never skip Step 5.
 2. Always ask base branch (Step 6) — never guess `master` vs `main`.
-3. Prefer project `.github/pull_request_template.md` when present.
-4. Use `gh` for create; if blocked, save draft and STOP with Outros path (abrir manual no GitHub).
+3. Prefer **project** PR/MR template when present (any host); pack template is **fallback only**.
+4. Use `gh` for create; if blocked, save draft and STOP with Outros path (abrir manual no GitHub/GitLab/etc.).
 5. Do not commit `development-agents/`, `.cursor/`, `.claude/`, `sdd/` — warn if staged.
 
 ## Related Commands

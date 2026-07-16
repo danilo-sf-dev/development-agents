@@ -332,7 +332,7 @@ All 17 command files follow a standard structure for consistency:
 
 **What it does**:
 - Builds PR body from SDD artifacts (`spec`, `tasks`, `tests`, commits)
-- Uses project `.github/pull_request_template.md` when present, else pack template
+- **Project template first** (`.github/`, `.gitlab/`, root, or path in `PROJECT.md`); pack template only if none found
 - Writes `sdd/wip/<feature>/pr-draft.md`
 - **Pauses** for approve / deny / Outros (adjustments)
 - Asks **target base branch** (master, main, develop, or custom)

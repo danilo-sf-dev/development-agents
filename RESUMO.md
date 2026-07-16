@@ -346,7 +346,7 @@ Documentação: [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) · templa
 | Entrega | Onde |
 |---------|------|
 | Command `/sdd.pr` | `commands/sdd.pr.md` + `commands/references/pr-*.md` |
-| Template PR SDD | `framework/templates/pull-request-template.md` (baseado no template Logística, enriquecido com contexto SDD) |
+| Template PR SDD | `framework/templates/pull-request-template.md` — **fallback**; prioridade ao template do projeto (GitHub/GitLab/etc.) |
 | Fluxo | Gera `pr-draft.md` → AskUserQuestion (aprovar / negar / **Outros**) → pergunta branch base → `gh pr create` |
 | Playbook primeiro dia | `framework/PLAYBOOK.md` |
 | Profiles de stack | **Descartado** — não implementar |

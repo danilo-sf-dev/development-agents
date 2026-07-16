@@ -30,7 +30,8 @@
 | "Título deve ser X" | Update suggested-title → re-approve |
 | "Abro manual no GitHub" | STOP after saving draft; show path |
 | "Só quero o markdown" | Show/copy draft; no gh |
-| "Usa template do repo sem SDD" | Regenerate from `.github/` only → re-approve |
+| "Usa template do repo sem SDD" | Re-resolve **project** template only; no pack fallback sections |
+| "Usa template do pack" | Force pack template even if project has one — only if user explicitly asks |
 
 If ambiguous → one clarifying question, then re-approve loop.
 
