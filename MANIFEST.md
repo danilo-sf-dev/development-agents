@@ -103,7 +103,7 @@ Uma segunda varredura (além do Cleanup v1) encontrou **resíduo de find-and-rep
 | `WORKFLOW.md` exemplo "Standard Feature" sem `/sdd.test` | Corrigido (bug real causado pela duplicação) |
 | `COMMANDS.md` "Total Commands: 17" e tabela sem `test/doctor/hub/install` | Corrigido para 20, categorias atualizadas |
 
-Validação: `rg -i 'meli|fury|nordic|everest|andes|furycloud|ltp\b'` (ignorando falsos positivos de "timeline") → zero hits fora do MANIFEST/RESUMO.
+Validação: `rg -i 'meli|fury|nordic|everest|andes|furycloud|ltp\b'` (ignorando falsos positivos de "timeline") → zero hits fora do MANIFEST.
 
 **Gap conhecido, não corrigido nesta rodada**: `COMMANDS.md` documenta `/sdd.skill` (hooks de terceiros) que não existe como comando no pack, e não tem seções para `/sdd.doctor`, `/sdd.hub`, `/sdd.install`. Decidir se `/sdd.skill` é uma feature a implementar ou doc morta a remover.
 
