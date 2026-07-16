@@ -289,7 +289,8 @@ elif selection == "/sdd.check":
 | `/sdd.start` | `/sdd.spec`, `/sdd.spec --audio`, `/sdd.check` |
 | `/sdd.spec` (functional approved) | `/sdd.spec technical`, `/sdd.spec --iterate`, `/sdd.check` |
 | `/sdd.spec` (both approved) | `/sdd.plan`, `/sdd.spec --iterate`, `/sdd.check` |
-| `/sdd.plan` | `/sdd.build`, `/sdd.build --layer 1`, `/sdd.check` |
+| `/sdd.plan` | `/sdd.test`, `/sdd.check` |
+| `/sdd.test` | `/sdd.build`, `/sdd.test --refine` |
 | `/sdd.build` (layer complete) | `/sdd.build`, `/sdd.check --compact`, `/sdd.check --sync` |
 | `/sdd.build` (all tasks done) | `/sdd.finish`, `/sdd.check --sync`, `/sdd.build --layer 3` |
 | `/sdd.finish` | `/sdd.start`, `/sdd.backlog list`, `/sdd.list` |

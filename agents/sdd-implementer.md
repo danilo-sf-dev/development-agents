@@ -284,7 +284,7 @@ function handleError(error: Error, res: Response): void {
 - [Service]: configured per technical spec
 
 ### Next Steps
-- [ ] Write unit tests (use sdd-small-test-writer)
+- [ ] Run approved tests from `/sdd.test` (no new test files written here)
 - [ ] Run validation (use sdd-validator)
 - [ ] Code review (use sdd-code-reviewer)
 ```
@@ -301,6 +301,7 @@ function handleError(error: Error, res: Response): void {
 8. **No Hardcoded Secrets**: Use environment variables or the project's secrets mechanism
 9. **Idempotency**: Design operations to be safely retryable
 10. **Logging**: Add appropriate logging for debugging
+11. **Approved tests are immutable**: Tests were already written and approved in `/sdd.test` (listed in `tests-manifest.json`). Never edit assertions, fixtures, or expected values in those files to force a pass, never disable/skip/delete them. If you believe an approved test is wrong, STOP implementing and report it — do not edit it silently. Fix the code to satisfy the contract, not the other way around.
 
 ## Dockerfiles (project-dependent)
 

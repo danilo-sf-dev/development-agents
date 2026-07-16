@@ -32,9 +32,9 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 | `context-guardian` | Controle de contexto/tokens |
 | `commit-workflow` | Formatação, validação e commit agnósticos |
 
-### commands/ (18) — orquestração `/sdd.*`
+### commands/ (20) — orquestração `/sdd.*`
 
-Inclui: start, spec, plan, build, go, check, finish, fix, backlog, etc.
+Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
 
 ### framework/
 

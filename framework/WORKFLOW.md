@@ -57,7 +57,8 @@ For most features, balanced control and quality:
 graph LR
     A["/sdd.start<br/>Initialize"] --> B["/sdd.spec<br/>Specs"]
     B --> C["/sdd.plan<br/>Tasks"]
-    C --> D["/sdd.build<br/>Implement"]
+    C --> T["/sdd.test<br/>Tests"]
+    T --> D["/sdd.build<br/>Implement"]
     D --> E["/sdd.finish<br/>Archive"]
     E -.->|"--reopen"| A
 ```
@@ -127,6 +128,25 @@ graph LR
 
 **Output**: Tasks approved with execution strategy
 
+**Next**: `/sdd.test`
+
+---
+
+### Phase 3.5: Tests-First (Gate 2.5)
+
+**Command**: `/sdd.test`
+
+**What happens**:
+- AI reads functional + technical specs and approved tasks
+- Writes unit/integration tests from acceptance criteria and edge cases
+- Verifies **red phase** — new tests fail before any feature implementation
+- Human approves test plan and test files
+- Skipped automatically for `prototype` project type
+
+**Token Budget**: ~40K-60K tokens
+
+**Output**: `sdd/wip/[feature]/4-tests/` with approved, failing tests
+
 **Next**: `/sdd.build`
 
 ---
@@ -137,8 +157,8 @@ graph LR
 
 **What happens**:
 - Reads execution strategy
-- Implements tasks in order/parallel
-- Runs tests after each task
+- Implements tasks in order/parallel — **does not write new unit/integration tests**
+- Runs approved tests after each task until green
 - Creates commits
 - Reports progress
 - Pauses on errors, offers options
@@ -185,6 +205,8 @@ For finer control within Standard mode:
 # Explicit plan refinement
 /sdd.plan --refine
 /sdd.plan --approve
+/sdd.test
+/sdd.test --approve
 
 # Targeted implementation
 /sdd.build task TASK-001
@@ -197,7 +219,7 @@ For finer control within Standard mode:
 
 | Aspect | Express | Standard |
 |--------|---------|----------|
-| Commands | 1 | 4-5 |
+| Commands | 1 | 5-6 |
 | Interaction | Low | Medium |
 | Control | Minimal | Balanced |
 | Questions | 3-5 critical | Full interview |

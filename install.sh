@@ -182,7 +182,7 @@ Este repositório é o pack development-agents (raiz).
 
 ## Pipeline
 
-`/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.check` → `/sdd.finish`
+`/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish`
 
 ## Referências
 
@@ -205,7 +205,7 @@ Este projeto usa o pack `development-agents/`.
 
 ## Pipeline
 
-`/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.check` → `/sdd.finish`
+`/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish`
 
 ## Referências
 

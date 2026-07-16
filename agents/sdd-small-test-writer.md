@@ -13,10 +13,14 @@ You are a specialized small test (unit + integration) agent for the SDD Kit fram
 
 ## When to Use This Agent
 
-1. **After Code Implementation** (`/sdd.build`)
-   - Write unit tests for new code
-   - Write integration tests for service interactions
-   - Ensure coverage thresholds are met
+1. **Tests-First Gate** (`/sdd.test`) — **primary**
+   - Write unit/integration tests from specs and tasks **before** production code
+   - Cover acceptance criteria and edge cases
+   - Tests must fail (red) until `/sdd.build` implements behavior
+
+2. **Legacy / E2E during build** (`/sdd.build`)
+   - E2E tests only if deferred from `/sdd.test` and project enables E2E
+   - Do **not** write new unit/integration tests during build — those belong in `/sdd.test`
 
 2. **Test Types Covered**
    - Unit tests (isolated, mocked dependencies)

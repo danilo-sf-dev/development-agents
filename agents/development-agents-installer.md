@@ -139,7 +139,7 @@ Este projeto usa o pack development-agents/.
 
 ## Pipeline
 
-/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.build -> /sdd.check -> /sdd.finish
+/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.test -> /sdd.build -> /sdd.check -> /sdd.finish
 
 Atalho: /sdd.go (express). Prefira o fluxo padrao no primeiro contato com um card.
 

@@ -20,7 +20,11 @@ if [ -z "$current_stage" ]; then
     tasks_status=$(grep -A3 "tasks:" "$META_FILE" 2>/dev/null | grep "status:" | head -1 | sed 's/.*: *//')
     tech_status=$(grep -A3 "technical:" "$META_FILE" 2>/dev/null | grep "status:" | head -1 | sed 's/.*: *//')
 
+    tests_status=$(grep -A3 "tests:" "$META_FILE" 2>/dev/null | grep "status:" | head -1 | sed 's/.*: *//')
+
     if [ "$impl_status" = "in-progress" ]; then current_stage="implementation"
+    elif [ "$tests_status" = "approved" ] && [ "$impl_status" != "completed" ]; then current_stage="implementation"
+    elif [ "$tests_status" = "in-progress" ] || [ "$tests_status" = "pending" ]; then current_stage="tests"
     elif [ "$tasks_status" = "approved" ] || [ "$tasks_status" = "in-progress" ]; then current_stage="tasks"
     elif [ "$tech_status" = "approved" ] || [ "$tech_status" = "in-progress" ]; then current_stage="technical"
     else current_stage="functional"; fi
@@ -31,7 +35,8 @@ case "$current_stage" in
     functional) phase=1 ;;
     technical) phase=2 ;;
     tasks) phase=3 ;;
-    implementation) phase=4 ;;
+    tests) phase=4 ;;
+    implementation) phase=5 ;;
     *) echo "❌ Unknown stage: $current_stage"; exit 1 ;;
 esac
 
@@ -40,7 +45,8 @@ case $phase in
     1) layers="functional" ;;
     2) layers="functional technical" ;;
     3) layers="functional technical tasks" ;;
-    4) layers="functional technical tasks code" ;;
+    4) layers="functional technical tasks tests" ;;
+    5) layers="functional technical tasks tests code" ;;
 esac
 
 if [ "$JSON_OUTPUT" = true ]; then

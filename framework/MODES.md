@@ -96,7 +96,7 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 
 **Workflow**:
 ```
-/sdd.start → /sdd.spec → /sdd.plan → /sdd.build → /sdd.finish
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
               ↑           ↑            ↑              ↑
               30-60min    10-20min     1-2h           5min
               (interactive) (review)   (progress)     (summary)
