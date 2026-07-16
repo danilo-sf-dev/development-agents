@@ -183,6 +183,10 @@ For most features, balanced control and quality:
 
 **Output**: Feature archived with documentation
 
+**Next (optional)**: `/sdd.pr` — draft pull request with human approval before `gh pr create`
+
+> First-time guide: [`PLAYBOOK.md`](./PLAYBOOK.md)
+
 ---
 
 ## Granular Control (Optional Flags)

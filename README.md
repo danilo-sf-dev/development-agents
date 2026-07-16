@@ -104,6 +104,8 @@ Depois:
 2. checkout `main`/`master` + pull (manual)
 3. `/sdd.start "JIRA-1234 resumo"`
 4. `/sdd.spec functional --include "<card ou link>"`
+5. … pipeline completo — ver [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
+6. `/sdd.pr` — rascunho de PR → você aprova → publica no GitHub
 
 ## Origem
 

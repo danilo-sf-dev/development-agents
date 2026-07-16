@@ -166,3 +166,4 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 2. Standard: confirm before archive; Express: auto-archive on green.
 3. Atomic `mv` wip→features; verify; promote PATTERNS/backlog via AskUserQuestion.
 4. Mobile / brownfield / hooks → matching lazy refs only.
+5. After archive (Standard): suggest `/sdd.pr` via `references/finish-next-steps.md`.

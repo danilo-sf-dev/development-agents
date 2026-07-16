@@ -15,9 +15,13 @@
   → /sdd.build           (implement until tests pass → validate)
   → /sdd.check
   → /sdd.finish          (Gate 3: completion & archive)
+  → /sdd.pr              (optional: draft PR → human approve → gh create)
 ```
 
-Shortcut: `/sdd.go` orchestrates `start → … → finish` in express mode (includes `/sdd.test`).
+Shortcut: `/sdd.go` orchestrates `start → … → finish` in express mode (includes `/sdd.test`).  
+PR is **not** part of `/sdd.go` — run `/sdd.pr` separately after finish when ready to merge.
+
+> First-time walkthrough: [`framework/PLAYBOOK.md`](./PLAYBOOK.md)
 
 ## Diagram
 
@@ -28,6 +32,7 @@ graph LR
     C --> T["/sdd.test<br/>Tests"]
     T --> D["/sdd.build<br/>Implement"]
     D --> E["/sdd.finish<br/>Archive"]
+    E --> P["/sdd.pr<br/>Open PR"]
     E -.->|"--reopen"| A
 ```
 
