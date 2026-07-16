@@ -26,106 +26,18 @@ argument-hint: "[feature-description] [--express|--lite|--audio|--from-backlog|-
 
 ## Quick Help
 
-> `/sdd.start help` → Shows this summary
-
-**Syntax**: `/sdd.start [feature-description] [flags]`
-
-| Argument | Description |
-|----------|-------------|
-| `feature-description` | Brief description of what you want to build (in natural language) |
-
-| Flag | Description |
-|------|-------------|
-| (none) | Standard mode (confirmations at key points) |
-| `--express` | Express mode (minimal interaction) |
-
-| `--lite` | Lite template (~80 lines, combined spec) |
-| `--audio` | Record feature description via microphone |
-| `--from-backlog <ID>` | Create feature from backlog item |
-| `--rename [new-name]` | Rename current feature (updates folder and meta.md) |
-| `--reopen [name]` | Reopen a completed feature from `sdd/features/` back to WIP |
-| `--phase N` | (with `--reopen`) Target phase: 1=Functional, 2=Technical, 3=Tasks, 4=Implementation |
-
-**Examples**:
-```bash
-# Describe what you want to build (RECOMMENDED)
-/sdd.start "user authentication with OAuth"
-/sdd.start "payment retry mechanism for failed transactions"
-/sdd.start "inventory sync from external API"
-
-# Record voice description
-/sdd.start --audio
-
-# Or use a short feature name
-/sdd.start "payment-gateway"
-/sdd.start "user-auth" --express
-/sdd.start "cache-layer" --lite
-
-# Rename an existing feature
-/sdd.start --rename "oauth-login"
-
-# Reopen a completed feature for iteration
-/sdd.start --reopen user-auth              # By name
-/sdd.start --reopen 20260120-user-auth --phase 2  # By full name, direct to technical spec phase
-```
-
-**What happens**:
-1. Agent infers a kebab-case feature name from your description
-2. Detects your tech stack and confirms this looks like an existing/ready repo
-3. Creates `sdd/wip/[YYYYMMDD-feature-name]/` directory structure
-4. Initializes `meta.md` with feature metadata
-
-**See also**: `/sdd.help start` for detailed documentation
-
----
-
-
-> **Application Name** vs **Feature Name**:
-> - **Application**: The app you're working on (e.g., `items-api`, `payments-core`)
-> - **Feature**: What you're building within that app (e.g., `user-auth`, `payment-retry`)
-
----
-
-## Modes
-
-| Mode | Flag | Behavior |
-|------|------|----------|
-| **Express** | `--express` | Minimal interaction, auto-advances |
-| **Standard** | (default) | Confirmations at key points |
-
-
-## Templates
-
-| Template | Flag | Lines | Use For |
-|----------|------|-------|---------|
-| **Full** | (default) | ~1,100 | Production, compliance-heavy |
-| **Lite** | `--lite` | ~80 | MVPs, prototypes, internal tools |
-
----
+`/sdd.start [description] [--express|--lite]` · rare flags: `--audio|--from-backlog|--rename|--reopen` (lazy table at bottom).
+Infer kebab name → detect stack → create `sdd/wip/YYYYMMDD-name/` + meta.md → next `/sdd.spec`.
+Modes: Standard (confirm) | Express (minimal). Templates: standard | `--lite` (combined short spec).
+App name ≠ feature name. See `/sdd.help start`.
 
 ## Workflow (Steps in Order)
 
-### Step 0: User Profile Check (BLOCKING - NEVER SKIP)
+### Step 0: User Profile Check (BLOCKING)
 
-> **⛔ This step runs BEFORE anything else. No profile = must ask.**
-
-```bash
-profile_file="$HOMEdevelopment-agents/framework/user-profile.yaml"
-if [ -f "$profile_file" ]; then
-    profile=$(grep "^profile:" "$profile_file" | cut -d: -f2 | tr -d ' ')
-    echo "✓ Using saved profile: $profile"
-else
-    # ⛔ MANDATORY: Ask user for profile. Do NOT continue without it.
-    # → Go to "First-time Profile Selection" in Step 5.5 below
-    # → Save result to $profile_file BEFORE proceeding
-fi
-```
-
-If no profile file exists, you MUST:
-1. Display the profile options (Business/Product vs Technical) using AskUserQuestion
-2. If Technical: ask Plan Mode preferences
-3. Save `development-agents/framework/user-profile.yaml`
-4. Only then continue to Step 1
+> Never skip. If global profile missing → AskUserQuestion (technical/non-technical) before Step 1.
+> **ONLY IF** needing full AskUserQuestion payloads / yaml paths:
+> Read `references/start-user-profile.md` (also used in Step 5.5).
 
 ### Step 1: Validate Input (BLOCKING)
 
@@ -141,800 +53,92 @@ If no profile file exists, you MUST:
 
 2. **Check uniqueness**: Feature must not exist in `sdd/wip/`
 
-### Step 2: Platform Detection + Frontend Skills Check
+### Step 2: Platform + Frontend Skills
 
-> **Run these two bash commands sequentially. Check the output of each before continuing.**
+> Run `detect-stack.sh` → set `IS_MOBILE`. Then `check-frontend-skill.sh`. If output has `❌`, STOP.
+> **ONLY IF** needing exact bash:
+> Read `references/start-platform-detect.md`.
 
-**Step 2a** — detect platform:
-```bash
-stack_result=$(bash development-agents/framework/tools/detection/detect-stack.sh . --json 2>/dev/null)
-platform=$(echo "$stack_result" | grep -o '"platform":[^,}]*' | grep -o '"[^"]*"$' | tr -d '"')
-([ "$platform" = "android" ] || [ "$platform" = "ios" ]) && IS_MOBILE=true || IS_MOBILE=false
-echo "platform=$platform IS_MOBILE=$IS_MOBILE"
-```
+### Step 2.5: Repository Readiness (short)
 
-**Step 2b** — validate frontend skill (run this independently):
-```bash
-bash development-agents/framework/tools/shared/check-frontend-skill.sh "$(pwd)" "$stack_result"
-```
-> If `$stack_result` is not available in this shell, run: `bash development-agents/framework/tools/shared/check-frontend-skill.sh "$(pwd)"` instead (the script will re-run detect-stack internally).
+Must run inside an existing git repo (never creates external apps). Detect `freshly_scaffolded` (0–1 commits, no specs/features).
+No `.git` → AskUserQuestion to init or relocate. Full scenario table: `references/new-app-scaffolding.md` if improvising.
 
-> **If Step 2b output contains `❌`, STOP. Do not proceed.**
+### Step 2.6: Cleanup Scaffolding Samples (lazy-loaded)
 
----
+> **ONLY IF** `freshly_scaffolded=true`:
+> Read `references/start-scaffolding-cleanup.md` (sample cleanup + essential-file checks).
+> Otherwise skip to Step 3.
 
-### Step 2.5: Repository Readiness Check
+### Step 3: Scaffolding + Stack Detection
 
-> **Assumption**: `/sdd.start` runs *inside* an already-existing git repository — cloned, scaffolded by your org's own tooling, or freshly `git init`'d. This command never creates/registers applications in an external system; that step (if your org has one) happens **before** `/sdd.start`.
-
-```bash
-freshly_scaffolded=false
-commit_count=$(git log --oneline 2>/dev/null | wc -l)
-if [ "$commit_count" -le 1 ] && ! [ -d "sdd/specs" ] && ! [ -d "sdd/features" ]; then
-    freshly_scaffolded=true
-fi
-echo "freshly_scaffolded=$freshly_scaffolded (commits=$commit_count)"
-```
-
-| Scenario | Action |
-|----------|--------|
-| No `.git` folder at all | Ask user (AskUserQuestion): initialize a repo here, or point to the correct existing one |
-| Fresh repo (0-1 commits), no `sdd/specs`/`sdd/features` | Likely brand-new project. If your org has its own app-creation/scaffolding tool, that should already have run — see `references/new-app-scaffolding.md` for a generic checklist if you need to improvise one |
-| Fresh repo but scaffold/sample files still present | Optional cleanup — Step 2.6 below |
-| Repo has real history / existing code / existing SDD specs | Standard case — skip straight to Step 3 (stack detection) |
-
-### Step 2.6: Cleanup Scaffolding Samples (CONDITIONAL)
-
-> **WHEN TO RUN**: Only if `freshly_scaffolded=true`. Adjust the globs below to match your own template/starter conventions — these are just common examples.
-
-```bash
-if [ "$freshly_scaffolded" = true ]; then
-    echo "🧹 Running scaffolding cleanup..."
-    case "$technology" in
-        java*)   rm -rf src/main/java/com/example/*/beans/ src/main/java/com/example/*/dtos/ src/test/java/com/example/*/unit/beans/ 2>/dev/null ;;
-        kotlin*) rm -rf src/main/kotlin/com/example/*/beans/ src/main/kotlin/com/example/*/dtos/ src/test/kotlin/com/example/*/unit/beans/ 2>/dev/null ;;
-        go*)     rm -f telemetry/example_test.go 2>/dev/null ;;
-        python*) rm -rf app/dummy/ 2>/dev/null ;;
-        node*|typescript*) rm -rf src/routes/example*.ts src/controllers/example*.ts 2>/dev/null ;;
-    esac
-    git add -A && git commit -m "chore: cleanup scaffolding samples" 2>/dev/null
-    echo "✅ Cleanup complete (sample/example files removed if present)"
-else
-    echo "ℹ️  Skipping cleanup (existing app with code)"
-fi
-```
-
-#### 2.6.1 Verify Essential Files (best-effort, adjust per stack)
-
-```bash
-if [ "$IS_MOBILE" = true ]; then
-    case "$platform" in
-        android) required_files=("app/src/main/AndroidManifest.xml" "build.gradle.kts") ;;
-        ios)     ls -d *.xcodeproj *.xcworkspace 2>/dev/null | head -1 | grep -q . || echo "⚠️ Missing Xcode project/workspace" ;;
-    esac
-else
-    case "$technology" in
-        java*)   required_files=("pom.xml" "Dockerfile") ;;
-        go*)     required_files=("go.mod" "Dockerfile") ;;
-        python*) required_files=("pyproject.toml" "Dockerfile") ;;
-        node*)   required_files=("package.json" "Dockerfile") ;;
-    esac
-fi
-for file in "${required_files[@]}"; do
-    [ ! -e "$file" ] && echo "⚠️ Missing: $file"
-done
-```
-
-### Step 3: Detect Scaffolding Status
-
-> **PURPOSE**: Detect if app was created externally but is freshly scaffolded.
-> **IMPORTANT**: If `sdd/specs` already exists, it's brownfield - NEVER cleanup.
-
-After moving contents, use the `detect-scaffolding-status.sh` script:
-
-```bash
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../tools" && pwd)"
-result=$("$SCRIPT_DIR/detect-scaffolding-status.sh" "." --json)
-
-# Parse JSON result
-project_mode=$(echo "$result" | grep -o '"project_mode":"[^"]*"' | cut -d'"' -f4)
-freshly_scaffolded=$(echo "$result" | grep -o '"freshly_scaffolded":[^,}]*' | cut -d: -f2)
-detected_tech=$(echo "$result" | grep -o '"technology":"[^"]*"' | cut -d'"' -f4)
-reason=$(echo "$result" | grep -o '"reason":"[^"]*"' | cut -d'"' -f4)
-
-# Use detected technology if not already set
-if [ -z "$technology" ] && [ -n "$detected_tech" ] && [ "$detected_tech" != "unknown" ]; then
-    technology="$detected_tech"
-    echo "   → Detected technology: $technology"
-fi
-
-echo "🔍 Scaffolding Status: $project_mode (freshly_scaffolded=$freshly_scaffolded)"
-echo "   Reason: $reason"
-```
-
-#### 3.1 Detect Full Stack (Deterministic)
-
-Use script for comprehensive stack detection - Saves ~2,000-3,000 tokens vs LLM inference.
-
-```bash
-# Detect full technology stack (language, framework, database, project services, platform)
-# NOTE: if IS_MOBILE=true, stack_result was already fetched in Step 2 — reuse it
-[ -z "$stack_result" ] && stack_result=$(bash development-agents/framework/tools/detection/detect-stack.sh . --json)
-
-# Parse JSON result
-language=$(echo "$stack_result" | grep -o '"language":"[^"]*"' | cut -d'"' -f4)
-build_tool=$(echo "$stack_result" | grep -o '"buildTool":"[^"]*"' | cut -d'"' -f4)
-framework=$(echo "$stack_result" | grep -o '"framework":"[^"]*"' | cut -d'"' -f4)
-database=$(echo "$stack_result" | grep -o '"database":"[^"]*"' | cut -d'"' -f4)
-platform_services=$(echo "$stack_result" | grep -o '"platformServices":\[[^]]*\]')
-[ -z "$platform" ] && platform=$(echo "$stack_result" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
-
-echo "📊 Stack Detection: language=$language platform=${platform:-backend} build=$build_tool framework=${framework:-none} db=${database:-none} services=$platform_services"
-```
-
-**Use stack info in meta.md**: pre-populate `technology:`/`platform:` fields, set build/test commands, list project services to configure (skip for mobile).
+> Run `detect-scaffolding-status.sh` then `detect-stack.sh` (reuse Step 2 result if mobile).
+> Pre-populate meta.md technology/platform/build/test. Brownfield with existing `sdd/specs` → never cleanup samples.
+> **ONLY IF** needing parse bash:
+> Read `references/start-stack-detect.md`.
 
 ### Step 4: Detect Project Mode
 
-```bash
-if [ "$freshly_scaffolded" = true ]; then
-    project_mode="greenfield"
-    echo "🆕 Freshly scaffolded → Greenfield mode"
-elif [ -d "sdd/specs" ] || [ -d "sdd/features" ]; then
-    project_mode="brownfield"
-    echo "🔍 Existing specs found → Brownfield mode"
-elif has_implementation_code; then
-    project_mode="brownfield"
-    echo "🔍 Existing code found → Brownfield mode"
-else
-    project_mode="greenfield"
-    echo "🆕 Empty project → Greenfield mode"
-fi
-```
+`freshly_scaffolded` or empty → greenfield; else if `sdd/specs|features` or real code → brownfield.
+> Brownfield path: Read `references/start-brownfield.md` (ONLY IF brownfield).
 
-#### Step 4.2: Brownfield Without Specs Warning
+### Step 5: Project Type Selection
 
-> **INFO**: Non-blocking recommendation for better results.
-
-When brownfield is detected WITHOUT existing specs:
-
-```bash
-if [ "$project_mode" = "brownfield" ] && [ ! -d "sdd/specs" ] && [ ! -d "sdd/extracted" ]; then
-    # Show informative warning
-fi
-```
-
-**Display to user**:
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  ⚠️  BROWNFIELD DETECTED WITHOUT SPECS                                  │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  This repository has existing code but no generated specs.               │
-│                                                                          │
-│  For better results, consider running:                                   │
-│                                                                          │
-│    /sdd.reverse-eng                                                     │
-│                                                                          │
-│  This will:                                                              │
-│  • Extract specs from existing code                                      │
-│  • Document current architecture                                         │
-│  • Identify patterns and conventions                                     │
-│  • Help avoid conflicts with new features                                │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-**⛔ INVOKE TOOL (do not print this, CALL the tool)**:
-
-```
-AskUserQuestion(
-  questions=[{
-    "question": "How would you like to proceed?",
-    "header": "Setup",
-    "options": [
-      {"label": "Run /sdd.reverse-eng first (Recommended)", "description": "Generate specs from existing code before starting"},
-      {"label": "Continue without specs", "description": "Feature will work but with less context"},
-      {"label": "What does reverse-eng do?", "description": "Show brief explanation"}
-    ],
-    "multiSelect": false
-  }]
-)
-```
-
-**Behavior by choice**:
-
-| Choice | Action |
-|--------|--------|
-| Run reverse-eng first | Exit `/sdd.start`, show: "Run `/sdd.reverse-eng` then retry `/sdd.start`" |
-| Continue without specs | Proceed to Step 4.1, add warning to meta.md |
-| What does it do? | Explain benefits, re-ask question |
-
-**If user chooses "Continue without specs"**, add to meta.md:
-
-```yaml
-brownfield_context:
-  has_specs: false
-  warning_acknowledged: true
-  recommendation: "Consider running /sdd.reverse-eng for better context"
-```
-
-#### Step 4.1: Analyze Existing Structure (Brownfield Only)
-
-> **FOR BROWNFIELD**: Analyze existing codebase structure to understand patterns.
-
-```bash
-if [ "$project_mode" = "brownfield" ]; then
-    echo "🔍 Analyzing existing codebase structure..."
-
-    # Run structure analysis
-    structure_result=$(bash development-agents/framework/tools/extraction/analyze-structure.sh . --json)
-
-    # Extract key information
-    entry_points=$(echo "$structure_result" | grep -o '"entry_points":\[[^]]*\]')
-    patterns=$(echo "$structure_result" | grep -o '"patterns":\[[^]]*\]')
-    dependencies=$(echo "$structure_result" | grep -o '"external_dependencies":\[[^]]*\]')
-    test_patterns=$(echo "$structure_result" | grep -o '"test_patterns":\[[^]]*\]')
-
-    echo "📊 Structure Analysis:"
-    echo "   Entry points: $entry_points"
-    echo "   Patterns detected: $patterns"
-    echo "   External dependencies: $dependencies"
-    echo "   Test patterns: $test_patterns"
-
-    # Store in meta.md for use in /sdd.spec
-    # This provides context about existing code patterns
-fi
-```
-
-**Structure analysis provides**:
-- Entry points (main classes, handlers, routes)
-- Code patterns (MVC, layered, hexagonal)
-- External service dependencies
-- Test organization patterns
-- Package/module structure
-
-### Step 5: Project Type Selection (MOVED UP)
-
-> **WHY FIRST**: Prototypes skip PROJECT.md prompt, saving time for quick POCs
-
-**⚠️ MUST SHOW this comparison table before asking:**
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    📋 PROJECT TYPE COMPARISON                               │
-├─────────────┬───────────────┬───────────────┬───────────────────────────────┤
-│   Aspect    │   Prototype   │      MVP      │         Production            │
-├─────────────┼───────────────┼───────────────┼───────────────────────────────┤
-│ Unit Tests  │ ❌ Skip       │ ⚠️ Critical   │ ✅ Full coverage              │
-│ Coverage    │ 0%            │ Varies        │ 80%+                          │
-│ CI Pipeline │ Optional      │ Required      │ Required                      │
-│ Code Review │ ❌ Skip       │ ✅ Yes        │ ✅ Yes                        │
-│ E2E Tests   │ ❌ Skip       │ ❌ Skip       │ ✅ Opt-in                     │
-│ Best for    │ Quick POC,    │ Internal      │ Customer-facing,              │
-│             │ experiments   │ tools, MVPs   │ compliance required           │
-└─────────────┴───────────────┴───────────────┴───────────────────────────────┘
-```
-
-**⛔ INVOKE TOOL (do not print this, CALL the tool)**:
-
-```
-AskUserQuestion(
-  questions=[{
-    "question": "What type of project is this?",
-    "header": "Type",
-    "options": [
-      {"label": "Prototype", "description": "Demo app, no tests, quick validation"},
-      {"label": "MVP", "description": "Tests for critical paths only"},
-      {"label": "Production (Recommended)", "description": "Full coverage 80%+, quality checks"}
-    ],
-    "multiSelect": false
-  }]
-)
-```
+> Ask once (prototype | mvp | production). Prototypes skip heavy PROJECT.md prompts.
+> **ONLY IF** showing comparison table / AskUserQuestion payload:
+> Read `references/start-project-type.md`.
+> Store choice in `meta.md` → `project_type`.
 
 ### Step 5.5: User Profile Selection
 
-> **PURPOSE**: Determine technical vs non-technical profile ONCE and persist for future sessions.
-> **CRITICAL**: Non-technical profile triggers EXPRESS MODE automatically.
-
-**Check for existing profile (hierarchy)**:
-
-```bash
-# 1. Check global user preference (persistent across all projects)
-profile_file="$HOMEdevelopment-agents/framework/user-profile.yaml"
-if [ -f "$profile_file" ]; then
-    profile=$(grep "^profile:" "$profile_file" | cut -d: -f2 | tr -d ' ')
-    if [ -n "$profile" ]; then
-        echo "✓ Using saved profile: $profile"
-        # Skip asking, use existing
-    fi
-fi
-
-# 2. If no global profile, check PROJECT.md defaults
-# 3. If still no profile, ask user
-```
-
-#### First-time Profile Selection (if no existing profile)
-
-**BEFORE ASKING**, display this behavior summary:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 User Profile Configuration
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Your profile determines how much technical detail you see.
-
-┌─────────────────────────────────────────────────────────────────┐
-│ BUSINESS/PRODUCT FOCUS                                          │
-├─────────────────────────────────────────────────────────────────┤
-│ • Focus on WHAT to build, agent handles HOW                     │
-│ • Simplified output (no layers, project services, code snippets)        │
-│ • Agent makes all technical decisions automatically             │
-│ • Express mode always active (fastest flow)                     │
-│ • Simplified effort labels instead of complexity ratings        │
-│ • Questions in plain language                                   │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│ TECHNICAL FOCUS                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│ • Full control over architecture decisions                      │
-│ • See layers, project services, code snippets                      │
-│ • Choose execution mode (express/standard)                      │
-│ • Complexity ratings (Low/Medium/High)                          │
-│ • Plan Mode for complex operations (configurable)               │
-│ • Detailed error messages with stack traces                     │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**⛔ INVOKE TOOL (do not print this, CALL the tool)**:
-
-```
-AskUserQuestion(
-  questions=[{
-    "question": "Which profile matches how you want to work?",
-    "header": "Profile",
-    "options": [
-      {"label": "Business/Product focus", "description": "Focus on WHAT to build. Agent handles technical decisions."},
-      {"label": "Technical focus", "description": "Full control. See layers, project services, architecture details."}
-    ],
-    "multiSelect": false
-  }]
-)
-```
-
-#### Step 5.5.1: Plan Mode Preferences (Technical Profile Only)
-
-> **SKIP IF**: User selected "Business/Product focus" (non-technical)
-
-If user selects "Technical focus", show Plan Mode configuration:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚙️ Plan Mode Preferences
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Plan Mode pauses before complex operations for your approval.
-(Only available in Claude Code CLI)
-```
-
-**⛔ INVOKE TOOL (do not print this, CALL the tool)**:
-
-```
-AskUserQuestion(
-  questions=[{
-    "question": "Enable Plan Mode for which scenarios?",
-    "header": "Plan Mode",
-    "options": [
-      {"label": "Complex bug fixes (Recommended)", "description": "Pause before investigating DESIGN_FLAW or FEATURE_GAP errors"},
-      {"label": "Technical spec in brownfield (Recommended)", "description": "Explore existing code before architecture decisions"},
-      {"label": "Complex build tasks", "description": "Pause before high-complexity tasks or Layer 2"},
-      {"label": "None", "description": "Never pause - implement directly"}
-    ],
-    "multiSelect": true
-  }]
-)
-```
-
-> **Default behavior**: If user selects "None", all plan_mode options set to false.
-> If user doesn't select "None", selected options are enabled.
-
-#### Step 5.5.2: Store Profile with Plan Mode Settings
-
-**Store profile persistently**:
-
-```bash
-# Create development-agents/framework/user-profile.yaml
-mkdir -p "$HOME/.sdd-kit"
-
-if [ "$selected_profile" = "technical" ]; then
-    # Technical profile with plan_mode settings
-    cat > "$HOMEdevelopment-agents/framework/user-profile.yaml" << EOF
-# SDD Kit User Profile
-# Generated: $(date -Iseconds)
-#
-# To update these settings:
-#   /sdd.project profile        → View current settings
-#   /sdd.project profile --edit → Interactive update
-#   Delete this file            → Re-select from scratch
-
-profile: technical  # technical | non-technical
-
-# Plan Mode settings (technical profile only)
-# These control when the agent pauses for your approval
-plan_mode:
-  fix_complex_bugs: $fix_complex_bugs           # DESIGN_FLAW, FEATURE_GAP errors
-  spec_technical_brownfield: $spec_brownfield   # Explore code before architecture
-  build_complex_tasks: $build_complex           # High complexity, >5 files, Layer 2
-  build_layer_transitions: false                # L1→L2, context >50%, 10+ tasks
-  build_ci_test_recovery: false               # Ambiguous project CI test failures
-EOF
-else
-    # Non-technical profile (no plan_mode)
-    cat > "$HOMEdevelopment-agents/framework/user-profile.yaml" << EOF
-# SDD Kit User Profile
-# Generated: $(date -Iseconds)
-#
-# To update these settings:
-#   /sdd.project profile        → View current settings
-#   /sdd.project profile --edit → Interactive update
-#   Delete this file            → Re-select from scratch
-
-profile: non-technical  # technical | non-technical
-
-# Non-technical profile: Express mode always active
-# Agent handles all technical decisions automatically
-EOF
-fi
-```
-
-#### Step 5.5.3: Confirmation Message
-
-**After saving profile, show confirmation**:
-
-For **Technical profile**:
-```
-✅ Profile saved: technical
-
-📋 Your settings:
-   • Full technical detail in outputs
-   • Plan Mode enabled for: [list enabled options]
-   • Execution mode: your choice per feature
-
-💡 To update later:
-   /sdd.project profile        → View current settings
-   /sdd.project profile --edit → Change settings
-```
-
-For **Non-technical profile**:
-```
-✅ Profile saved: non-technical
-
-📋 Your settings:
-   • Simplified output (business focus)
-   • Express mode always active
-   • Agent handles all technical decisions
-
-💡 To update later:
-   /sdd.project profile        → View current settings
-   /sdd.project profile --edit → Change settings
-```
-
-**Profile behavior mapping**:
-
-| Profile | Execution Mode | Technical Questions | Display |
-|---------|----------------|---------------------|---------|
-| `non-technical` | **AUTO-EXPRESS** | Agent decides | Simplified |
-| `technical` | User's choice | Ask user | Full detail |
-
-**⚠️ CRITICAL: Non-Technical = Express Mode**:
-
-```
-IF user_profile == "non-technical":
-    execution_mode = "express"  # FORCED, no matter what flag was passed
-    show: "📋 Express mode activated (non-technical profile)"
-    show: "   Agent will handle all technical decisions automatically"
-```
-
-**Store in meta.md**:
-
-```yaml
-user_profile:
-  type: non-technical  # or technical
-  source: global       # global | project | selected
-  selected_at: 2026-01-22T10:30:00Z
-```
+> Resolve profile: global `user-profile.yaml` → PROJECT.md defaults → AskUserQuestion.
+> Persist technical vs non-technical (+ plan-mode prefs for technical).
+> **ONLY IF** writing/updating profile files or AskUserQuestion payloads:
+> Read `references/start-user-profile.md`.
 
 ### Step 6: Load PROJECT.md (CONDITIONAL)
 
-**If `project_type == "prototype"`**:
-  → Skip PROJECT.md prompt entirely
-  → Use framework defaults for all settings
-  → Show: "⏭️ PROJECT.md skipped (prototype mode)"
-  → Continue to Step 7
+> **ONLY IF** `project_type != prototype` and `sdd/PROJECT.md` exists (or needs creation):
+> Read `references/start-project-md.md` (load, GenAI validate, doctor tip).
+> Prototype: skip or minimal defaults. Missing PROJECT.md → recommend `/sdd.project` then continue.
 
-**If `sdd/PROJECT.md` exists**:
-  → Load defaults (e2e_enabled, atlassian_mcp_enabled, etc.)
-  → **Validate PROJECT.md** (GenAI Offloaded):
+### Step 6.5: Configure Local MCPs (lazy-loaded)
 
-```bash
-# Validate PROJECT.md via GenAI Gateway
-validation_result=$(bash development-agents/framework/tools/genai/genai-validate-project.sh .)
-genai_exit=$?
-
-if [ "$genai_exit" -eq 0 ]; then
-    status=$(echo "$validation_result" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
-    if [ "$status" != "PASSED" ]; then
-        echo "PROJECT.md validation: $status"
-        echo "$validation_result" | grep -o '"recommendations":\[[^]]*\]'
-    fi
-elif [ "$genai_exit" -eq 2 ]; then
-    # Fallback to deterministic validation
-    validation_result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
-    is_valid=$(echo "$validation_result" | grep -o '"valid":[^,}]*' | cut -d: -f2)
-    if [ "$is_valid" != "true" ]; then
-        echo "PROJECT.md validation warnings:"
-        echo "$validation_result" | grep -o '"warnings":\[[^]]*\]'
-    fi
-fi
-# Continue regardless - not blocking for start
-```
-
-**If missing AND `project_type != "prototype"`**:
-  → Use AskUserQuestion:
-    1. Create PROJECT.md now (delegate to `sdd-project-wizard` subagent)
-    2. Continue with framework defaults
-    3. What is PROJECT.md?
-
-#### Step 6.1: Doctor Tip (Non-blocking, ⭐ v1.7.3)
-
-> **Purpose**: surface project-config health issues that would otherwise inflate specs.
-> **Behavior**: deterministic, fast (<1s), prints at most one line, NEVER blocks `/sdd.start`.
-
-```bash
-# Run the doctor's heuristic scanner only. No LLM, no questions.
-doctor_result=$(bash development-agents/framework/tools/doctor/scan-config.sh . --json 2>/dev/null || echo '{}')
-
-# Trigger the tip if any of these heuristics fire:
-#   - any phrase hit on rule X1 or X4 (anti-elegance / disables kit)
-#   - any shadowed command (O1) or agent (O2)
-#   - combined always-on footprint over the soft threshold (S3)
-trip_x=$(echo "$doctor_result" | grep -oE '"rule":"(X1|X4)"' | head -1)
-trip_o=$(echo "$doctor_result" | grep -oE '"rule":"(O1|O2)"' | head -1)
-footprint=$(echo "$doctor_result" | grep -o '"always_on_lines":[0-9]*' | cut -d: -f2)
-threshold=$(echo "$doctor_result" | grep -o '"threshold":[0-9]*' | head -1 | cut -d: -f2)
-
-if [ -n "$trip_x" ] || [ -n "$trip_o" ] || { [ -n "$footprint" ] && [ -n "$threshold" ] && [ "$footprint" -gt "$threshold" ]; }; then
-    echo "💡 Tip: tu config de proyecto puede estar afectando al kit (footprint=${footprint} líneas o conflicto detectado). Considera ejecutar /sdd.doctor antes de continuar."
-fi
-# Continue regardless — this tip is informational only.
-```
-
-> **Rules**:
-> - This step does NOT pause, does NOT use AskUserQuestion, and does NOT modify anything.
-> - If the scanner fails or is missing, silently skip (the empty JSON fallback ensures all triggers stay false).
-
-### Step 6.5: Configure Local MCPs (if needed)
-
-> **SKIP IF**: `project_type == "prototype"` (already skipped PROJECT.md)
-
-After loading PROJECT.md, check for optional MCP configurations:
-
-1. **Check `atlassian_mcp_enabled` setting**
-2. **If `true`**:
-   - Check if `.mcp.json` exists in project root
-   - Add AtlassianMCP to local `.mcp.json`:
-
-   ```json
-   {
-     "mcpServers": {
-       "AtlassianMCP": {
-         "command": "npx",
-         "args": ["-y", "mcp-remote", "https://mcp.atlassian.com/v1/sse"]
-       }
-     }
-   }
-   ```
-
-   - If `.mcp.json` exists: Merge AtlassianMCP into existing config
-   - If `.mcp.json` doesn't exist: Create it with AtlassianMCP only
-   - Show: "✓ AtlassianMCP configured locally for this project"
-   - Note: "First use will require OAuth login to Atlassian"
-
-3. **If `false` or missing**: Skip (AtlassianMCP not needed)
+> **ONLY IF** PROJECT.md / stack requires local MCP setup that is not yet configured:
+> Read `references/start-local-mcps.md`.
+> Otherwise skip.
 
 ### Step 7: Create Feature Structure
 
-**Validate name uniqueness** (BLOCKING):
-```bash
-# Check no other feature has the same name (regardless of date prefix)
-existing=$(ls -1 sdd/wip sdd/features sdd/cancelled 2>/dev/null | sed 's/^[0-9]*-//' | sed 's/_[0-9]*$//' | grep -x "$feature_name" | head -1)
-if [ -n "$existing" ]; then
-    # Find the full directory name for context
-    full_match=$(ls -1 sdd/wip sdd/features sdd/cancelled 2>/dev/null | grep -- "-${feature_name}\$" | head -1)
-    echo "❌ Feature name '${feature_name}' already exists: ${full_match}"
-fi
-```
-
-**On collision**: Do NOT stop and ask the user. Instead:
-1. Derive a more specific name from the original user description (e.g., `auth` → `oauth-login`, `payment` → `payment-retry-mechanism`)
-2. If the description is too vague to differentiate, append a qualifier: `{name}-v2`, `{name}-refactor`, `{name}-migration`
-3. Show the user the alternative name and proceed: `⚠️ Name 'auth' already in use (20250601-auth). Using 'oauth-login' instead.`
-4. If unable to derive a meaningful alternative, ask the user with AskUserQuestion
-
-**Generate date prefix**:
-```bash
-feature_date=$(date +%Y%m%d)
-feature_folder="${feature_date}-${feature_name}"
-```
-
-> **CRITICAL — folder naming format**: The folder name MUST be `YYYYMMDD-feature-name` (e.g., `20260326-user-auth`).
-> Do NOT use sequential numbers like `001-`, `002-`, `003-` even if existing folders in `sdd/wip/` or `sdd/features/` use that format.
-> Those are legacy folders from an older version. New features ALWAYS use the date prefix from `date +%Y%m%d`.
-
-**Date Prefix Rules**:
-- Date prefix is **organizational only** (for chronological ordering) — it is NOT an identifier
-- Features are identified by **name** (e.g., `user-auth`) or **full name** (e.g., `20260325-user-auth`)
-- Feature names are **globally unique** across `wip/`, `features/`, and `cancelled/`
-- Date prefix **never changes** when feature moves from `wip/` to `features/`
-
-**Create folders**:
-```bash
-mkdir -p "sdd/wip/$feature_folder"/{1-functional,2-technical,3-tasks,4-implementation/artifacts}
-```
+1. Uniqueness across wip/features/cancelled (name without date). On collision: derive better name or `-v2`, show warning, proceed.
+2. Folder: `YYYYMMDD-feature-name` (never legacy `001-` prefixes).
+3. Create WIP tree (1-functional … 5-implementation, meta.md placeholder).
+> **ONLY IF** needing mkdir tree / collision bash:
+> Read `references/start-feature-structure.md`.
 
 ### Step 8: Create meta.md
 
-Use template from `development-agents/framework/templates/meta.md` with:
-- Feature name, date prefix, ID
-- Project mode (greenfield/brownfield)
-- Execution mode (express/standard)
-- Framework version
-- Project type and testing config
-- **Spec language**: Read `language.specs` from `sdd/PROJECT.md` and set `spec_language` field in meta.md
-
-```bash
-# Read spec language from PROJECT.md (fallback to en)
-spec_lang=$(grep "specs:" sdd/PROJECT.md 2>/dev/null | head -1 | awk '{print $2}')
-if [ -z "$spec_lang" ]; then spec_lang="en"; fi
-# Write to meta.md spec_language field
-```
-
-**Conditional**: Delete "Brownfield Context" section if greenfield.
+Write meta from template: name, mode, project_type, profile, stack, `spec_language` from PROJECT.md (default `en`), stages pending.
+> **ONLY IF** needing field checklist:
+> Read `references/start-meta.md`.
 
 ### Step 9: Git Branch Management
 
-```bash
-current_branch=$(git rev-parse --abbrev-ref HEAD)
+If on default branch (master/main/develop per PROJECT.md): create/checkout `feature/<name>` (or project gitflow pattern).
+If already on feature branch: keep it. Never force-push.
+> **ONLY IF** needing gitflow variants:
+> Read `references/start-git-branch.md`.
 
-case "$current_branch" in
-    main|master)
-        # On main/master → Create feature branch
-        git checkout -b "feature/$feature_name"
-        ;;
-    feature/*)
-        # Already on feature branch → Ask user
-        # Option 1: Switch to new branch
-        # Option 2: Stay on current branch
+### Step 9.5: CLAUDE.md (lazy-loaded)
 
-        # ⚠️ SAFETY CHECK: Before switching branches
-        if ! git diff --quiet || ! git diff --cached --quiet; then
-            echo "⚠️ You have uncommitted changes."
-            echo "Please commit or stash them before switching branches."
-            # BLOCK - do not switch
-        else
-            git checkout -b "feature/$feature_name"
-        fi
-        ;;
-    *)
-        # Other branch → Ask what to do
-        # Same safety check before switching
-        ;;
-esac
-```
+> **ONLY IF** Claude Code session and CLAUDE.md integration needed:
+> Read `references/start-claude-md.md`. Mobile CLAUDE extras: `references/start-mobile-claude.md`.
 
-**Safety Rules**:
-- NEVER switch branches with uncommitted changes
-- Always verify clean working tree before `git checkout -b`
+### Step 10: Load PATTERNS.md (lazy-loaded)
 
-### Step 9.5: CLAUDE.md Integration (Claude Code Only)
-
-> **PURPOSE**: Inject SDD Kit section into CLAUDE.md for session-bootstrap language enforcement.
-
-**Precondition**: Only execute if `.claude/` directory exists (indicates Claude Code project).
-
-```pseudocode
-IF .claude/ directory exists:
-    # Resolve language name for display
-    spec_lang = resolved from Step 8
-    lang_names = { "en": "English", "es": "Spanish (Español)", "pt": "Portuguese (Português)" }
-    lang_name = lang_names[spec_lang] or "English"
-
-    IF CLAUDE.md does NOT exist:
-        → Generate CLAUDE.md with SDD Kit section (see template below)
-    ELSE IF CLAUDE.md exists but does NOT contain "## SDD Kit":
-        → Append SDD Kit section to end of file (preserve existing content)
-    ELSE:
-        → Replace existing "## SDD Kit" section with updated version
-           (e.g., language may have changed)
-```
-
-**SDD Kit section template**:
-
-```markdown
-## SDD Kit
-
-This project uses **SDD Kit** for spec-driven development.
-
-### Spec Language
-All specifications MUST be written in **[lang_name]** (`[spec_lang]`).
-Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English.
-
-### Quick Reference
-- Framework expert: `Skill("sdd-kit-expert")`
-- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.finish`
-- Project conventions: `sdd/PROJECT.md`
-- Discovered patterns: `sdd/PATTERNS.md`
-
-### Rules
-- Never create files under `sdd/specs/`, `sdd/wip/`, or `sdd/features/` manually
-- Always go through the `/sdd.start` workflow
-- Respect the phased workflow — don't skip phases
-```
-
-> **Lazy-loaded**: When `platform = android` or `platform = ios`, Read `references/start-mobile-claude.md` before appending the Mobile Implementation Rule to `CLAUDE.md`.
-
-**Section replacement rules**:
-- Framework ONLY owns the `## SDD Kit` section — never touch the rest of CLAUDE.md
-- If user ran `/init` before, their content is preserved; we just append our section
-- The section is idempotent: if `## SDD Kit` exists, replace from that header to the next `##` header (or end of file)
-- If user runs `/init` after, they can re-run `/sdd.start` to re-inject the section
-
-### Step 10: Load PATTERNS.md
-
-If `sdd/PATTERNS.md` exists, load accumulated wisdom from previous features.
-
-**Display pattern summary with origins**:
-
-```
-📋 Project Patterns Loaded:
-   • N from feature learnings (auto-promoted via /sdd.finish)
-   • M from team conventions (manually added via /sdd.project patterns)
-   Total: X patterns influencing this feature
-```
-
-**Pattern counting algorithm**:
-
-```bash
-# Count patterns in "Team Conventions (Manually Added)" section
-manual_count=$(grep -c "^\*\*.*\*\*:" sdd/PATTERNS.md | head -1)
-
-# Count patterns in other sections (technology sections from /sdd.finish)
-# Sections: Go, Database Patterns, MessageQueue, Testing, etc.
-auto_count=$(grep -c "^\*\*.*\*\*:" sdd/PATTERNS.md)
-auto_count=$((auto_count - manual_count))
-
-total=$((manual_count + auto_count))
-```
-
-**If no PATTERNS.md exists**: Skip this output (no patterns to load).
-
-**Example output**:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 Project Patterns Loaded
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-   • 3 from team conventions (manual)
-   • 6 from feature learnings (auto)
-   Total: 9 patterns influencing this feature
-
-   Tip: Add more conventions with /sdd.project patterns --add
-```
+> **ONLY IF** `sdd/PATTERNS.md` exists:
+> Read `references/start-patterns.md` and surface relevant conventions for this feature.
+> Otherwise skip.
 
 ### Step 11: Output Success Message
 
@@ -950,148 +154,46 @@ total=$((manual_count + auto_count))
    💡 For rapid prototyping: /sdd.go --resume (switches to express mode)
 ```
 
-### Step 12: Interactive Next Steps
+### Step 12: Interactive Next Steps (lazy-loaded)
 
-> **MANDATORY**: Always offer interactive selection, never just show text.
+> After success message: AskUserQuestion for next command (usually `/sdd.spec`).
+> **ONLY IF** presenting next-steps UX:
+> Read `references/start-next-steps.md`.
 
-After displaying success message, use **AskUserQuestion** to offer next actions:
+## Validations & References
 
-**Determine options based on context**:
-
-```pseudocode
-if saved_description exists in meta.md:
-    option_1_label = "/sdd.spec (with saved context)"
-    option_1_description = "Uses your description to seed the spec"
-else:
-    option_1_label = "/sdd.spec (Recommended)"
-    option_1_description = "Start spec creation interactively"
-```
-
-**⛔ INVOKE TOOL (do not print this, CALL the tool)** - options vary by context:
-
-```
-AskUserQuestion(
-  questions=[{
-    "question": "Feature initialized. What would you like to do next?",
-    "header": "Next",
-    "options": [
-      {"label": "/sdd.spec (Recommended)", "description": "Start spec creation interactively"},
-      {"label": "/sdd.spec --audio", "description": "Describe your feature by voice"},
-      {"label": "/sdd.check", "description": "View feature status"}
-    ],
-    "multiSelect": false
-  }]
-)
-```
-
-> **Note**: If saved description exists in meta.md, first option label should be "/sdd.spec (with saved context)" with description "Uses your description to seed the spec".
-
-**On user selection**:
-
-| Selection | Action |
-|-----------|--------|
-| /sdd.spec (with saved context) | `Skill(skill="sdd.spec")` - description auto-loaded from meta.md |
-| /sdd.spec (Recommended) | `Skill(skill="sdd.spec")` |
-| /sdd.spec --audio | `Skill(skill="sdd.spec", args="--audio")` |
-| /sdd.check | `Skill(skill="sdd.check")` |
-| Other | User types custom input (e.g., `/sdd.spec "nueva descripción"`, questions, etc.) |
-
-> **NOTE**: AskUserQuestion ALWAYS includes "Other" option automatically.
-> Users can write ANY text: another command, a question, feedback, etc.
-
----
-
-## Validations
-
-### Pre-execution (BLOCKING)
-
-| Validation | Blocking | Recovery |
-|------------|----------|----------|
-| Not inside `development-agents/framework/` | YES | Ask user to change directory |
-| Input is valid name (not prompt) | YES | Convert → suggest → confirm |
-| Valid name format (kebab-case) | YES | Ask for valid name |
-| Feature doesn't exist in `wip/` | YES | Ask for different name |
-| Repo is git-initialized | AUTO-RETRY | Prompt to `git init` or point to correct folder |
-
-### Post-execution
-
-- [ ] Folder `sdd/wip/[YYYYMMDD-feature-name]/` created
-- [ ] File `meta.md` exists with mode set
-- [ ] Execution mode recorded
-
----
-
-## References
-
-- **Meta.md template**: `development-agents/framework/templates/meta.md`
-- **Lite spec template**: `development-agents/framework/templates/lite/spec.md`
-- **Gitignore templates**: `development-agents/framework/templates/gitignore/`
-- **PROJECT.md wizard**: `sdd-project-wizard` subagent
-- **Mandatory standards**: `standards/mandatory-standards.md`
-
----
+Pre: valid input; unique feature name; repo ready. Post: WIP + meta.md; stack/mode set; branch OK.
+Templates: `framework/templates/meta.md`. Scripts: `detect-stack.sh`, `detect-scaffolding-status.sh`.
+Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE.md`.
 
 ## AI Agent Instructions
 
-### Help Flag Detection
-
-**WHEN** the user runs `/sdd.start help`:
-1. Output ONLY the "Quick Help" section (not full documentation)
-2. Do NOT execute start logic
-3. Keep response concise (~15 lines)
-
-### Execution Order (MANDATORY)
-
-```
-STEP 0: USER PROFILE CHECK (⛔ BLOCKING - NEVER SKIP)
-├─ development-agents/framework/user-profile.yaml exists? → Read profile, continue
-└─ Missing? → ⛔ STOP. Ask profile (Business vs Technical), save file, THEN continue
-
-STEP 1: VALIDATE INPUT (BLOCKING)
-├─ Is it a prompt/description? → Auto-infer name, show message, continue
-├─ Is it valid kebab-case? → Continue
-└─ NEVER create files until validation passes
-
-STEP 2: REPOSITORY READINESS CHECK
-├─ Existing repo with history/specs? → Continue (standard case)
-└─ Fresh/empty repo? → Optional scaffold cleanup, then continue
-
-STEP 3: CREATE STRUCTURE (only after Steps 0-2 pass)
-
-STEP 4: OUTPUT SUCCESS MESSAGE
-```
-
-### Auto-Inference Pattern
-
-```
-✅ CORRECT (v1.2.6+):
-User: /sdd.start I want a payment system with refunds
-AI: ✓ Feature name inferred: `payment-refunds` (from your description)
-    [Continues automatically to Step 2...]
-
-❌ WRONG:
-User: /sdd.start I want a payment system with refunds
-AI: OK, creating payment service... [starts implementing without feature name]
-```
-
-### Key Rules
-
-1. **PROFILE FIRST** - If `development-agents/framework/user-profile.yaml` is missing, ask BEFORE anything else
-2. **VALIDATE FIRST** - Never skip input validation
-3. **Prompt ≠ Name** - If >5 words or punctuation, it's a description → auto-infer name
-4. **Auto-infer, don't ask** - Infer feature name from description and proceed automatically
-5. **Delegate heavy ops** - Use `sdd-project-wizard` for PROJECT.md
-6. **No external app creation** - This command never registers/creates apps in an external system; it only works inside a repo that already exists (see `references/new-app-scaffolding.md` if you need a generic pre-`/sdd.start` checklist)
+1. Flag-first: if `--help`/`--reopen`/`--rename`/`--from-backlog`/`--audio` → load matching ref, do not run full happy path.
+2. Order: Steps 0→12; never skip profile (Step 0/5.5) or input validation (Step 1).
+3. Infer kebab-case feature name from description; confirm only if ambiguous.
+4. Critical: Application name ≠ feature name; never invent external app registration; stack from detection + PROJECT.md.
 
 ## Optional flags (lazy-loaded)
 
-**Before Step 0**, if any flag below is present, read its reference and follow that path instead of the standard workflow (except `--from-backlog` and `--audio`, which extend the standard path):
+Read the matching reference **ONLY IF** the flag/condition is present. Never load all refs.
 
-| Flag / condition | Reference | Behavior |
-|------------------|-----------|----------|
-| `--reopen` | `references/reopen-workflow.md` | Replace standard path |
-| `--rename` | `references/start-rename.md` | Replace standard path |
-| `--from-backlog <ID>` | `references/start-from-backlog.md` | Pre-populate context, then continue standard path |
-| `--audio` | `references/start-audio.md` | Standard init + audio capture |
-
-> **Output examples** (optional UX reference): `references/start-examples.md`
+| Flag / condition | Reference |
+|------------------|-----------|
+| `--reopen` | `references/reopen-workflow.md` |
+| `--rename` | `references/start-rename.md` |
+| `--from-backlog` | `references/start-from-backlog.md` |
+| `--audio` | `references/start-audio.md` / `audio-capture-flow.md` |
+| CLAUDE.md (Claude Code) | `references/start-claude-md.md` |
+| Mobile CLAUDE extras | `references/start-mobile-claude.md` |
+| Platform/frontend detect bash | `references/start-platform-detect.md` |
+| Scaffolding/stack detect bash | `references/start-stack-detect.md` |
+| Feature folder creation | `references/start-feature-structure.md` |
+| Git branch variants | `references/start-git-branch.md` |
+| `freshly_scaffolded=true` | `references/start-scaffolding-cleanup.md` |
+| `project_mode == brownfield` | `references/start-brownfield.md` |
+| Project type AskUserQuestion | `references/start-project-type.md` |
+| Profile AskUserQuestion / yaml | `references/start-user-profile.md` |
+| Load/validate PROJECT.md | `references/start-project-md.md` |
+| Local MCP setup needed | `references/start-local-mcps.md` |
+| `sdd/PATTERNS.md` exists | `references/start-patterns.md` |
+| Next-steps UX | `references/start-next-steps.md` |

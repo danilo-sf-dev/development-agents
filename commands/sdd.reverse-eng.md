@@ -42,15 +42,7 @@ Use cases:
 - Re-extract specific component that was too shallow
 - Add detail to existing brownfield specs
 
-**Examples**:
-```bash
-/sdd.reverse-eng                            # Analyze current directory
-/sdd.reverse-eng ./src                      # Analyze specific path
-/sdd.reverse-eng --focus PaymentService     # Deep-dive into PaymentService
-/sdd.reverse-eng --focus --audio            # Describe component to focus via voice
-```
-
-**See also**: `/sdd.help reverse-eng` for detailed documentation
+**See also**: `/sdd.help reverse-eng` · `--focus` / `--audio` lazy-loaded at bottom.
 
 ---
 
@@ -58,25 +50,7 @@ Use cases:
 
 > **🚨 CRITICAL**: Before ANY extraction work, ALWAYS present mode selection to user.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  /sdd.reverse-eng - Mode Selection                              │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Detected state:                                                 │
-│  • sdd/extracted/ exists: [YES/NO]                              │
-│  • sdd/specs/ exists: [YES/NO]                                  │
-│                                                                  │
-│  Select mode:                                                    │
-│  1. FULL EXTRACTION - Complete analysis from scratch             │
-│  2. UPDATE MODE - Re-analyze and merge with existing specs       │
-│  3. VIEW STATUS - Show current extraction summary                │
-│                                                                  │
-│  [If sdd/specs/ exists but sdd/extracted/ doesn't]:            │
-│  4. ENHANCE SPECS - Add missing details to existing specs        │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+AskUserQuestion first: **FULL** | **UPDATE** | **VIEW STATUS** | (if specs without extracted) **ENHANCE**.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool):**
 
@@ -158,48 +132,9 @@ Performs comprehensive reverse engineering in **eight phases** (0-7):
 
 ## Output Structure (CANONICAL)
 
-> **⚠️ CRITICAL**: This is the ONLY valid output structure. Any file outside these locations is an error.
-
-```
-sdd/
-├── extracted/                        # WORKING directory (Phases 0-5)
-│   ├── raw/                          # Phase 0-1: Source data
-│   │   ├── existing-specs/           # MUST CREATE if any specs detected
-│   │   │   └── DETECTION_REPORT.md   # What frameworks/specs were found
-│   │   ├── mcp-platform/                  # MUST CREATE
-│   │   │   ├── functional-docs.md
-│   │   │   ├── technical-docs.md
-│   │   │   └── openapi.yaml
-│   │   ├── code-analysis/            # MUST CREATE always
-│   │   │   ├── architecture/
-│   │   │   ├── api-specs/
-│   │   │   ├── platform-services/
-│   │   │   ├── database/
-│   │   │   └── deployment/
-│   │   └── README.md                 # Extraction metadata
-│   │
-│   ├── DOCUMENTATION_GAPS.md         # Phase 2: Cross-validation report
-│   ├── DISCREPANCIES_REPORT.md       # Phase 3: Field-level validation
-│   ├── functional-spec.md            # Phase 4: Synthesized spec
-│   ├── technical-spec.md             # Phase 4: Synthesized spec
-│   ├── PATTERNS.md                   # Phase 5: Discovered project patterns
-│   └── README.md                     # Index and metadata
-│
-├── specs/                            # FINAL location (Phase 7)
-│   ├── functional-spec.md            # ← PROMOTED from extracted/
-│   └── technical-spec.md             # ← PROMOTED from extracted/
-│
-└── PATTERNS.md                       # ← PROMOTED from extracted/ (root level)
-```
-
-**KEY POINTS**:
-- `sdd/extracted/` = Working directory with all extraction artifacts
-- `sdd/specs/` = **Final location** for global specs (created in Phase 7)
-- Phase 7 **PROMOTES** specs from `extracted/` to `specs/`
-- Both  AND code analysis are **mandatory**
-- **NEVER write files to `sdd/` root except `PATTERNS.md`**
-
----
+> Working: `sdd/extracted/` · Final: `sdd/specs/` (+ root `sdd/PATTERNS.md`). Never invent ad-hoc files at `sdd/` root.
+> **ONLY IF** needing full tree / KEY POINTS:
+> Read `references/reverse-eng-output-structure.md`.
 
 ## Directory Creation Rules (MANDATORY)
 
@@ -224,26 +159,11 @@ mkdir -p sdd/wip/
 
 ---
 
-## Forbidden File Names
+## Forbidden File Names (short)
 
-> **🚨 NEVER generate these files** - they indicate unstructured output.
-
-| Forbidden Pattern | Why It's Wrong |
-|-------------------|----------------|
-| `FOCUSED_ANALYSIS_*.md` | Analysis should go into standard phase outputs |
-| `*_DEEP_DIVE.md` | Deep dives belong in PATTERNS.md or specs |
-| `*_USE_CASE_*.md` (standalone) | Use cases go IN functional-spec.md |
-| `*_FLOW_DIAGRAMS.md` | Diagrams go IN the relevant spec file |
-| `*_RESERVE.md` | No ad-hoc reserve files |
-| Files in `sdd/` root | Only `PATTERNS.md` allowed at root |
-
-**If analysis is needed**: It MUST go into the appropriate phase output file:
-- Use case analysis → `functional-spec.md`
-- Technical deep dive → `technical-spec.md`
-- Pattern analysis → `PATTERNS.md`
-- Gaps/issues → `DOCUMENTATION_GAPS.md` or `DISCREPANCIES_REPORT.md`
-
----
+Never write `FOCUSED_ANALYSIS_*`, `*_DEEP_DIVE.md`, standalone use-case files, or anything in `sdd/` root except `PATTERNS.md`.
+> **ONLY IF** validating filenames / remapping content:
+> Read `references/reverse-eng-forbidden.md`.
 
 ## Eight-Phase Workflow
 
@@ -279,63 +199,11 @@ sdd/
 
 ---
 
-### Phase 0 Pre-step 2: Project Configuration Check (MANDATORY)
+### Phase 0 Pre-step 2: Project Configuration (lazy-loaded)
 
-> **PURPOSE**: Ensure PROJECT.md and CLAUDE.md exist before extraction, so specs are written in the correct language.
-
-**ALWAYS execute AFTER directory structure creation, BEFORE Phase 0 detection**:
-
-```pseudocode
-# 1. Ensure PROJECT.md exists (needed for language resolution)
-IF NOT EXISTS sdd/PROJECT.md:
-    → Invoke Skill("sdd.project") — runs wizard, creates PROJECT.md with language
-    → Wait for wizard completion before continuing
-
-# 2. Ensure CLAUDE.md exists (Claude Code session bootstrap)
-IF .claude/ directory exists:
-    # Resolve language from PROJECT.md
-    spec_lang = read language.specs from sdd/PROJECT.md (fallback: "en")
-    lang_names = { "en": "English", "es": "Spanish (Español)", "pt": "Portuguese (Português)" }
-    lang_name = lang_names[spec_lang] or "English"
-
-    IF NOT EXISTS CLAUDE.md:
-        → Generate CLAUDE.md with SDD Kit section
-           (language, workflow, links to PROJECT.md and PATTERNS.md)
-        → Note: /init is a built-in CLI command and CANNOT be invoked programmatically
-        → User can run /init later to enrich CLAUDE.md; framework re-injects project section on next run
-    ELSE IF CLAUDE.md exists but missing "## SDD Kit" section:
-        → Append SDD Kit section (preserve existing content)
-    ELSE:
-        → Update existing "## SDD Kit" section (e.g., language changed)
-
-# 3. Continue Phase 0 with language resolved from PROJECT.md
-```
-
-**SDD Kit section** (same template as `/sdd.start` Step 9.5):
-```markdown
-## SDD Kit
-
-This project uses **SDD Kit** for spec-driven development.
-
-### Spec Language
-All specifications MUST be written in **[lang_name]** (`[spec_lang]`).
-Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English.
-
-### Quick Reference
-- Framework expert: `Skill("sdd-kit-expert")`
-- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.finish`
-- Project conventions: `sdd/PROJECT.md`
-- Discovered patterns: `sdd/PATTERNS.md`
-
-### Rules
-- Never create files under `sdd/specs/`, `sdd/wip/`, or `sdd/features/` manually
-- Always go through the `/sdd.start` workflow
-- Respect the phased workflow — don't skip phases
-```
-
-> **Lazy-loaded**: When `platform = android` or `platform = ios`, Read `references/start-mobile-claude.md` before appending the Mobile Implementation Rule to `CLAUDE.md`.
-
----
+> Ensure `PROJECT.md` (+ optional CLAUDE.md bootstrap). Resolve `$spec_lang`.
+> **ONLY IF** PROJECT.md/CLAUDE.md missing or language unresolved:
+> Read `references/reverse-eng-project-config.md`.
 
 ### Phase 0: Repository State Detection
 
@@ -414,334 +282,26 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 
 ---
 
-### Phase 1: Parallel Extraction
+### Phase 1: Parallel Extraction (lazy-loaded)
 
-Extract data from **both sources simultaneously**. No interpretation, just facts.
+> Extract from existing docs/specs **and** code (both mandatory). Prefer Task()-delegated subagents.
+> **ONLY IF** running Phase 1 (full/update/enhance modes that extract):
+> Read `references/reverse-eng-phase1.md`.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PARALLEL EXTRACTION                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   Queries ─────────────┐                                 │
-│    • get_app_documentation    ├──► mcp-platform/                     │
-│    • search_api_specs         │                                 │
-│                               │                                 │
-│  Code Analysis ───────────────┼──► code-analysis/               │
-│    • Stack detection          │                                 │
-│    • API extraction           │                                 │
-│    • Database extraction      │                                 │
-└───────────────────────────────┴─────────────────────────────────┘
-```
+### Phase 2: Cross-Validation (lazy-loaded)
 
-**Step 0: Determine App Name** (CRITICAL)
+> Compare sources, coverage gaps → `DOCUMENTATION_GAPS.md`.
+> Read `references/reverse-eng-phase2.md` when executing Phase 2.
 
-```bash
-# ALWAYS read from .platform-config file first (100% reliable)
-APP_NAME=$(grep "^application_name:" .platform-config | sed 's/application_name: *//')
-```
+### Phase 3: Deep Cross-Validation (lazy-loaded)
 
-** Queries**:
-1. `get_app_documentation(app_name)` - General documentation
-2. `search_api_specs(app_name)` - OpenAPI specs
-3. Conditional queries if coverage < 70%
+> Field-by-field + phantom endpoints → `DISCREPANCIES_REPORT.md`.
+> Read `references/reverse-eng-phase3.md` when executing Phase 3.
 
-**Code Analysis** (delegate to sdd-explorer):
-1. Stack Detection - Java, Node, Go, Python
-2. API Extraction - Endpoints from annotations/routes
-3. Database Extraction - Entities, migrations
-4.  Services Extraction - SDK usage, integrations
-5. **Actor Discovery** - System consumers and integrations
+### Phase 4: Synthesis (lazy-loaded)
 
-> **Reference**: See `sdd-explorer` agent for stack-specific extraction commands.
-
----
-
-#### Actor Discovery (v2.6.1)
-
-> **PURPOSE**: Identify real system actors using authoritative architecture data.
-
-**Source Hierarchy** (use in order):
-
-| Priority | Source | What it provides | Reliability |
-|----------|--------|------------------|-------------|
-| 1. PRIMARY | **ProjectSystemMCP** (if configured — an example internal service-graph MCP; replace with whatever your org uses) | Clients, Dependencies, Platform Services | Authoritative |
-| 2. SECONDARY | API docs search | Documentation, message-queue consumers | High |
-| 3. FALLBACK | Code analysis | Inferred from patterns | Medium |
-
----
-
-**Step 1: Query ProjectSystemMCP (PRIMARY)**
-
-> **REQUIRES**: `ProjectSystemMCP` configured in `.mcp.json`. See [MCP_SETUP_GUIDE.md](../MCP_SETUP_GUIDE.md#ProjectSystemMCP-system-architecture).
-
-```
-# Inbound clients (who calls this app)
-mcp__ProjectSystemMCP__clients(app_name)
-
-# Outbound dependencies (what this app calls)
-mcp__ProjectSystemMCP__dependencies(app_name)
-
-# Platform services owned by this app
-mcp__ProjectSystemMCP__platform_services(app_name)
-```
-
-**What each returns**:
-
-| Tool | Returns | Use for |
-|------|---------|---------|
-| `clients` | Services that call this app (inbound) | Actor identification |
-| `dependencies` | Services + datastores this app calls (outbound) | Integration discovery |
-| `platform_services` | KeyValueStore, MessageQueue, OS resources owned | Platform resource mapping |
-
-**If ProjectSystemMCP unavailable**: Skip to Step 2. Note in `DOCUMENTATION_GAPS.md`:
-```markdown
-## Actor Discovery Limitations
-
-- ProjectSystemMCP unavailable - actors discovered via fallback methods
-- Recommended: Configure ProjectSystemMCP for authoritative data
-```
-
----
-
-**Step 2: Supplement with API docs and org-specific infra tooling (SECONDARY, if available)**
-
-```
-# API documentation (example MCP call — replace with whatever your org's docs MCP exposes)
-mcp__platform__search_api_docs(app_name, query="architecture consumers integrations")
-
-# Message-queue consumer discovery (if your org has a skill/CLI for this — check sdd/PROJECT.md)
-```
-
-Use these to:
-- Fill gaps not covered by ProjectSystemMCP
-- Get documentation context for discovered actors (via `search_api_docs`)
-- Identify message-queue consumers, if your org provides tooling for this
-
----
-
-**Step 3: Code Analysis (FALLBACK)**
-
-Scan for known actor patterns in code:
-
-| Actor Type | Detection Pattern |
-|------------|-------------------|
-| **API Callers** | Swagger consumers, API gateway configs |
-| **Message Consumers** | MessageQueue/Streams subscribers |
-| **Scheduled Jobs** | Cron configs,  Jobs, Director |
-| **External Integrations** | REST client configs, external URLs |
-| **Internal Services** | Service-to-service calls |
-
----
-
-**Step 4: Consolidate in functional-spec.md**
-
-```markdown
-## System Context
-
-### Inbound Clients (who calls us)
-
-| Client | Type | Interaction | Source |
-|--------|------|-------------|--------|
-| [name] | Internal/External | [description] | ProjectSystemMCP / API docs / code |
-
-### Outbound Dependencies (what we call)
-
-| Dependency | Type | Purpose | Source |
-|------------|------|---------|--------|
-| [name] | Service/Datastore | [description] | ProjectSystemMCP / API docs / code |
-
-### Platform Services Owned
-
-| Service | Type | Purpose |
-|---------|------|---------|
-| [name] | KeyValueStore/MessageQueue/OS/etc | [description] |
-
-## Actors
-
-| Actor | Type | Interaction | Evidence |
-|-------|------|-------------|----------|
-| [name] | Internal/External/System | [description] | [source] |
-
-### Actor Details
-
-#### [Actor Name]
-- **Type**: [Human | System | External Service]
-- **Authentication**: [How they authenticate]
-- **Endpoints Used**: [Which endpoints they call]
-- **Frequency**: [If known - high/medium/low volume]
-```
-
----
-
-**Step 5: Handle Missing Actor Data**
-
-If all sources fail to provide complete actor data:
-1. Note gap in `DOCUMENTATION_GAPS.md`:
-   ```markdown
-   ## Missing Actor Information
-
-   - ProjectSystemMCP: [unavailable / no data returned]
-   - API docs search: [no architecture data found]
-   - Code analysis: [limited patterns detected]
-   - Recommended: Verify application is registered in your org's systems/service catalog, if one exists
-   ```
-2. Use code analysis to infer actors from:
-   - Access log patterns (if available)
-   - Security/auth configurations
-   - API documentation comments
-
----
-
-### Exhaustive Endpoint Discovery
-
-> **CRITICAL**: Do NOT rely solely on . You MUST scan ALL controllers in code.
-
-**Verification Rule**: If code has N controllers, output MUST document N controllers.
-
-**Endpoint Categories**:
-
-| Category | Marker | Criteria |
-|----------|--------|----------|
-| **Verified** | ✅✅ | In docs/ProjectSystemMCP AND code, schemas match |
-| **Partial** | ✅⚠️ | In both, but schemas differ |
-| **Code Only** | 🔸 | In code only (undocumented) |
-| **Docs Only** | ⚠️ | In docs/ProjectSystemMCP only (PHANTOM - verify!) |
-| **Internal** | 🔸 INTERNAL | `/internal/*`, `/admin/*` paths |
-
----
-
-### Phase 2: Cross-Validation (Basic Coverage)
-
-Compare **THREE sources** and generate initial coverage report.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                 THREE-WAY CROSS-VALIDATION                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  existing-specs/ ───┐                                           │
-│                     │                                           │
-│  mcp-platform/ ──────────┼──► Compare EXISTENCE ──► Coverage %       │
-│                     │                                           │
-│  code-analysis/ ────┘                                           │
-│                                                                 │
-│  Source Priority (for conflicts):                               │
-│    1. CODE (source of truth)                                    │
-│    2. existing-specs (pre-validated)                            │
-│    3.  (may be stale)                                    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Output**: `DOCUMENTATION_GAPS.md` with coverage percentages per category.
-
----
-
-### Phase 3: Deep Cross-Validation (Field-by-Field)
-
-> **CRITICAL**: This phase catches the most dangerous errors - phantom endpoints, missing enum values.
-
-**Validation Checks**:
-
-| Check Type | What to Compare | Output |
-|------------|-----------------|--------|
-| **Entity Fields** |  schema vs code struct/class | Field diff table |
-| **Endpoint Existence** |  routes vs code annotations | Missing routes list |
-| **Enum Values** |  enum vs code enum/constants | Value diff |
-| ** Services** | Mentioned services vs actual dependencies | Services diff |
-
-**Output**: `DISCREPANCIES_REPORT.md` with prioritized action items.
-
----
-
-### Phase 4: Synthesis with Confidence Indicators
-
-Transform data into specs, marking the **origin** of each piece of information.
-
-#### Six-Level Confidence System (CRITICAL)
-
-| Level | Icon | Meaning | Action |
-|-------|------|---------|--------|
-| **THREE_WAY** | ✅✅✅ | Found in code + existing-specs + , ALL MATCH | Highest confidence |
-| **VERIFIED** | ✅✅ | Found in code + one other source, fields MATCH | High confidence |
-| **PARTIAL** | ✅⚠️ | Found in multiple sources, but fields DIFFER | Review diff first |
-| **CODE_ONLY** | 🔸 | Found only in code (reliable, undocumented) | Consider documenting |
-| **DOCS_ONLY** | ⚠️ | Found only in specs/ (NOT in code) | VERIFY before using |
-| **UNKNOWN** | ❓ | Insufficient information | DO NOT USE without verification |
-
-**Source Priority for Conflicts**:
-1. **CODE** - Always the source of truth
-2. **existing-specs** - Pre-validated, higher trust than 
-3. **Plain Docs (Wiki/Confluence)** - May be stale, lowest priority
-4. **Plain Docs (README)** - HINTS ONLY, never trust without verification
-
-#### Override Rules for Plain Docs
-
-> **CRITICAL**: When discrepancies are found between Plain Docs (README) and CODE,
-> the generated specs MUST reflect CODE reality, NOT README claims.
-
-**Never Trust README For**:
-- Storage technology choices (verify against service imports)
-- project service integrations (verify against pom.xml/package.json)
-- Processing architectures (verify against actual implementations)
-- API versions (verify against controller annotations)
-
-**Generates**:
-- `functional-spec.md` - From use cases, capabilities (with confidence)
-- `technical-spec.md` - From architecture, APIs (with confidence)
-- `DISCREPANCIES_REPORT.md` - Field-level validation results
-- `PATTERNS.md` - Discovered project patterns
-
-#### Focused Extraction Merge Strategy (v2.6.2)
-
-When `--focus <component>` is used with existing specs:
-
-**Step 1**: Load existing specs
-```bash
-if [ -f "sdd/extracted/functional-spec.md" ]; then
-    EXISTING_FUNCTIONAL=$(cat sdd/extracted/functional-spec.md)
-fi
-```
-
-**Step 2**: Extract focused component detail
-- Deep analysis of specified component
-- More detailed use cases, edge cases, error flows
-- Implementation specifics
-
-**Step 3**: Merge strategy
-
-| Spec Section | Merge Behavior |
-|--------------|----------------|
-| **System Context** | Preserve existing, add focused component relationships |
-| **Actors** | Preserve existing, add actors relevant to focused component |
-| **Use Cases** | **ADD** detailed use cases for focused component with marker |
-| **Data Models** | Preserve existing, expand models used by focused component |
-| **API Endpoints** | Preserve existing, add detail for focused component endpoints |
-| **Patterns** | Add patterns specific to focused component |
-
-**Step 4**: Mark focused sections for traceability
-
-```markdown
-### UC-005: Extract Products from Page
-<!-- Focused: ExtractPageProductsUseCase -->
-
-[Detailed use case from focused extraction...]
-
-<!-- End Focus -->
-```
-
-**Step 5**: Update DETECTION_REPORT.md
-
-```markdown
-## Extraction History
-
-| Date | Mode | Focus | Changes |
-|------|------|-------|---------|
-| 2026-01-24 | FULL | - | Initial extraction |
-| 2026-01-25 | UPDATE | ExtractPageProductsUseCase | Added UC-005, UC-006, expanded DM-003 |
-```
-
----
+> Write `functional-spec.md` + `technical-spec.md` with confidence indicators.
+> Read `references/reverse-eng-phase4.md` when synthesizing.
 
 ### Phase 4.5: Code Ownership Mapping
 
@@ -749,228 +309,26 @@ fi
 
 ---
 
-### Phase 5: Generate PATTERNS.md
+### Phase 5: Generate PATTERNS.md (lazy-loaded)
 
-> **PURPOSE**: Extract established patterns from the codebase to accelerate future development.
+> Extract established patterns → `sdd/extracted/PATTERNS.md`.
+> Read `references/reverse-eng-phase5.md` when generating patterns.
 
-#### PATTERNS.md Content Guidelines (CRITICAL)
+### Phase 6: Functional ↔ Technical Consistency (lazy-loaded)
 
-**What IS a Pattern (INCLUDE)**:
-| Criteria | Example |
-|----------|---------|
-| Reusable code structure used **3+ times** in codebase | Error handling wrapper |
-| Established convention with clear evidence | Naming conventions |
-| Configuration pattern (env vars, feature flags) | Config loading strategy |
-| Error handling strategy | Custom error types |
-| Testing approach | Mock patterns |
+> Validate functional ↔ technical alignment before promotion.
+> Read `references/reverse-eng-phase6.md` when executing Phase 6.
 
-**What is NOT a Pattern (EXCLUDE)**:
-| Anti-Pattern | Where It Should Go |
-|--------------|-------------------|
-| One-time implementation details | `technical-spec.md` |
-| Business logic specific to one use case | `functional-spec.md` |
-| "Deep dive" analysis of a single flow | `technical-spec.md` |
-| Architectural decisions | `technical-spec.md` |
-| Use case descriptions | `functional-spec.md` |
+### Phase 7: Spec Promotion (lazy-loaded)
 
-#### Pattern Format Requirements
+> Promote `extracted/` → `sdd/specs/` (+ PATTERNS.md) with merge confirmation when specs already exist.
+> Read `references/reverse-eng-phase7.md` before writing to `sdd/specs/`.
 
-Each pattern MUST have:
+## Anti-Truncation (CRITICAL — short)
 
-```markdown
-### [Pattern Name]
-
-**Category**: [HTTP/API | Database | Messaging | Error Handling | Testing |  Services | Security]
-
-**Evidence**: Used in:
-- `path/to/file1.go:42`
-- `path/to/file2.go:87`
-- `path/to/file3.go:123`
-
-**Example**:
-```[language]
-// Max 20 lines of code showing the pattern
-```
-
-**When to use**: [1-2 sentences explaining when to apply this pattern]
-```
-
-#### Max Patterns by Repository Size
-
-| Repo Size | Max Patterns | Rationale |
-|-----------|--------------|-----------|
-| Small (<10k LOC) | **Max 10 patterns** | Small repos have limited patterns |
-| Medium (10-50k LOC) | **Max 20 patterns** | Balanced coverage |
-| Large (>50k LOC) | **Max 30 patterns** | Focus on most important |
-
-> **⚠️ NEVER create "deep dive" documents** - all analysis goes into standard output files.
-
-#### Extract from code analysis
-
-| Category | What to Extract |
-|----------|-----------------|
-| **HTTP/API** | Client library, retry patterns, timeout configs |
-| **Database** | Query patterns, ORM usage, migration style |
-| **Messaging** | MessageQueue/Streams patterns, ACK mode, idempotency |
-| **Error Handling** | Custom error types, error wrapping, logging |
-| **Testing** | Test framework, mocking strategy, coverage |
-| ** Services** | KeyValueStore key patterns, TTL defaults, segment usage |
-| **Security** | Auth patterns, input validation, secrets access |
-
-**IMPORTANT**: Only document patterns that are:
-- ✅ Actually used in the codebase (evidence in code)
-- ✅ Non-obvious (not just standard framework usage)
-- ✅ Reusable for future features
-- ✅ Have **minimum 2 evidence locations** in code
-
----
-
-### Phase 6: Functional ↔ Technical Consistency (MANDATORY)
-
-> **🚨 BLOCKING**: After generating both specs, validate consistency between them.
-
-See `standards/spec-consistency.md` for validation rules.
-
----
-
-### Phase 7: Spec Promotion with Merge Confirmation (MANDATORY)
-
-> **PURPOSE**: Copy synthesized specs to `sdd/specs/` - the canonical location for global specs.
-
-**CRITICAL**: This phase ensures specs are in the **correct location** for the SDD workflow.
-
-#### Step 1: Present Promotion Dialog (ALWAYS)
-
-After Phase 6 completes, **ALWAYS** ask user before promoting:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  📋 EXTRACTION COMPLETE - Ready to Promote                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Generated specs in sdd/extracted/:                             │
-│  • functional-spec.md (X lines, Y use cases detected)            │
-│  • technical-spec.md (X lines, Y endpoints documented)           │
-│  • PATTERNS.md (X patterns discovered)                           │
-│                                                                  │
-│  [If sdd/specs/ already exists]:                                │
-│  ⚠️  Current specs will be REPLACED.                             │
-│                                                                  │
-│  Options:                                                        │
-│  1. PROMOTE NOW - Copy to sdd/specs/ (Recommended)              │
-│  2. REVIEW FIRST - Let me review extracted/ manually             │
-│  3. SHOW DIFF - Show what changed vs existing specs              │
-│  4. SKIP PROMOTION - Keep only in extracted/                     │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**⛔ INVOKE TOOL (do not print this, CALL the tool):**
-
-```
-AskUserQuestion(
-  questions=[{
-    "question": "How would you like to proceed with the extracted specs?",
-    "header": "Spec Promotion",
-    "options": [
-      {"label": "PROMOTE NOW", "description": "Copy to sdd/specs/ (Recommended)"},
-      {"label": "REVIEW FIRST", "description": "Let me review extracted/ manually"},
-      {"label": "SHOW DIFF", "description": "Show what changed vs existing specs"},
-      {"label": "SKIP PROMOTION", "description": "Keep only in extracted/"}
-    ],
-    "multiSelect": false
-  }]
-)
-```
-
-#### Step 2: Execute Promotion
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  SPEC PROMOTION                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  FROM: sdd/extracted/                                               │
-│    functional-spec.md                                                │
-│    technical-spec.md                                                 │
-│    PATTERNS.md                                                       │
-│                                                                      │
-│  TO: sdd/specs/                                                     │
-│    functional-spec.md    ← Global functional spec                    │
-│    technical-spec.md     ← Global technical spec                     │
-│                                                                      │
-│  TO: sdd/ (root)                                                    │
-│    PATTERNS.md           ← Reference doc (not a spec)                │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-**Promotion Steps** (same for standard and focused extractions):
-
-1. **Create directory** if not exists:
-   ```bash
-   mkdir -p sdd/specs
-   ```
-
-2. **Copy/Replace specs** (ALWAYS the base files):
-   ```bash
-   cp sdd/extracted/functional-spec.md sdd/specs/functional-spec.md
-   cp sdd/extracted/technical-spec.md sdd/specs/technical-spec.md
-   ```
-
-   > **Note**: Even with `--focus`, these are the only spec files.
-   > Focused detail is merged INTO these files, not stored separately.
-
-3. **Copy PATTERNS.md** to project root (reference doc, not a spec):
-   ```bash
-   cp sdd/extracted/PATTERNS.md sdd/PATTERNS.md
-   ```
-
-4. **Confirm to user**:
-   ```
-   ✅ Specs promoted:
-      - sdd/specs/functional-spec.md
-      - sdd/specs/technical-spec.md
-      - sdd/PATTERNS.md
-
-   Next steps:
-   - Review specs with: /sdd.check
-   - Start feature work with: /sdd.start
-   ```
-
-#### Update Mode Behavior
-
-When `sdd/specs/` already exists (re-extraction):
-- **REPLACE** existing files directly (no `-UPDATED` suffix)
-- Show diff summary before replacing
-- Ask for confirmation if >20% changes detected
-
----
-
-## Anti-Truncation Protocol (CRITICAL)
-
-> **NEVER TRUNCATE entity fields, enum values, or endpoint lists.**
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  ANTI-TRUNCATION RULE                                               │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  If an entity has 48 fields → Document ALL 48 fields                │
-│  If an enum has 15 values → List ALL 15 values                      │
-│  If there are 44 endpoints → Document ALL 44 endpoints              │
-│                                                                     │
-│  DO NOT:                                                            │
-│  - Use "..." to truncate                                            │
-│  - Say "and X more"                                                 │
-│  - Summarize instead of listing                                     │
-│                                                                     │
-│  WHY: Truncated specs cause integration failures                    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
+Never stop mid-phase; write partial artifacts to disk; resume from last completed phase.
+> **ONLY IF** context pressure or long extraction:
+> Read `references/reverse-eng-anti-truncation.md`.
 
 ## AI Agent Instructions
 
@@ -984,118 +342,21 @@ When `sdd/specs/` already exists (re-extraction):
 
 ## Optional flags (lazy-loaded)
 
+Read **ONLY IF** flag/condition present:
+
 | Flag / condition | Reference |
 |------------------|-----------|
 | `--focus` | `references/reverse-eng-focus.md` |
-| `--focus --audio` | `references/audio-capture-flow.md` + `references/reverse-eng-focus.md` |
-| mode FULL or ENHANCE (code ownership) | `references/code-ownership.md` |
-| `platform = android \| ios` (CLAUDE.md) | `references/start-mobile-claude.md` |
-
-### Phase 0: Repository State Detection Rules
-
-1. **Execute Detection FIRST** - Before any extraction
-2. **Delegate to sdd-explorer** for scanning
-3. **Copy detected specs** to `sdd/extracted/raw/existing-specs/[framework]/`
-4. **Generate DETECTION_REPORT.md** with findings
-5. **Select optimization strategy** based on detected frameworks
-6. **Communicate strategy to user** before proceeding to Phase 1
-
-### Phase 1: Parallel Extraction Rules
-
-1. Read `optimization_strategy` from DETECTION_REPORT.md
-2. Apply strategy-specific behavior
-3. Execute ProjectSystemMCP queries, if configured (ALL primary queries)
-4. Delegate code analysis to sdd-explorer
-5. Store results in `sdd/extracted/raw/`
-
-### Phase 2: Cross-Validation Rules
-
-1. Compare THREE sources: existing-specs vs ProjectSystemMCP vs Code
-2. Calculate coverage percentage per source
-3. If coverage < 70%, execute conditional ProjectSystemMCP queries
-4. **Source Priority**: CODE > existing-specs > ProjectSystemMCP
-
-### Phase 3: Deep Cross-Validation Rules
-
-1. For EACH entity/model: Compare fields across ALL THREE sources
-2. For EACH endpoint: Verify existence in ALL THREE sources
-3. For EACH enum: Compare ALL values across ALL THREE sources
-4. Generate `DISCREPANCIES_REPORT.md`
-
-### Phase 4: Synthesis Rules
-
-1. Mark EVERY item with 6-level confidence indicator
-2. **NEVER invent data** - if unknown, mark as ❓ UNKNOWN
-3. Transform implementation details to capabilities
-4. Use technology-agnostic language
-5. Follow framework template structure
-6. Follow Anti-Invention Protocol: never invent APIs, endpoints, or config that doesn't exist in the codebase
-
-### Phase 5: PATTERNS.md Generation Rules
-
-1. Extract patterns ONLY from actual code (not from documentation)
-2. Include code evidence (file path + line reference) for each pattern
-3. Categorize by: HTTP/API, Database, Messaging, Error Handling, Testing,  Services, Security
-4. Only document patterns that are:
-   - ✅ Actually used in the codebase (evidence in code)
-   - ✅ Non-obvious (not just standard framework usage)
-   - ✅ Reusable for future features
-5. Output to `sdd/extracted/PATTERNS.md`
-
-### Phase 6: Consistency Check Rules
-
-1. After generating BOTH specs, run consistency validation
-2. Check all items in `standards/spec-consistency.md`:
-   - Every use case in functional → has implementation path in technical
-   - Every endpoint in technical → traces to a user story
-   - Data models match between specs
-3. If inconsistencies found:
-   - List each with severity (CRITICAL, WARNING, INFO)
-   - CRITICAL blocks completion
-   - WARNING requires user acknowledgment
-4. Generate consistency report in synthesis output
-
-### Phase 7: Spec Promotion Rules
-
-1. **ALWAYS execute** - This phase is mandatory, not optional
-2. **Create `sdd/specs/`** if it doesn't exist
-3. **Copy specs** from `sdd/extracted/` to `sdd/specs/`:
-   - `functional-spec.md`
-   - `technical-spec.md`
-4. **Copy PATTERNS.md** to `sdd/` root
-5. **On Update Mode**:
-   - **REPLACE files directly** - no `-UPDATED` suffix
-   - Show diff summary before replacing
-   - If >20% changes, ask confirmation
-6. **Confirm to user** with final file locations
-
-### Framework Conflict Resolution (Multi-Framework Repos)
-
-When Phase 0 detects MULTIPLE spec frameworks:
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  MULTI-FRAMEWORK RESOLUTION                                          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  1. IDENTIFY all detected frameworks and their coverage areas        │
-│                                                                      │
-│  2. DETERMINE precedence:                                            │
-│     - SDD Kit > OpenSpec > Other frameworks                     │
-│     - More specific > More general                                   │
-│     - Newer timestamp > Older (check file dates)                     │
-│                                                                      │
-│  3. ASK USER which framework is authoritative:                       │
-│     "Multiple spec frameworks detected. Which should be primary?"    │
-│                                                                      │
-│  4. MERGE non-conflicting content from secondary frameworks          │
-│                                                                      │
-│  5. FLAG conflicts in DETECTION_REPORT.md for manual resolution      │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
+| `--audio` | `references/audio-capture-flow.md` |
+| `platform = android \| ios` | `references/start-mobile-claude.md` |
+| Full output tree | `references/reverse-eng-output-structure.md` |
+| Forbidden filenames | `references/reverse-eng-forbidden.md` |
+| PROJECT.md / CLAUDE.md bootstrap | `references/reverse-eng-project-config.md` |
+| Phase 1 extraction | `references/reverse-eng-phase1.md` |
+| Phase 2–3 validation | `references/reverse-eng-phase2.md`, `phase3.md` |
+| Phase 4–7 | `references/reverse-eng-phase4.md` … `phase7.md` |
+| Anti-truncation | `references/reverse-eng-anti-truncation.md` |
+| Detailed phase rules | `references/reverse-eng-phase-rules.md` |
 
 ## Telemetry
 

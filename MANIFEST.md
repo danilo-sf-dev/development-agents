@@ -37,16 +37,20 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
 
 Medição atual da redução de verbosidade:
-- 20 comandos: **~10.240 linhas** (caminho comum enxuto; ramos raros lazy-loaded)
-- `commands/references/`: **45 referências** lazy-loaded (~2.080 linhas)
+- 20 comandos: caminho comum enxuto; ramos raros lazy-loaded
+- `commands/references/`: **~120** referências lazy-loaded (P0 `spec-*` + P1 `start-*`/`build-*`/`finish-*`/`reverse-eng-*`)
 - `framework/_shared/agent-instructions.md`: instruções compartilhadas — **1 referência** substituindo 18 cópias
-- `sdd.start.md`: 1.689 → **~856 linhas**
-- `sdd.spec.md`: 2.223 → **~1.419 linhas**
-- `sdd.plan.md`: ~690 → **~511 linhas**
-- `sdd.check.md`: ~800 → **~227 linhas**
-- `sdd.rollback.md`: ~360 → **~237 linhas**
-- `sdd.build.md`: ~975 → **~716 linhas**
-- **15 comandos** com tabela `Optional flags/conditions (lazy-loaded)` + roteamento flag-first
+- `sdd.spec.md`: 2.223 → **~287 linhas** (P0 ≤400)
+- `sdd.fix.md`: ~1834 → **~273 linhas** (P0 ≤400)
+- `sdd.project.md`: ~1671 → **~158 linhas** (P0 ≤400)
+- `sdd.start.md`: 1.689 → **~199 linhas** (P1 ≤400)
+- `sdd.reverse-eng.md`: ~1125 → **~386 linhas** (P1 ≤400)
+- `sdd.build.md`: ~975 → **~230 linhas** (P1 ≤400; anti-gaming no principal)
+- `sdd.finish.md`: ~950 → **~168 linhas** (P1 ≤400)
+- `sdd.plan.md`: ~672 → **~192 linhas** (P2 ≤400; next → `/sdd.test`)
+- `sdd.backlog.md`: ~540 → **~111 linhas** (P2 ≤400)
+- `sdd.check.md`: ~800 → **~305 linhas**
+- **P0 + P1 + P2 concluídos** — nenhum `commands/sdd*.md` acima de 400 linhas
 
 ### framework/
 
