@@ -167,37 +167,7 @@ Q: "Where does [X] come from?"
 
 ### Frontend Web Skills (Frontend framework/design system Projects) ⭐ v1.2.0
 
-> **CONDITIONAL**: Only invoke when project has Frontend framework/design system Web stack.
-> **Detection**: Check `package.json` for `"frontend-framework"` or `"@design-system/*"` dependencies.
-
-```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  🎨 AGENT FOR /sdd.spec technical (Frontend Web)                        ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  sdd-system-designer → All frontend architecture decisions       ┃
-┃                                Uses Skill(frontend-web-expert) internally┃
-┃                                                                          ┃
-┃  WORKFLOW:                                                               ┃
-┃     Agent("sdd-system-designer", ...)                            ┃
-┃                                                                          ┃
-┃  WHY: Single agent delegates to frontend-web-expert skill as source      ┃
-┃       of truth for Frontend framework/design system patterns, rendering strategy, and        ┃
-┃       component decisions. Replaces direct skill calls.                  ┃
-┃                                                                          ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-```
-
-**When to Use (Frontend Web Projects)**:
-| Decision Type | Agent | Example |
-|---------------|-------|---------|
-| Architecture + rendering strategy | `sdd-system-designer` | "SSR vs Islands, page hierarchy" |
-| Component selection + Frontend framework patterns | `sdd-system-designer` | "Which design system components? How to structure pages?" |
-
-**Stack Detection Rules**:
-- **Backend only** (`pom.xml`, `go.mod`, `requirements.txt`): Use backend subagents only
-- **Frontend only** (`package.json` with `frontend-framework`/`@design-system/*`): Use frontend skills only
-- **Fullstack**: Use both as appropriate
+> **Lazy-loaded**: When the project has a Frontend framework/design system Web stack (`package.json` with `frontend-framework` or `@design-system/*`), Read `references/spec-frontend-web-agents.md` for agent routing.
 
 ---
 
@@ -1797,6 +1767,7 @@ Read the matching reference **only** when the flag or condition is present:
 | `--audio` | `references/spec-audio.md` |
 | `functional --approve` or `technical --approve` | `references/spec-approve.md` |
 | `platform = android \| ios` (technical spec) | `references/spec-mobile-technical.md` |
+| Frontend Web stack detected | `references/spec-frontend-web-agents.md` |
 
 ---
 

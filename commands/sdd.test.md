@@ -291,24 +291,7 @@ AskUserQuestion(
 
 ---
 
-## Refinement (`--refine`)
-
-**Triggered by**:
-- User request to adjust tests before implementation
-- **Escalation from `/sdd.build`**: the implementer flagged an approved test as incorrect instead of silently editing it (see "Approved Tests Are Immutable" in `sdd.build.md`)
-
-Allowed actions:
-- Add edge case test
-- Fix test that passes incorrectly (false green)
-- Split/combine test files
-- Update AC mapping in test-plan.md
-- Done refining → re-run Step 5 (red verify)
-
-**When escalated from `/sdd.build`**:
-1. Show the implementer's rationale for why the test is wrong (from the build report) plus the proposed test change as a diff — never apply it silently
-2. Human reviews and either approves the corrected test or rejects it (implementer must then fix the code instead)
-3. If approved: re-run Step 5 red-verify is **not** required to show a fresh fail (implementation may already partially exist) — but the approval itself (`approved_by`, `approved_at`, incremented revision) is mandatory before returning control to `/sdd.build`
-4. Update `tests-manifest.json` with a `revision` bump and `revised_reason` field for audit trail
+> **Lazy-loaded**: When `--refine` is present (or escalated from `/sdd.build`), Read `references/test-refine.md`.
 
 ---
 
@@ -334,6 +317,16 @@ Allowed actions:
 - **Stack detection**: `detect-language.sh`, `detect-stack.sh`, `sdd/PROJECT.md`
 - **Context**: `context-guardian` skill
 - **Next step**: `sdd.build.md` (implementation only — no new tests)
+
+---
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--refine` | `references/test-refine.md` |
+| `--approve` | Standard path — Step 7 (On Approval) |
+| `--resume` | Resume from last saved test-writing state in `meta.md` |
 
 ---
 

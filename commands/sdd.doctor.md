@@ -224,19 +224,7 @@ When `--apply` is passed:
 
 ---
 
-## Step 5 — Explain Mode (`--explain <id>`)
-
-When the user passes `--explain X2` (or any semantic issue id):
-
-1. Re-read the file and the cited `kit_reference`.
-2. Print:
-   - The exact quote from the user file (with surrounding 2-3 lines of context).
-   - The exact quote from the kit reference.
-   - The axis (`contradicts` / `duplicates` / `steals_context`).
-   - The reasoning chain — why these two pieces of text conflict.
-   - The recipe with concrete alternatives.
-
-This makes every semantic finding falsifiable. If the user disagrees, they can ignore it.
+> **Lazy-loaded**: When `--explain <id>` is present, Read `references/doctor-explain.md` and skip Steps 1-3.
 
 ---
 
@@ -300,6 +288,21 @@ If `--json` is set, emit a structured object instead:
   "summary": { "errors": 2, "warnings": 3, "info": 1 }
 }
 ```
+
+---
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--explain <id>` | `references/doctor-explain.md` — replaces Steps 1-3 |
+| `--apply` | Step 4 apply loop (inline) |
+| `--heuristic-only` | Skip Step 2 |
+| `--deep` | Step 2 on all in-scope files |
+| `--json` | JSON output only |
+| `--strict` | Pass through to `scan-config.sh --strict` |
+
+Rules catalog: `references/doctor-rules.md` · Semantic prompt: `references/semantic-prompt.md` · Output examples: `references/doctor-output-examples.md`
 
 ---
 
