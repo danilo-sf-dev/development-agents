@@ -23,25 +23,26 @@ AskUserQuestion(
     "question": "Feature archived! What's next?",
     "header": "Next",
     "options": [
-      {"label": "/sdd.start (Recommended)", "description": "Start a new feature"},
+      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish to chosen base branch"},
+      {"label": "/sdd.start", "description": "Start a new feature"},
       {"label": "/sdd.start --reopen", "description": "Reopen this feature later for iteration"},
-      {"label": "/sdd.backlog list", "description": "Check pending backlog items"},
-      {"label": "/sdd.list", "description": "View all features"}
+      {"label": "Outros", "description": "Outro próximo passo (texto livre)"}
     ],
     "multiSelect": false
   }]
 )
 ```
 
+Shape: `ask-user-question-outros.md` — **Outros** is mandatory on gates.
+
 **On user selection**:
 
 | Selection | Action |
 |-----------|--------|
-| /sdd.start (Recommended) | `Skill(skill="sdd.start")` |
+| /sdd.pr (Recommended) | Run `/sdd.pr` for archived or last feature |
+| /sdd.start | `Skill(skill="sdd.start")` |
 | /sdd.start --reopen | Show: "To reopen later: `/sdd.start --reopen [feature-name]`" |
-| /sdd.backlog list | `Skill(skill="sdd.backlog", args="list")` |
-| /sdd.list | `Skill(skill="sdd.list")` |
-| Other | User types custom input |
+| Outros | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, manual PR |
 
 > **MODE BEHAVIOR**: In Express mode, just show completion message without prompting.
 

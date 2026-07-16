@@ -139,7 +139,9 @@ No **projeto alvo**, append em `.gitignore` — `development-agents/`, `.cursor/
 
 ## Ainda não feito
 
-- [ ] Profiles opcionais de stack (`profiles/java`, `profiles/nextjs`, …)
+- [x] Playbook formal — [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
+- [x] `/sdd.pr` + template PR — [`commands/sdd.pr.md`](./commands/sdd.pr.md)
+- [ ] Profiles de stack — **descartado** (não implementar)
 
 ## Como validar
 

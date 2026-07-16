@@ -186,7 +186,9 @@ Este repositorio e o pack development-agents (raiz).
 
 ## Pipeline
 
-/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.test -> /sdd.build -> /sdd.check -> /sdd.finish
+/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.test -> /sdd.build -> /sdd.check -> /sdd.finish -> /sdd.pr (opcional)
+
+Playbook: framework/PLAYBOOK.md
 
 ## Referencias
 
@@ -209,7 +211,9 @@ Este projeto usa o pack development-agents/.
 
 ## Pipeline
 
-/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.test -> /sdd.build -> /sdd.check -> /sdd.finish
+/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.test -> /sdd.build -> /sdd.check -> /sdd.finish -> /sdd.pr (opcional)
+
+Playbook: framework/PLAYBOOK.md
 
 ## Referencias
 

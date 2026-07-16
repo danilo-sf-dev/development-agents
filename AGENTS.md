@@ -5,7 +5,7 @@ Fonte canônica dos agents do time. Pack **language-/platform-agnostic**: specs 
 ## Pipeline
 
 ```
-/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.check → /sdd.finish
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.check → /sdd.finish → /sdd.pr
 ```
 
 Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.test`).
@@ -26,6 +26,9 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 | Orquestrador | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert` |
 | Instalador | command `/sdd.install` + agent `development-agents-installer` (alternativa a `install.ps1`) |
 | Commit | skill `commit-workflow` com 4 opções e Graphify opcional |
+| Pull Request | command `/sdd.pr` — rascunho SDD → aprovação humana → `gh pr create` |
+
+> Playbook primeiro dia: [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
 
 ## Paths
 

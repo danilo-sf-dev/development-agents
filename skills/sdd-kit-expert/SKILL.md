@@ -77,7 +77,7 @@ sdd/
 > Canonical pipeline, gates, and diagram: `framework/PIPELINE.md`
 
 ```
-/sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
+/sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish → /sdd.pr (optional)
 ```
 
 **Express Mode** (orchestrated):
@@ -112,6 +112,7 @@ SDD Kit is a command-based framework that helps teams build software predictably
 | `/sdd.test` | Write and approve tests (tests-first gate) |
 | `/sdd.build` | Implement tasks until approved tests pass |
 | `/sdd.finish` | Validate and archive |
+| `/sdd.pr` | Draft PR → human approve → open on GitHub |
 | `/sdd.check` | View progress and consistency |
 | `/sdd.fix` | Fix errors across all layers |
 | `/sdd.list` | List all features |

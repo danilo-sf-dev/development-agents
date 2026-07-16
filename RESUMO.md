@@ -57,7 +57,7 @@ development-agents/          ← raiz do git (este repo)
 ├── install.sh / install.ps1 # Instaladores
 ├── agents/                  # 11 subagents
 ├── skills/                  # 6 skills de processo
-├── commands/                # 20 commands /sdd.*
+├── commands/                # 21 commands /sdd.*
 └── framework/               # Templates, standards, tools SDD
 ```
 
@@ -288,6 +288,7 @@ Cenário: você entrou na empresa, não conhece o projeto, tem um card Jira mal 
 8. **Build:** `/sdd.build` ou `/sdd.go` (express)
 9. **Verificar:** `/sdd.check`
 10. **Concluir:** `/sdd.finish` (Gate 3)
+11. **PR (opcional):** `/sdd.pr` — rascunho → aprovação → branch base → `gh pr create`
 11. **Commit:** skill `commit-workflow`
 12. **PR:** manual (fora do escopo do pack)
 
@@ -340,13 +341,25 @@ Documentação: [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) · templa
 
 ---
 
+## 16. `/sdd.pr` + Playbook (jul/2026)
+
+| Entrega | Onde |
+|---------|------|
+| Command `/sdd.pr` | `commands/sdd.pr.md` + `commands/references/pr-*.md` |
+| Template PR SDD | `framework/templates/pull-request-template.md` (baseado no template Logística, enriquecido com contexto SDD) |
+| Fluxo | Gera `pr-draft.md` → AskUserQuestion (aprovar / negar / **Outros**) → pergunta branch base → `gh pr create` |
+| Playbook primeiro dia | `framework/PLAYBOOK.md` |
+| Profiles de stack | **Descartado** — não implementar |
+
+---
+
 ## 14. O que ainda NÃO foi implementado
 
-| Item | Descrição |
-|------|-----------|
-| Profiles de stack | `profiles/java`, `profiles/nextjs`, etc. (opcionais) |
-| Playbook formal | Arquivo dedicado do "primeiro dia" |
-| Integração PR automática | Abertura de PR via `gh` — fora do escopo atual |
+| Item | Descrição | Status |
+|------|-----------|--------|
+| Profiles de stack | `profiles/java`, etc. | **Descartado** — risco de confusão/bloqueio |
+| Playbook formal | Guia “primeiro dia” | ✅ [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md) |
+| Integração PR | `/sdd.pr` + template + aprovação humana + `gh` | ✅ command + [`framework/templates/pull-request-template.md`](./framework/templates/pull-request-template.md) |
 
 ### Redução de verbosidade — item 3 concluído (ramos raros)
 
@@ -450,6 +463,8 @@ Todos os `commands/sdd*.md` estão ≤400. Detalhes em `commands/references/*`. 
 | Pastas legadas removidas | ✅ Concluído |
 | Gate tests-first (`/sdd.test`) | ✅ Concluído (branch `feat/tests-first-gate`) |
 | Redução de verbosidade e referências lazy-loaded | ✅ Concluído nesta etapa |
-| Profiles de stack | ⏳ Pendente |
+| Profiles de stack | ❌ Descartado (decisão explícita) |
+| Playbook formal | ✅ `framework/PLAYBOOK.md` |
+| `/sdd.pr` (PR com aprovação humana) | ✅ Concluído |
 
 **Conclusão:** o núcleo do time agêntico SDD está **pronto para uso** em projetos reais, com pipeline tests-first entre plan e build.

@@ -62,6 +62,7 @@ Quick reference for all SDD Kit commands. Shows commands organized by workflow p
 /sdd.test             Write and approve tests (tests-first)
 /sdd.build            Implement tasks (make approved tests pass)
 /sdd.finish           Validate and archive feature
+/sdd.pr               Draft PR → approve → open on GitHub (gh)
 
 ⚡ EXPRESS MODE
 ────────────────────────────────────────
@@ -217,6 +218,7 @@ Execution Modes:
 | `/sdd.plan` | Generate tasks | `/sdd.plan` |
 | `/sdd.build` | Implement | `/sdd.build` |
 | `/sdd.finish` | Complete & archive | `/sdd.finish` |
+| `/sdd.pr` | Draft PR → approve → gh create | `/sdd.pr` |
 | `/sdd.go` | Full auto workflow | `/sdd.go "feature"` |
 | `/sdd.check` | View status | `/sdd.check` |
 | `/sdd.check --sync` | Verify layer consistency | `/sdd.check --sync` |

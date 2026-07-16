@@ -6,7 +6,7 @@ Complete reference for all `/sdd.` commands.
 
 ## Command Overview
 
-**Total Commands**: 20
+**Total Commands**: 21
 
 > Canonical pipeline order and gates: [`framework/PIPELINE.md`](./PIPELINE.md)
 
@@ -14,7 +14,7 @@ Complete reference for all `/sdd.` commands.
 |----------|----------|
 | **Express** | `go` |
 | **Setup** | `project` |
-| **Core Workflow** | `start`, `spec`, `plan`, `test`, `build`, `finish` |
+| **Core Workflow** | `start`, `spec`, `plan`, `test`, `build`, `finish`, `pr` |
 | **Utilities** | `check`, `list`, `rollback`, `cancel`, `fix`, `backlog`, `help`, `doctor` |
 | **Import & Analysis** | `import`, `reverse-eng` |
 | **Multi-app** | `hub` |
@@ -286,7 +286,7 @@ All 17 command files follow a standard structure for consistency:
 
 **Output**: All tasks implemented, tested, committed by layer
 
-**Next**: `/sdd.finish`
+**Next**: `/sdd.finish` (then optionally `/sdd.pr`)
 
 **Documentation**: [skills/sdd.build/SKILL.md](./skills/sdd.build/SKILL.md)
 
@@ -315,6 +315,34 @@ All 17 command files follow a standard structure for consistency:
 **Output**: Feature archived with documentation
 
 **Documentation**: [skills/sdd.finish/SKILL.md](./skills/sdd.finish/SKILL.md)
+
+**Next (optional)**: `/sdd.pr` — draft pull request, human approval, publish via `gh`
+
+---
+
+### /sdd.pr
+
+**Draft and open pull request (human-gated)**
+
+```bash
+/sdd.pr
+/sdd.pr [feature-name]
+/sdd.pr --draft
+```
+
+**What it does**:
+- Builds PR body from SDD artifacts (`spec`, `tasks`, `tests`, commits)
+- Uses project `.github/pull_request_template.md` when present, else pack template
+- Writes `sdd/wip/<feature>/pr-draft.md`
+- **Pauses** for approve / deny / Outros (adjustments)
+- Asks **target base branch** (master, main, develop, or custom)
+- Runs `gh pr create` only after explicit approval
+
+**Pre-requisite**: Feature implemented; commits on feature branch; `gh` authenticated (or copy draft manually).
+
+**Template**: [`framework/templates/pull-request-template.md`](./templates/pull-request-template.md)
+
+**Documentation**: [commands/sdd.pr.md](../commands/sdd.pr.md)
 
 ---
 
@@ -586,6 +614,7 @@ During `/sdd.build`, when improvement patterns are detected (TODO comments, code
 | Implement only local layer | `/sdd.build --layer 1` |
 | Implement local +  | `/sdd.build --layer 2` |
 | Finish and archive | `/sdd.finish` |
+| Open pull request | `/sdd.pr` |
 | Check progress | `/sdd.check` |
 | List features | `/sdd.list` |
 | Rollback phase | `/sdd.rollback` |
