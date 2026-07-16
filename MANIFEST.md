@@ -37,8 +37,9 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
 
 Medição atual da redução de verbosidade:
-- 20 comandos: **15.658 linhas**
+- 20 comandos: **~15.300 linhas** (após dedup de boilerplate)
 - `commands/references/`: 20 referências lazy-loaded, **1.088 linhas**
+- `framework/_shared/agent-instructions.md`: instruções compartilhadas (HOW TO READ + regras AskUserQuestion) — **1 referência** substituindo 18 cópias
 - `sdd.start.md`: 1.689 → 1.355 linhas
 - `sdd.spec.md`: 2.223 → 2.002 linhas
 

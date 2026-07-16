@@ -339,8 +339,11 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
   `commands/references/` e carregados sob demanda.
 - Resíduos vendor nas skills e docs do framework foram generalizados.
 - O fluxo canônico tests-first foi alinhado nos docs: `plan → test → build`.
-- Medição atual: 20 comandos com 15.658 linhas e 20 referências lazy-loaded com
-  1.088 linhas.
+- Boilerplate duplicado (`HOW TO READ THIS SKILL` + regras `AskUserQuestion`)
+  centralizado em `framework/_shared/agent-instructions.md` — 18 comandos agora
+  apontam para um único arquivo.
+- Medição atual: 20 comandos com ~15.300 linhas, 20 referências lazy-loaded com
+  1.088 linhas e 1 arquivo compartilhado de instruções do agente.
 
 ---
 

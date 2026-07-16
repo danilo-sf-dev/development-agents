@@ -1,0 +1,36 @@
+# Shared Agent Instructions
+
+**Used by**: All `/sdd.*` command files. Read once at the start of any command invocation.
+
+---
+
+## How to read command files
+
+When you see a block like this:
+
+⛔ INVOKE TOOL (do not print this, CALL the tool):
+AskUserQuestion(questions=[{...}])
+
+This is a **tool call** you must execute, not content to display.
+
+| WRONG | CORRECT |
+|-------|---------|
+| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
+| Print the JSON to terminal | Pass the parameters shown to the tool |
+
+---
+
+## User interaction rules
+
+When a command shows JSON for `AskUserQuestion`, you MUST:
+
+1. CALL the `AskUserQuestion` tool with that exact JSON
+2. DO NOT print options using Bash (no echo, cat, printf)
+3. DO NOT ask "Which option?" as plain text
+4. Tables marked **REFERENCE ONLY** are documentation — do NOT print them to the user
+
+---
+
+## AskUserQuestion format reminder
+
+Blocks marked with ⛔ INVOKE TOOL are executable tool calls. Pass the JSON parameters exactly as written; never simulate the prompt in chat or terminal output.
