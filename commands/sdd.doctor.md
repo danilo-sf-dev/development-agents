@@ -5,19 +5,7 @@ model: sonnet
 argument-hint: "[--apply] [--scope all|kit|claude] [--strict] [--deep] [--heuristic-only] [--json] [--explain <id>]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.doctor
 
@@ -61,15 +49,6 @@ This is a TOOL CALL you must execute, not content to display.
 ```
 
 **See also**: `/sdd.help doctor` for detailed documentation.
-
----
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 ---
 
@@ -155,7 +134,7 @@ The scanner outputs structured JSON with:
 - `phrase_hits[]` — one per regex match from `phrases.json`
 - `issues[]` — pre-built findings (one per phrase hit or threshold breach)
 
-Each pre-built issue uses the shape: `{rule, file, line, evidence, severity, fixable}`. The skill resolves `rule → axis / kit_reference / recipe` by re-reading `phrases.json` and the rule catalog at `references/rules.md`.
+Each pre-built issue uses the shape: `{rule, file, line, evidence, severity, fixable}`. The skill resolves `rule → axis / kit_reference / recipe` by re-reading `phrases.json` and the rule catalog at `references/doctor-rules.md`.
 
 **D1/D2** findings come from `detect-duplication.sh.pairs[]` — for any pair above the threshold the skill creates a WARN issue tagged `D2` with both file:line ranges.
 
@@ -205,7 +184,7 @@ Use the template at `references/semantic-prompt.md`. Key invariants:
 2. Dedupe on tuple `(file, line, axis)` — keep heuristic if both report the same spot.
 3. Sort by severity (ERROR → WARN → INFO), then by file.
 4. Tag each issue with its source. Semantic issues are printed as `[ID] (semantic)`.
-5. Render using the layout in `references/output-examples.md`.
+5. Render using the layout in `references/doctor-output-examples.md`.
 
 Exit codes (when `--json`):
 - `0` — no issues OR only INFO
@@ -245,19 +224,7 @@ When `--apply` is passed:
 
 ---
 
-## Step 5 — Explain Mode (`--explain <id>`)
-
-When the user passes `--explain X2` (or any semantic issue id):
-
-1. Re-read the file and the cited `kit_reference`.
-2. Print:
-   - The exact quote from the user file (with surrounding 2-3 lines of context).
-   - The exact quote from the kit reference.
-   - The axis (`contradicts` / `duplicates` / `steals_context`).
-   - The reasoning chain — why these two pieces of text conflict.
-   - The recipe with concrete alternatives.
-
-This makes every semantic finding falsifiable. If the user disagrees, they can ignore it.
+> **Lazy-loaded**: When `--explain <id>` is present, Read `references/doctor-explain.md` and skip Steps 1-3.
 
 ---
 
@@ -269,7 +236,7 @@ This makes every semantic finding falsifiable. If the user disagrees, they can i
 
 ## Output Format
 
-See `references/output-examples.md` for the canonical layouts. The default report has:
+See `references/doctor-output-examples.md` for additional layouts (clean run, `--explain`, `--apply` summary). The default report has:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -321,6 +288,21 @@ If `--json` is set, emit a structured object instead:
   "summary": { "errors": 2, "warnings": 3, "info": 1 }
 }
 ```
+
+---
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--explain <id>` | `references/doctor-explain.md` — replaces Steps 1-3 |
+| `--apply` | Step 4 apply loop (inline) |
+| `--heuristic-only` | Skip Step 2 |
+| `--deep` | Step 2 on all in-scope files |
+| `--json` | JSON output only |
+| `--strict` | Pass through to `scan-config.sh --strict` |
+
+Rules catalog: `references/doctor-rules.md` · Semantic prompt: `references/semantic-prompt.md` · Output examples: `references/doctor-output-examples.md`
 
 ---
 

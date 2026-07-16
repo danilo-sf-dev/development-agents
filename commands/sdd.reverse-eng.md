@@ -5,19 +5,7 @@ model: opus
 argument-hint: "[scope]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.reverse-eng
 
@@ -65,13 +53,6 @@ Use cases:
 **See also**: `/sdd.help reverse-eng` for detailed documentation
 
 ---
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 ## ⚡ First Step: Mode Selection (MANDATORY)
 
@@ -125,67 +106,13 @@ AskUserQuestion(
 | **VIEW STATUS** | `sdd/extracted/` exists | Show summary of current extraction, no changes |
 | **ENHANCE SPECS** | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs |
 
-### `--focus` Behavior (CRITICAL)
-
-> **RULE**: `--focus` ALWAYS updates base spec files. It NEVER creates `-{component}.md` suffixed files.
-
-| Scenario | Files Updated |
-|----------|---------------|
-| Fresh repo + `--focus ComponentA` | Creates `functional-spec.md`, `technical-spec.md` |
-| Existing specs + `--focus ComponentB` | Updates existing `functional-spec.md`, `technical-spec.md` |
-| Re-run with same `--focus` | Updates same files (UPDATE MODE) |
-| Re-run with different `--focus` | Enriches same files with new component detail |
-
-**What `--focus` does**:
-1. Extracts deep detail about the specified component
-2. **Merges** that detail into existing specs (or creates if none exist)
-3. Marks sections as `[Focused: ComponentName]` for traceability
-
-**What `--focus` does NOT do**:
-- Create `functional-spec-{component}.md` files
-- Create parallel spec versions
-- Delete existing content from other components
-
-### Files to Update on Re-extraction
-
-> **CRITICAL**: When re-running `/sdd.reverse-eng`, ALL these files MUST be **REPLACED** (not suffixed):
-
-| File | What to Update | Location |
-|------|----------------|----------|
-| `functional-spec.md` | Use cases, actors, business rules | `sdd/extracted/` AND `sdd/specs/` |
-| `technical-spec.md` | Architecture, APIs, integrations | `sdd/extracted/` AND `sdd/specs/` |
-| `DISCREPANCIES_REPORT.md` | New/resolved discrepancies | `sdd/extracted/` |
-| `DOCUMENTATION_GAPS.md` | Coverage analysis | `sdd/extracted/` |
-| `raw/README.md` | Extraction date, sources, metadata | `sdd/extracted/raw/` |
-| `PATTERNS.md` | Discovered project patterns | `sdd/extracted/` AND `sdd/specs/` |
-
-### ⚠️ ANTI-PATTERN: No `-UPDATED` Suffixes
-
-> **WRONG**: Creating `functional-spec-UPDATED.md` alongside original
-> **CORRECT**: Replace `functional-spec.md` directly
-
-```
-❌ WRONG (creates confusion):
-sdd/specs/
-├── functional-spec.md           # Old version
-├── functional-spec-UPDATED.md   # New version - user must manually rename
-
-✅ CORRECT (clean update):
-sdd/specs/
-├── functional-spec.md           # Replaced with new version
-```
-
-**Update Mode MUST**:
-1. Show diff summary of changes
-2. Ask for confirmation if >20% changes detected
-3. **REPLACE files directly** - no suffixes, no side-by-side versions
-4. Update both `sdd/extracted/` AND `sdd/specs/`
+> **Lazy-loaded**: When `--focus` is present, Read `references/reverse-eng-focus.md` (includes anti-pattern rules for `-UPDATED` suffixes).
 
 ---
 
 ## Subagent Delegation (MANDATORY)
 
-> **⚠️ MANDATORY**: See [warning-hierarchy.md](../standards/warning-hierarchy.md#subagent-delegation) for the central principle.
+> **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
 > This command MUST delegate exploration work to the `sdd-explorer` subagent.
 
 ```
@@ -213,7 +140,7 @@ Performs comprehensive reverse engineering in **eight phases** (0-7):
 | Phase | Name | Purpose |
 |-------|------|---------|
 | **0** | Repository State Detection | Identify existing specs/frameworks before extraction |
-| **1** | Parallel Extraction | Extract data from  AND code (both mandatory) |
+| **1** | Parallel Extraction | Extract data from existing docs/specs AND code (both mandatory) |
 | **2** | Basic Cross-Validation | Compare sources, calculate coverage |
 | **3** | Deep Cross-Validation | Field-by-field comparison, detect phantom endpoints |
 | **4** | Synthesis | Generate specs with 6-level confidence indicators |
@@ -406,66 +333,7 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 - Respect the phased workflow — don't skip phases
 ```
 
-> **CONDITIONAL — Mobile Implementation Rule** (append ONLY when `platform = android` or `platform = ios`):
->
-> After the base template above, if the detected platform (from `detect-stack.sh` or project files) is
-> `android` or `ios`, append a **platform-specific** section to CLAUDE.md.
-> Do NOT append for backend, web, or empty platform.
-> Do NOT include the other platform's skill name — keep it project-specific.
-
-**If platform = android**, append:
-
-```markdown
-## Mobile Implementation Rule
-
-This project is **Android** — MANDATORY before any Kotlin/Android code:
-
-1. Invoke `Skill("mobile-android-expert")`
-2. Read `$SKILL_PATH/SKILL.md` — single source of truth for all documentation navigation
-3. Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK and design system
-4. Build Confirmed Imports Registry from the skill docs before writing any code
-
-**When it applies**: spec creation, task planning, implementation, code review — any step that touches Kotlin/Android.
-
-**For subagents**: include as step 0 in the prompt of any subagent that works on Android code:
-```
-⚠️ STEP 0 — MANDATORY:
-Skill("mobile-android-expert")
-cat "$SKILL_PATH/SKILL.md"
-Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK libraries and design system components.
-Build Confirmed Imports Registry. Only then read the task and write code.
-```
-
-`mobile-android-expert` is the ONLY authoritative source for mobile SDK library APIs and design system
-component APIs. Pre-training knowledge about Android libraries MUST be overridden by the skill docs.
-```
-
-**If platform = ios**, append:
-
-```markdown
-## Mobile Implementation Rule
-
-This project is **iOS** — MANDATORY before any Swift/iOS code:
-
-1. Invoke `Skill("mobile-ios-expert")`
-2. Read `$SKILL_PATH/SKILL.md` — single source of truth for all documentation navigation
-3. Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK and design system
-4. Build Confirmed Imports Registry from the skill docs before writing any code
-
-**When it applies**: spec creation, task planning, implementation, code review — any step that touches Swift/iOS.
-
-**For subagents**: include as step 0 in the prompt of any subagent that works on iOS code:
-```
-⚠️ STEP 0 — MANDATORY:
-Skill("mobile-ios-expert")
-cat "$SKILL_PATH/SKILL.md"
-Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK libraries and design system components.
-Build Confirmed Imports Registry. Only then read the task and write code.
-```
-
-`mobile-ios-expert` is the ONLY authoritative source for mobile SDK library APIs and design system
-component APIs. Pre-training knowledge about iOS libraries MUST be overridden by the skill docs.
-```
+> **Lazy-loaded**: When `platform = android` or `platform = ios`, Read `references/start-mobile-claude.md` before appending the Mobile Implementation Rule to `CLAUDE.md`.
 
 ---
 
@@ -597,8 +465,8 @@ APP_NAME=$(grep "^application_name:" .platform-config | sed 's/application_name:
 
 | Priority | Source | What it provides | Reliability |
 |----------|--------|------------------|-------------|
-| 1. PRIMARY | **ProjectSystemMCP** | Clients, Dependencies, Platform Services | Authoritative |
-| 2. SECONDARY |  | Documentation, MessageQueue consumers | High |
+| 1. PRIMARY | **ProjectSystemMCP** (if configured — an example internal service-graph MCP; replace with whatever your org uses) | Clients, Dependencies, Platform Services | Authoritative |
+| 2. SECONDARY | API docs search | Documentation, message-queue consumers | High |
 | 3. FALLBACK | Code analysis | Inferred from patterns | Medium |
 
 ---
@@ -626,7 +494,7 @@ mcp__ProjectSystemMCP__platform_services(app_name)
 | `dependencies` | Services + datastores this app calls (outbound) | Integration discovery |
 | `platform_services` | KeyValueStore, MessageQueue, OS resources owned | Platform resource mapping |
 
-**If ProjectSystemMCP unavailable**: Skip to Step 2 (). Note in `DOCUMENTATION_GAPS.md`:
+**If ProjectSystemMCP unavailable**: Skip to Step 2. Note in `DOCUMENTATION_GAPS.md`:
 ```markdown
 ## Actor Discovery Limitations
 
@@ -636,20 +504,19 @@ mcp__ProjectSystemMCP__platform_services(app_name)
 
 ---
 
-**Step 2: Supplement with API docs and `project-infra-operations` skill (SECONDARY)**
+**Step 2: Supplement with API docs and org-specific infra tooling (SECONDARY, if available)**
 
 ```
-# API documentation
+# API documentation (example MCP call — replace with whatever your org's docs MCP exposes)
 mcp__platform__search_api_docs(app_name, query="architecture consumers integrations")
 
-# MessageQueue consumer discovery
-Skill("project-infra-operations") → "list consumers of topic <topic_name> for <app_name>"
+# Message-queue consumer discovery (if your org has a skill/CLI for this — check sdd/PROJECT.md)
 ```
 
 Use these to:
 - Fill gaps not covered by ProjectSystemMCP
 - Get documentation context for discovered actors (via `search_api_docs`)
-- Identify MessageQueue consumers (via `Skill("project-infra-operations")`)
+- Identify message-queue consumers, if your org provides tooling for this
 
 ---
 
@@ -676,13 +543,13 @@ Scan for known actor patterns in code:
 
 | Client | Type | Interaction | Source |
 |--------|------|-------------|--------|
-| [name] | Internal/External | [description] | ProjectSystemMCP /  / code |
+| [name] | Internal/External | [description] | ProjectSystemMCP / API docs / code |
 
 ### Outbound Dependencies (what we call)
 
 | Dependency | Type | Purpose | Source |
 |------------|------|---------|--------|
-| [name] | Service/Datastore | [description] | ProjectSystemMCP /  / code |
+| [name] | Service/Datastore | [description] | ProjectSystemMCP / API docs / code |
 
 ### Platform Services Owned
 
@@ -715,9 +582,9 @@ If all sources fail to provide complete actor data:
    ## Missing Actor Information
 
    - ProjectSystemMCP: [unavailable / no data returned]
-   - : [no architecture data found]
+   - API docs search: [no architecture data found]
    - Code analysis: [limited patterns detected]
-   - Recommended: Verify application exists in  Systems model
+   - Recommended: Verify application is registered in your org's systems/service catalog, if one exists
    ```
 2. Use code analysis to infer actors from:
    - Access log patterns (if available)
@@ -736,10 +603,10 @@ If all sources fail to provide complete actor data:
 
 | Category | Marker | Criteria |
 |----------|--------|----------|
-| **Verified** | ✅✅ | In  AND code, schemas match |
+| **Verified** | ✅✅ | In docs/ProjectSystemMCP AND code, schemas match |
 | **Partial** | ✅⚠️ | In both, but schemas differ |
 | **Code Only** | 🔸 | In code only (undocumented) |
-| **Docs Only** | ⚠️ | In  only (PHANTOM - verify!) |
+| **Docs Only** | ⚠️ | In docs/ProjectSystemMCP only (PHANTOM - verify!) |
 | **Internal** | 🔸 INTERNAL | `/internal/*`, `/admin/*` paths |
 
 ---
@@ -805,7 +672,7 @@ Transform data into specs, marking the **origin** of each piece of information.
 **Source Priority for Conflicts**:
 1. **CODE** - Always the source of truth
 2. **existing-specs** - Pre-validated, higher trust than 
-3. **** - May be stale, lowest priority
+3. **Plain Docs (Wiki/Confluence)** - May be stale, lowest priority
 4. **Plain Docs (README)** - HINTS ONLY, never trust without verification
 
 #### Override Rules for Plain Docs
@@ -1115,7 +982,14 @@ When `sdd/specs/` already exists (re-extraction):
 2. Do NOT execute reverse-eng logic
 3. Keep response concise (~15 lines)
 
-### --audio Flag Detection (with --focus)
+## Optional flags (lazy-loaded)
+
+| Flag / condition | Reference |
+|------------------|-----------|
+| `--focus` | `references/reverse-eng-focus.md` |
+| `--focus --audio` | `references/audio-capture-flow.md` + `references/reverse-eng-focus.md` |
+| mode FULL or ENHANCE (code ownership) | `references/code-ownership.md` |
+| `platform = android \| ios` (CLAUDE.md) | `references/start-mobile-claude.md` |
 
 ### Phase 0: Repository State Detection Rules
 
@@ -1130,16 +1004,16 @@ When `sdd/specs/` already exists (re-extraction):
 
 1. Read `optimization_strategy` from DETECTION_REPORT.md
 2. Apply strategy-specific behavior
-3. Execute  queries (ALL primary queries)
+3. Execute ProjectSystemMCP queries, if configured (ALL primary queries)
 4. Delegate code analysis to sdd-explorer
 5. Store results in `sdd/extracted/raw/`
 
 ### Phase 2: Cross-Validation Rules
 
-1. Compare THREE sources: existing-specs vs  vs Code
+1. Compare THREE sources: existing-specs vs ProjectSystemMCP vs Code
 2. Calculate coverage percentage per source
-3. If coverage < 70%, execute conditional  queries
-4. **Source Priority**: CODE > existing-specs > 
+3. If coverage < 70%, execute conditional ProjectSystemMCP queries
+4. **Source Priority**: CODE > existing-specs > ProjectSystemMCP
 
 ### Phase 3: Deep Cross-Validation Rules
 

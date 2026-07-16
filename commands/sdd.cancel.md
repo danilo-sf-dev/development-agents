@@ -5,19 +5,7 @@ model: haiku
 argument-hint: "[feature-name] [reason]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.cancel
 
@@ -62,13 +50,6 @@ This is a TOOL CALL you must execute, not content to display.
 **See also**: `/sdd.help cancel` for detailed documentation
 
 ---
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 ## When to Use
 
@@ -348,8 +329,6 @@ mv sdd/cancelled/[feature-name]_YYYYMMDD sdd/wip/[feature-name]
 2. Do NOT execute cancel logic
 3. Keep response concise (~15 lines)
 
-### --audio Flag Detection
-
 ### Key Rules
 1. **Always require reason** - Don't cancel without documented reason
 2. **Preserve all work** - Never delete, always archive
@@ -367,3 +346,9 @@ mv sdd/cancelled/[feature-name]_YYYYMMDD sdd/wip/[feature-name]
 - `/sdd.rollback` - Go back to previous phase instead
 
 ---
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--audio` | `references/audio-capture-flow.md` |

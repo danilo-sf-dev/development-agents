@@ -6,15 +6,19 @@ Complete reference for all `/sdd.` commands.
 
 ## Command Overview
 
-**Total Commands**: 17
+**Total Commands**: 20
+
+> Canonical pipeline order and gates: [`framework/PIPELINE.md`](./PIPELINE.md)
 
 | Category | Commands |
 |----------|----------|
 | **Express** | `go` |
 | **Setup** | `project` |
-| **Core Workflow** | `start`, `spec`, `plan`, `build`, `finish` |
-| **Utilities** | `check`, `list`, `rollback`, `cancel`, `fix`, `backlog`, `skill`, `help` |
+| **Core Workflow** | `start`, `spec`, `plan`, `test`, `build`, `finish` |
+| **Utilities** | `check`, `list`, `rollback`, `cancel`, `fix`, `backlog`, `help`, `doctor` |
 | **Import & Analysis** | `import`, `reverse-eng` |
+| **Multi-app** | `hub` |
+| **Installation** | `install` |
 
 ---
 
@@ -138,7 +142,7 @@ All 17 command files follow a standard structure for consistency:
 - **Creates feature branch** `feature/<name>` from master/main
 - Sets execution mode (persists across sessions)
 - Detects greenfield/brownfield mode
-- Validates  connection (ML teams)
+- Validates the repository is ready (git initialized, stack detectable)
 - **Reopens completed features** back to WIP (`--reopen` flag)
 
 **Output**: Feature initialized, ready for specifications
@@ -184,7 +188,7 @@ All 17 command files follow a standard structure for consistency:
 **What it does**:
 - Phase 1: Creates functional spec (problem, user stories, metrics)
 - Phase 2: Creates technical spec (architecture, APIs, data model)
-- Queries  for project services (ML teams)
+- Queries your internal service directory/registry for project services, if one exists
 - Validates before approving
 
 **Complexity**: Low-Medium (varies by spec size and mode)
@@ -224,9 +228,23 @@ All 17 command files follow a standard structure for consistency:
 
 **Output**: Tasks approved with execution strategy
 
-**Next**: `/sdd.build`
+**Next**: `/sdd.test`
 
 **Documentation**: [skills/sdd.plan/SKILL.md](./skills/sdd.plan/SKILL.md)
+
+---
+
+### /sdd.test
+
+**Write and approve tests before implementation (tests-first gate)**
+
+**What it does**:
+- Derives unit/integration tests from approved specs and tasks
+- Verifies the new tests fail before production implementation (red phase)
+- Records the approved test contract in `4-tests/`
+- Requires human approval before `/sdd.build`
+
+**Next**: `/sdd.build`
 
 ---
 
@@ -259,7 +277,7 @@ All 17 command files follow a standard structure for consistency:
 **Layer-based execution**:
 ```
 📦 Layer 1 (Local) → commit
-☁️ Layer 2 () → commit
+☁️ Layer 2 (CI Pipeline) → commit
 🔒 Layer 3 (Quality) → commit
 <signal>ALL_TASKS_COMPLETE</signal>
 ```
@@ -483,7 +501,7 @@ During `/sdd.build`, when improvement patterns are detected (TODO comments, code
 ```
 
 **What it does** (4 phases):
-- **Phase 1**: Extract raw data from  AND code (both mandatory)
+- **Phase 1**: Extract raw data from existing docs/specs AND code (both mandatory)
 - **Phase 2**: Basic cross-validation, calculate coverage %
 - **Phase 2.5**: Deep cross-validation (field-by-field comparison)
 - **Phase 3**: Synthesize specs with 5-level confidence indicators
@@ -522,12 +540,13 @@ During `/sdd.build`, when improvement patterns are detected (TODO comments, code
 /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
 
-### Standard (4-5 commands)
+### Standard (tests-first)
 
 ```bash
 /sdd.start "user-auth"
 /sdd.spec      # Interactive, confirmations
 /sdd.plan      # Review, choose strategy
+/sdd.test      # Write, verify red, and approve tests
 /sdd.build     # Progress reports
 /sdd.finish    # Validation summary
 ```

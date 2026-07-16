@@ -1,23 +1,11 @@
-﻿---
+---
 name: sdd.spec
 description: Create and approve functional and technical specifications. Use when user needs to define requirements (functional) or design architecture (technical). Supports --approve, --iterate, --summary, and --audio flags.
 model: opus
 argument-hint: "[functional|technical] [--approve]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.spec
 
@@ -70,13 +58,6 @@ This is a TOOL CALL you must execute, not content to display.
 **See also**: `/sdd.help spec` for detailed documentation
 
 ---
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 
 ## Subagent Delegation
@@ -164,8 +145,8 @@ profile=$(grep "type:" sdd/wip/*/meta.md | grep -o 'technical\|non-technical')
 
 | Aspect | Technical | Non-Technical |
 |--------|-----------|---------------|
-| **Code snippets** | Show full implementation examples via `sdd-implementer` (platform-services plugin skill) | Hide code, show "Configuration ready ✓" |
-| ** services** | Show service names, containers, TTLs | Show "Data storage configured" |
+| **Code snippets** | Show full implementation examples via `sdd-implementer` skill | Hide code, show "Configuration ready ✓" |
+| **Project services** | Show service names, containers, TTLs | Show "Data storage configured" |
 | **Architecture diagrams** | Show full Mermaid diagrams | Show simplified flow: "Input → Processing → Output" |
 | **API contracts** | Show full REST contracts with schemas | Show "API structure: N endpoints" |
 
@@ -186,37 +167,7 @@ Q: "Where does [X] come from?"
 
 ### Frontend Web Skills (Frontend framework/design system Projects) ⭐ v1.2.0
 
-> **CONDITIONAL**: Only invoke when project has Frontend framework/design system Web stack.
-> **Detection**: Check `package.json` for `"frontend-framework"` or `"@design-system/*"` dependencies.
-
-```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  🎨 AGENT FOR /sdd.spec technical (Frontend Web)                        ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  sdd-system-designer → All frontend architecture decisions       ┃
-┃                                Uses Skill(frontend-web-expert) internally┃
-┃                                                                          ┃
-┃  WORKFLOW:                                                               ┃
-┃     Agent("sdd-system-designer", ...)                            ┃
-┃                                                                          ┃
-┃  WHY: Single agent delegates to frontend-web-expert skill as source      ┃
-┃       of truth for Frontend framework/design system patterns, rendering strategy, and        ┃
-┃       component decisions. Replaces direct skill calls.                  ┃
-┃                                                                          ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-```
-
-**When to Use (Frontend Web Projects)**:
-| Decision Type | Agent | Example |
-|---------------|-------|---------|
-| Architecture + rendering strategy | `sdd-system-designer` | "SSR vs Islands, page hierarchy" |
-| Component selection + Frontend framework patterns | `sdd-system-designer` | "Which design system components? How to structure pages?" |
-
-**Stack Detection Rules**:
-- **Backend only** (`pom.xml`, `go.mod`, `requirements.txt`): Use backend subagents only
-- **Frontend only** (`package.json` with `frontend-framework`/`@design-system/*`): Use frontend skills only
-- **Fullstack**: Use both as appropriate
+> **Lazy-loaded**: When the project has a Frontend framework/design system Web stack (`package.json` with `frontend-framework` or `@design-system/*`), Read `references/spec-frontend-web-agents.md` for agent routing.
 
 ---
 
@@ -404,13 +355,13 @@ Use AskUserQuestion:
 
 > **MANDATORY — Architect-First Protocol (no skipping)**:
 >
-> If `genai-detect-gaps.sh` returns any `detected_need` with `delegate_to: project-services-architect`,
+> If `genai-detect-gaps.sh` returns any `detected_need` with `delegate_to: sdd-system-designer`,
 > **OR** the inline fallback matches `topic/queue/event`, `save/store/persist`, or `concurrent/simultaneous`,
-> you **MUST** invoke `Skill("project-services-architect")` BEFORE asking the user any gap question on
-> that need. The plugin is the only authority on project service candidates and trade-offs.
+> you **MUST** invoke `Skill("sdd-system-designer")` BEFORE asking the user any gap question on
+> that need. This skill is the authority on project service candidates and trade-offs.
 >
 > ```
-> Skill("project-services-architect")  # redirects to sdd-system-designer plugin skill
+> Skill("sdd-system-designer")
 > # context: pass the feature description and the detected_need(s), e.g.:
 > #   "User needs async/event processing AND key-value storage. Classify project services and
 > #    return candidates with trade-offs."
@@ -579,8 +530,8 @@ Use AskUserQuestion with options:
 
 **Safe assumptions (don't need to ask):**
 - Standard REST patterns (JSON, HTTP methods)
-- (Dockerfile, /ping, scopes)
-- Standard auth patterns (Tiger-Token for user, scope for app)
+- Standard containerization/health-check conventions (Dockerfile, `/ping` or `/health` endpoint) if this is a network service
+- Standard auth patterns already established in the project (reuse the existing token/scope scheme rather than inventing a new one)
 - Standard retry with exponential backoff for 5xx errors
 
 **NEVER ask about these - they are industry standards:**
@@ -637,12 +588,12 @@ Use AskUserQuestion with options:
 >
 > ```
 > [ ] The Dependencies section does NOT name concrete project services
->     (no "MessageQueue", "KeyValueStore", "Audits", "Streams", etc.). It lists CAPABILITIES instead
+>     (no specific message-queue/database/cache product names). It lists CAPABILITIES instead
 >     (e.g. "async event processing", "key-value storage", "immutable audit trail").
 > [ ] No gap question exposed implementation jargon to the user
->     (no "MessageQueue at-least-once", "TTL", "consumer", "producer", "topic", "container").
+>     (no "at-least-once delivery", "TTL", "consumer", "producer", "topic", "container").
 > [ ] If any architectural classification was needed (async vs sync, storage type, etc.),
->     I invoked Skill("project-services-architect") to inform candidate selection — and
+>     I invoked Skill("sdd-system-designer") to inform candidate selection — and
 >     surfaced the candidates as "tentative — to be confirmed in technical spec",
 >     NOT as final dependencies.
 > ```
@@ -650,8 +601,8 @@ Use AskUserQuestion with options:
 > If ANY checkbox is unchecked: STOP. Reword the offending sections in product terms
 > (or invoke the missing skill) before proceeding to Step 3a.
 >
-> ❌ ANTI-PATTERN: outputting "Dependencies:  MessageQueue · KeyValueStore · Audits" in the
->    functional summary. Service selection belongs to the technical spec.
+> ❌ ANTI-PATTERN: outputting "Dependencies: MessageQueueX · KeyValueStoreY · AuditServiceZ" (concrete
+>    product/service names) in the functional summary. Service selection belongs to the technical spec.
 > ✅ CORRECT: "Dependencies (capabilities): async event processing, key-value storage,
 >    immutable audit trail. Concrete services to be selected in technical spec."
 
@@ -673,7 +624,7 @@ bash development-agents/framework/tools/validation/validate-functional.sh sdd/wi
 ### Scope: In/Out
 ### Dependencies (capabilities): [list of capabilities, NOT project service names]
   e.g. "async event processing, key-value storage, immutable audit trail"
-  Concrete services chosen in technical spec via project-services-architect plugin.
+  Concrete services chosen in technical spec via the sdd-system-designer skill.
 ```
 
 **Step 3c: Context Check Before Approval**
@@ -903,123 +854,42 @@ BEFORE engaging sdd-system-designer:
 platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}')
 ```
 
-#### Mobile Technical Spec (platform = android | ios)
-
-> **PREREQUISITE**: Verify mobile skills are available before generating the spec.
->
-> ```bash
-> skill_dir="mobile-android-expert"
-> plugin_name="mobile-android"
-> [ "$platform" = "ios" ] && skill_dir="mobile-ios-expert"
-> [ "$platform" = "ios" ] && plugin_name="mobile-ios"
-> PLUGIN_PATH="$HOME/.claude/plugins/$plugin_name/skills/$skill_dir"
->
-> if [ ! -d "$PLUGIN_PATH" ]; then
->     echo "❌ Mobile plugin not found: $plugin_name"
->     echo "   Re-run: sdd-kit install claude"
->     exit 1
-> fi
-> ```
->
-> If skills are not found, **stop here** — do not generate the spec without documentation.
-
-> **MANDATORY — 3-STEP SEQUENCE (all steps required, no skipping)**:
->
-> **Step A — Invoke the mobile skill** (loads mobile SDK/design system documentation into context):
-> ```
-> Skill("mobile-android-expert")   # if platform = android
-> Skill("mobile-ios-expert")       # if platform = ios
-> ```
->
-> **Step B — Read the skill documentation** (ALWAYS — before writing any section of the spec):
-> ```bash
-> # SKILL_PATH was resolved in the PREREQUISITE block above
-> cat "$SKILL_PATH/SKILL.md"
-> ```
-> Read SKILL.md fully. Identify and follow the documentation navigation workflows it references
-> for mobile SDK libraries and design system components.
-> Use those workflows to map **every feature requirement** from the functional spec to its
-> corresponding mobile SDK library or design system component. SKILL.md is the single source of truth — no assumptions.
->
-> **Step C — Enforce ML-only library selection**:
-> The index from Step B is the **only allowed source** for library decisions.
-> For each feature requirement, the answer is one of exactly two outcomes:
->
-> - **Found in index** → use that mobile SDK library. No alternatives, no substitutions.
-> - **Not in index** → the capability does not exist in mobile SDK → document as
->   "no mobile SDK equivalent — use native [X]" in the spec.
->
-> Generic Android/iOS ecosystem libraries (e.g. Retrofit, SharedPreferences, Coil,
-> Hilt, Jetpack Navigation, UserDefaults, Alamofire, etc.) are **NEVER a valid answer**
-> when an mobile SDK library exists for that need.
-> The index tells you what exists — trust the index, not pre-training knowledge.
-
-**Sections for mobile**:
-
-1. Executive Summary
-2. Architecture (MVVM layers: UI → ViewModel → Repository → DataSource)
-3. mobile SDK Libraries — **derived from Step B index read**; list each library name + purpose; NO generic Android/iOS alternatives allowed
-4. design system Components (list UI components needed — check design system component map via the skill)
-5. Screen/Flow Design (screens, navigation deeplinks if applicable)
-6. Data Model (local persistence schema — use the mobile SDK storage library identified in Step B's index read; NEVER SharedPreferences, DataStore, or UserDefaults)
-7. Dependencies (mobile SDK lib versions — query via mobile skill index)
-8. Testing Strategy (unit tests for ViewModel/Repository; UI tests via screenshot testing)
-9. Accessibility (design system components handle this natively)
-10. Performance (ANR analysis for Android; App Hangs for iOS)
-
-**Subagents for mobile**:
-
-| Decision type | Subagent | Notes |
-|---|---|---|
-| Architecture + mobile SDK libs | `Skill("mobile-android-expert")` or `Skill("mobile-ios-expert")` | **MANDATORY (Step A above)** |
-| Conflict detection | `sdd-conflict-resolver` | Same as backend |
-
-> ❌ Do NOT invoke `sdd-explorer` for mobile projects
-> ❌ Do NOT include  Services, Dockerfile, /ping, or  Compliance sections
-> ❌ Do NOT include specific import statements — your team library imports are ML-internal APIs that change across versions and are ONLY reliably known from the skill's official documentation. List libraries by name/purpose only; leave all imports to be resolved at build time.
->
-> **IMAGE LOADING — MANDATORY RULE**:
-> ❌ NEVER mention Coil, AsyncImage, Glide, Picasso, Fresco (Android) or Kingfisher, SDWebImage, Nuke, PinRemoteImage (iOS) in any spec
-> ✅ ALWAYS use the image loading library provided by mobile SDK — the exact library name is in the skill's mobile SDK index (read in Step B above)
-> This applies to the spec text, dependency tables, component lists, and code snippets
-
----
+> **Lazy-loaded**: When `platform = android` or `platform = ios`, Read `references/spec-mobile-technical.md` for the complete mobile technical spec workflow.
 
 #### Backend/Web Technical Spec (platform = backend | web | "")
 
 > **MANDATORY — Architect-First Protocol (no skipping, BLOCKING)**:
 >
 > Before producing ANY design decision (DD-1, DD-2, …), service selection, dependency list,
-> code snippet, or architecture diagram, you **MUST** invoke the architect plugin skill.
+> code snippet, or architecture diagram, you **MUST** invoke the `sdd-system-designer` skill.
 >
 > ```
-> Skill("project-services-architect")  # redirects to sdd-system-designer plugin skill
+> Skill("sdd-system-designer")
 > # context: pass the functional spec summary plus a list of capabilities derived from it:
 > #   "Capabilities: [async event processing | key-value storage | object storage | audit
 > #    trail | distributed lock | …]. Recommend project services with trade-offs and
 > #    anti-patterns. Project language: [go|java|python|node]."
 > ```
 >
-> The plugin is the **single source of truth** for:
-> - Which project service to pick for each capability (KeyValueStore vs NoSQL vs MySQL, MessageQueue vs
->   Streams vs Workqueues, Object Storage vs Audits, etc.)
+> This skill is the **single source of truth** for:
+> - Which project service to pick for each capability (e.g. key-value store vs document DB vs
+>   relational DB, message queue vs streaming vs work queue, object storage vs audit log, etc.)
 > - Trade-off rationale that feeds the Design Decisions section
 > - Anti-patterns to call out
 > - Segmentation strategy when relevant
 >
 > ❌ ANTI-PATTERN: writing DD-1, DD-2, … from pre-training knowledge or "what we already saw
->    in discovery" without invoking the plugin. This is the #1 regression mode — the agent
->    "knows" KeyValueStore+MessageQueue+Audits is the answer and skips the call. Don't.
-> ✅ CORRECT: invoke `Skill("project-services-architect")` first; let the plugin response drive
+>    in discovery" without invoking the skill. This is the #1 regression mode — the agent
+>    assumes a specific service combo is the answer and skips the call. Don't.
+> ✅ CORRECT: invoke `Skill("sdd-system-designer")` first; let its response drive
 >    the candidates; THEN present architecture options to the user (next subsection).
 >
-> If the plugin recommends 2-3 viable approaches with similar scores, surface those via the
+> If the skill recommends 2-3 viable approaches with similar scores, surface those via the
 > "Architecture Options" subsection below. If it returns a single recommendation, use it
 > directly (skip Architecture Options) and document the rationale in the spec.
 >
-> After the architect, for each selected service, invoke `Skill("project-snippets-expert")`
-> (which redirects to `sdd-implementer`) to fetch live SDK details before writing the
->  Services section of the spec.
+> After the architect step, for each selected service, invoke `Skill("sdd-implementer")`
+> to fetch live SDK details before writing the Project Services section of the spec.
 
 #### Architecture Options (Standard Mode + Technical Profile)
 
@@ -1133,11 +1003,11 @@ mode=$(grep "mode:" sdd/wip/[feature]/meta.md | cut -d: -f2 | tr -d ' ')
 | Dockerfile status/verification tables | ❌ EXCLUDE | App already has working Dockerfile |
 | Dockerfile.runtime mentions | ❌ EXCLUDE | Runtime config already exists |
 | /ping endpoint status | ❌ EXCLUDE | Health check already implemented |
-| " Platform compliance" section | ❌ SKIP | Handled by AUTO-TASK-PLATFORM-COMPLIANCE |
-| Basic auth patterns (Tiger-Token setup) | ❌ EXCLUDE | Auth already configured (reference only if feature needs new scopes) |
+| "Platform Compliance" section | ❌ SKIP | Handled by AUTO-TASK-PLATFORM-COMPLIANCE |
+| Basic auth patterns (existing token/scope setup) | ❌ EXCLUDE | Auth already configured (reference only if feature needs new scopes) |
 
-4. ** Services** -  query (ML teams)
-5. **Dependencies** ⭐ - **MUST check platform docs for ALL ML dependencies** (see Key Rules #11)
+4. **Project Services** - query via your internal service directory/registry, if your org has one
+5. **Dependencies** ⭐ - **MUST check platform docs for any dependency with known compliance/security requirements** (see Key Rules #11)
 6. **Design Decisions** - With rationale
 7. **Data Model** - Entities, schemas, migrations
 8. **REST API Contracts** - Endpoints, request/response
@@ -1188,7 +1058,7 @@ ELIF mode == "brownfield":
 ```markdown
 # ❌ DO NOT include in brownfield pure-logic spec:
 
-##  Platform compliance
+## Platform compliance
 | Requirement | Status | Notes |
 |-------------|--------|-------|
 | Dockerfile exists | ✅ | ... |
@@ -1223,34 +1093,22 @@ bash development-agents/framework/tools/templates/process-template.sh \
   --output sdd/wip/[feature]/2-technical/spec.md
 ```
 
-###  Services with Code Snippets
+### Project Services with Code Snippets
 
-> When documenting project services, auto-include code examples by delegating to the `sdd-implementer` plugin skill, which fetches live official toolkit documentation.
-
-**Plugin availability check** (before delegating):
-
-```bash
-PLUGIN_PATH="$HOME/.claude/plugins/cache/tech-plugins-marketplace/platform-services"
-if [ ! -d "$PLUGIN_PATH" ]; then
-    echo "⚠️ platform-services plugin not installed — snippets unavailable"
-    echo "   Run: sdd-kit init claude --force"
-    # Skip snippet section and continue without code examples
-fi
-```
+> When documenting project services, auto-include code examples by delegating to the `sdd-implementer` skill, which fetches live documentation for the actual service/library in use.
 
 **Workflow**:
 1. After `sdd-explorer` identifies services
-2. Verify plugin is installed (check above)
-3. For each service, invoke: `Skill("sdd-implementer")` passing the service name and detected project language
-4. The skill fetches live documentation from official toolkit repos and returns ready-to-use snippets
-5. Include the returned snippet in the spec under the service entry
+2. For each service, invoke: `Skill("sdd-implementer")` passing the service name and detected project language
+3. The skill fetches live documentation and returns ready-to-use snippets
+4. Include the returned snippet in the spec under the service entry
 
 **Format in Technical Spec**:
 
 ```markdown
-##  Services
+## Project Services
 
-### KeyValueStore - User Sessions
+### Key-Value Store - User Sessions
 - **Container**: `user-sessions`
 - **TTL**: 3600s (1 hour)
 - **Criticality**: HIGH
@@ -1258,7 +1116,7 @@ fi
 **Implementation Example** (via `sdd-implementer`):
 [snippet returned by Skill("sdd-implementer")]
 
-### MessageQueue - Order Events
+### Message Queue - Order Events
 - **Topic**: `order-events`
 - **Visibility**: private
 - **Consumer**: `order-processor`
@@ -1291,21 +1149,19 @@ fi
 ✓ Technical configuration ready - agent will implement automatically
 ```
 
-###  Service Instance Selection (Live Discovery)
+### Project Service Instance Selection (Live Discovery, if applicable)
 
-> CRITICAL: When the technical spec identifies project services, run live
-> discovery to let the user choose existing instances or create new ones.
-> This happens DURING spec creation, NOT during build.
+> When the technical spec identifies project services, and your org provides a CLI/skill for
+> discovering existing instances, run live discovery to let the user choose existing instances
+> or create new ones. This happens DURING spec creation, NOT during build. Skip entirely if
+> your org has no such tooling — just document the service in the spec.
 
 FOR EACH project service type identified:
-  1. Read `PROJECT_SERVICES.json` → get `cli_list` and `discovery_skill_prompt`
-     for this service
-  2. If `cli_list` exists (Tier 1) → run: `project services <type> list`
-  3. If `cli_list` is null but `discovery_skill_prompt` exists (Tier 2) →
-     invoke `Skill("project-infra-operations")` with that prompt
-     (substituting `{app_name}`). The service-specific platform docs
-     tools no longer exist.
-  4. If neither exists (Tier 3) → inform user: "Manage at the project platform console (from PROJECT.md)"
+  1. Check `sdd/PROJECT.md` for any declared CLI or skill used to list existing instances
+     of this service type
+  2. If a CLI is declared → run it to list existing instances
+  3. If a discovery skill is declared instead → invoke it with the service type and app name
+  4. If neither is declared → inform user: "Manage this service manually — see your org's platform console (referenced in sdd/PROJECT.md)"
   5. If CLI/skill call fails (not logged in, VPN) → inform user to fix
      and retry
   6. If instances found → AskUserQuestion: select existing or "Create new"
@@ -1444,17 +1300,17 @@ migration:
 >
 > If `platform = backend` or `platform = web` (NOT mobile), and the spec contains any of:
 > - `## Design Decisions` with DD-* entries that pick project services, OR
-> - `##  Services` section with concrete service names (KeyValueStore, MessageQueue, Audits, etc.), OR
-> - `## Dependencies` listing  SDKs
+> - `## Project Services` section with concrete service names, OR
+> - `## Dependencies` listing SDKs
 >
-> Then this spec was generated under the rule "architect plugin is the source of truth".
+> Then this spec was generated under the rule "the sdd-system-designer skill is the source of truth".
 > Verify in your own working memory:
 >
 > ```
-> [ ] I invoked Skill("project-services-architect") this session BEFORE writing the
->     Design Decisions /  Services / Dependencies sections.
-> [ ] The service choices in the spec reflect the plugin's response, not pre-training knowledge.
-> [ ] For each selected service, I invoked Skill("project-snippets-expert") to fetch
+> [ ] I invoked Skill("sdd-system-designer") this session BEFORE writing the
+>     Design Decisions / Project Services / Dependencies sections.
+> [ ] The service choices in the spec reflect that skill's response, not pre-training knowledge.
+> [ ] For each selected service, I invoked Skill("sdd-implementer") to fetch
 >     the live SDK details (envvars, dependency coordinates, client setup).
 > ```
 >
@@ -1504,7 +1360,7 @@ fi
 ### Architecture: [1-2 lines]
 ### Endpoints (N): [list]
 ### Database: [services + tables]
-###  Services: [list]
+### Project Services: [list]
 ### Key Decisions: [list]
 ### Secrets: [count + names]
 ```
@@ -1881,143 +1737,22 @@ next_e2e=$(bash development-agents/framework/tools/generation/generate-ids.sh e2
 - **System design**: `sdd-system-designer` subagent
 - ** discovery**: `sdd-explorer` subagent
 - **Conflict resolution**: `genai-resolve-conflicts.sh` → `validate-spec-conflicts.sh`
+- **Optional modes**: `references/spec-iterate.md`, `spec-summary.md`, `spec-audio.md`
 
 ---
 
-## --iterate Flag Behavior
+## Optional flags (lazy-loaded)
 
-> **PURPOSE**: Refine specs during build phase when requirements change or gaps are discovered.
+Read the matching reference **only** when the flag or condition is present:
 
-### Usage
-
-```bash
-/sdd.spec --iterate "description of the change"
-/sdd.spec --iterate "add retry logic to payment endpoint"
-/sdd.spec --iterate "change user authentication from JWT to OAuth2"
-```
-
-### ⚠️ MANDATORY: Preview Before Apply
-
-> **CRITICAL**: NEVER apply changes directly. ALWAYS show a preview and ask for confirmation.
-
-```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                    🔄 --iterate FLOW (MANDATORY)                         ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  1. READ current spec(s)                                                 ┃
-┃  2. ANALYZE requested change                                             ┃
-┃  3. GENERATE diff/preview of proposed changes                            ┃
-┃  4. SHOW preview to user (see format below)                              ┃
-┃  5. ASK for confirmation using AskUserQuestion                           ┃
-┃  6. ONLY IF approved → Apply changes to spec files                       ┃
-┃                                                                          ┃
-┃  ❌ NEVER skip steps 3-5                                                 ┃
-┃  ❌ NEVER apply changes without explicit user approval                   ┃
-┃                                                                          ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-```
-
-### Preview Format
-
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔄 Spec Iteration Preview
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-**Requested Change**: "[user's description]"
-
-**Files Affected**:
-- `1-functional/spec.md` (if applicable)
-- `2-technical/spec.md` (if applicable)
-
-**Proposed Changes**:
-
-### 1. Functional Spec Changes (if any)
-
-**Section: [section name]**
-```diff
-- Current: [old text]
-+ Proposed: [new text]
-```
-
-### 2. Technical Spec Changes (if any)
-
-**Section: [section name]**
-```diff
-- Current: [old text]
-+ Proposed: [new text]
-```
-
-**Impact Assessment**:
-- Tasks affected: [list task IDs if in build phase]
-- Breaking changes: [yes/no]
-- Requires task regeneration: [yes/no]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[AskUserQuestion: "Apply these changes to the specs?"]
-Options:
-- "Yes, apply" (description: "Apply all proposed changes")
-- "Modify" (description: "I want to adjust before applying")
-- "Cancel" (description: "Discard changes, keep current specs")
-```
-
-### Example Flow
-
-```
-User: /sdd.spec --iterate "add rate limiting to all endpoints"
-
-AI: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    🔄 Spec Iteration Preview
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    **Requested Change**: "add rate limiting to all endpoints"
-
-    **Files Affected**:
-    - `2-technical/spec.md`
-
-    **Proposed Changes**:
-
-    ### Technical Spec Changes
-
-    **Section: Non-Functional Requirements**
-    ```diff
-    - (section not present)
-    + ## Non-Functional Requirements
-    +
-    + ### Rate Limiting
-    + - All endpoints: 100 requests/minute per user
-    + - Authentication endpoints: 10 requests/minute per IP
-    + - Implemented via  Rate Limit service
-    ```
-
-    **Section:  Services**
-    ```diff
-      ##  Services
-      - KeyValueStore: User session storage
-      - MessageQueue: Async notifications
-    + - Rate Limit: Request throttling (100 req/min default)
-    ```
-
-    **Impact Assessment**:
-    - Tasks affected: None (new requirement)
-    - Breaking changes: No
-    - Requires task regeneration: Yes (new tasks for rate limiting)
-
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    [AskUserQuestion: "Apply these changes to the specs?"]
-
-User: Yes, apply
-
-AI: ✅ Changes applied to 2-technical/spec.md
-
-    ⚠️ **IMPORTANT**: Changing specs may affect existing tasks.
-    - Your current task statuses will be PRESERVED
-    - Review tasks manually: some completed tasks may now be incomplete
-    - To regenerate tasks: `/sdd.plan --refine` (will reset statuses)
-```
+| Flag / condition | Reference |
+|------------------|-----------|
+| `--iterate` | `references/spec-iterate.md` |
+| `--summary` | `references/spec-summary.md` |
+| `--audio` | `references/spec-audio.md` |
+| `functional --approve` or `technical --approve` | `references/spec-approve.md` |
+| `platform = android \| ios` (technical spec) | `references/spec-mobile-technical.md` |
+| Frontend Web stack detected | `references/spec-frontend-web-agents.md` |
 
 ---
 
@@ -2064,160 +1799,7 @@ Q1: What specific payment methods need to be supported?
 - If description is vague, ask clarifying questions first
 - Store context in memory for both functional and technical phases
 
-### --iterate Flag Detection
+### Flag-first routing
 
-**WHEN** the user runs `/sdd.spec --iterate "change description"`:
-1. Read current spec files (functional and/or technical)
-2. Analyze the requested change
-3. Generate a diff/preview of ALL proposed changes
-4. Display the preview using the format above
-5. Use AskUserQuestion to ask for confirmation
-6. **ONLY** apply changes if user selects "Yes, apply"
-7. If user selects "Modify", ask what they want to adjust
-8. If user selects "Cancel", discard all changes
-
-**PROHIBITED**:
-- ❌ Applying changes without showing preview first
-- ❌ Applying changes without explicit user confirmation
-- ❌ Showing partial preview (must show ALL changes)
-- ❌ Using vague descriptions ("some changes to the spec")
-
-### --approve Flag Detection
-
-**WHEN** the user runs `/sdd.spec functional --approve` or `/sdd.spec technical --approve`:
-
-> **CRITICAL**: Do NOT call `EnterPlanMode()`. Skip Steps 2, 4, 4.5 entirely. This flag is used to resume approval after plan mode was already completed.
-
-1. Detect the target phase from the command: `functional` or `technical`
-2. **Locate the spec file**: `sdd/wip/[feature]/1-functional/spec.md` or `sdd/wip/[feature]/2-technical/spec.md`
-3. **Validate spec exists**: If the file does not exist, show error and suggest running `/sdd.spec <phase>` first
-4. **Check meta.md status**: Read `meta.md` and verify the phase status is `draft` (not already `approved`)
-   - If already approved: Show message "Spec already approved" and offer next steps
-5. **Run validation** (same as Step 3a/6a depending on phase):
-   - Functional: `bash development-agents/framework/tools/validation/validate-functional.sh sdd/wip/[feature]`
-   - Technical: `bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip/[feature]`
-   - If validation fails: Show errors, do NOT proceed
-6. **Show concise summary** (same as Step 3b/6b depending on phase)
-7. **Ask for approval** via AskUserQuestion (same as Step 3c/6c depending on phase)
-8. **On approval**: Update `meta.md` with `status: approved`, `approved_by: <git config user.name>`, `approved_at: <ISO-8601>`
-9. **Context advisory** (optional): Estimate context usage. If > 50%, show:
-   ```
-   ╔═══════════════════════════════════════════════════════╗
-   ║  CONTEXT ADVISORY (optional)                          ║
-   ╠═══════════════════════════════════════════════════════╣
-   ║                                                       ║
-   ║  Context usage: ~[XX]%                                ║
-   ║  Phase completed: [spec phase]                        ║
-   ║                                                       ║
-   ║  All decisions are saved in your spec artifacts.      ║
-   ║  Consider /clear before starting next phase           ║
-   ║  for maximum available context.                       ║
-   ║                                                       ║
-   ║  This is optional — you can continue as-is.           ║
-   ║                                                       ║
-   ╚═══════════════════════════════════════════════════════╝
-   ```
-
-**PROHIBITED**:
-- ❌ Calling `EnterPlanMode()` — the user already exited plan mode
-- ❌ Re-running the interview or spec generation steps
-- ❌ Re-entering the full workflow (Steps 1-6)
-
----
-
-## --summary Flag Behavior
-
-> **PURPOSE**: Quick spec overview (~100 tokens) without loading full content. Useful for context-aware decisions.
-
-### Usage
-
-```bash
-/sdd.spec --summary
-/sdd.spec --summary feature-name
-```
-
-### Output Format
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 📋 SPEC SUMMARY: [feature-name]                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ Functional Spec: [APPROVED/DRAFT/PENDING]                       │
-│   • User Stories: [N] stories                                   │
-│   • Acceptance Criteria: [M] criteria                           │
-│   • E2E Scenarios: [K] (if production + E2E enabled)            │
-│                                                                 │
-│ Technical Spec: [APPROVED/DRAFT/PENDING]                        │
-│   • Endpoints: [N] REST endpoints                               │
-│   •  Services: [list: KeyValueStore, MessageQueue, etc.]                  │
-│   • Data Entities: [N] entities                                 │
-│   • Key Decisions: [N] documented                               │
-│                                                                 │
-│ [Load full: /sdd.spec functional OR /sdd.spec technical]      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Example Output
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 📋 SPEC SUMMARY: payment-gateway                                │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ Functional Spec: APPROVED                                       │
-│   • User Stories: 5 stories                                     │
-│   • Acceptance Criteria: 12 criteria                            │
-│   • E2E Scenarios: 3 (E2E enabled)                              │
-│                                                                 │
-│ Technical Spec: APPROVED                                        │
-│   • Endpoints: 8 REST endpoints                                 │
-│   •  Services: KeyValueStore, MessageQueue, Cache                         │
-│   • Data Entities: 4 entities                                   │
-│   • Key Decisions: 6 documented                                 │
-│                                                                 │
-│ [Load full: /sdd.spec functional OR /sdd.spec technical]      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### When to Use
-
-| Scenario | Use --summary? |
-|----------|----------------|
-| Quick status check | ✅ Yes |
-| Context budget elevated (>40%) | ✅ Yes |
-| Need specific details | ❌ No, use full spec |
-| Planning next steps | ✅ Yes |
-| Code review preparation | ❌ No, use full spec |
-
-### Implementation
-
-1. Read ONLY `meta.md` and section headers from spec files
-2. Count items (stories, endpoints, services) from headers/lists
-3. Generate summary without loading full content
-4. Target: ~100 tokens output
-
-### AI Agent Instructions for --summary
-
-**WHEN** the user runs `/sdd.spec --summary`:
-1. Read `meta.md` for status and feature name
-2. Scan `1-functional/spec.md` headers only (count stories, criteria)
-3. Scan `2-technical/spec.md` headers only (count endpoints, services)
-4. Output summary in format above
-5. **DO NOT** load full file contents
-6. **DO NOT** execute spec creation logic
-
----
-
-## --audio Flag Behavior
-
-> **PURPOSE**: Record voice description via microphone for hands-free feature specification.
-
-### Usage
-
-```bash
-/sdd.spec --audio
-```
-
-### AI Agent Instructions for --audio
-
+Before running the standard spec workflow, check optional flags in the table above.
+If a flag matches, read its reference first and follow that path.

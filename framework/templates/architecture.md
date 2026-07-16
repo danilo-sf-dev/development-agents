@@ -331,7 +331,7 @@ graph LR
 2. **Authentication**:  IAM JWT validation
 3. **Authorization**: Role-based access control (RBAC)
 4. **Data**: Encryption at rest (AES-256)
-5. **Secrets**: Managed via  Vault (no hardcoded secrets)
+5. **Secrets**: Managed via your org's secrets manager/vault (no hardcoded secrets)
 6. **WAF**: DDoS protection, SQL injection prevention
 
 ---

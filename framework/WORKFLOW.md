@@ -53,14 +53,10 @@ For simple features with clear requirements:
 
 For most features, balanced control and quality:
 
-```mermaid
-graph LR
-    A["/sdd.start<br/>Initialize"] --> B["/sdd.spec<br/>Specs"]
-    B --> C["/sdd.plan<br/>Tasks"]
-    C --> T["/sdd.test<br/>Tests"]
-    T --> D["/sdd.build<br/>Implement"]
-    D --> E["/sdd.finish<br/>Archive"]
-    E -.->|"--reopen"| A
+> Canonical diagram and gates: [`framework/PIPELINE.md`](./PIPELINE.md#diagram)
+
+```
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
 
 ### Phase 0: Initialize
@@ -96,7 +92,7 @@ graph LR
 **Technical Spec** (HOW to build):
 - AI loads functional spec
 - Interviews about architecture
-- Queries  for project services (ML teams)
+- Queries your internal service directory/registry for project services, if one exists
 - Documents APIs, data model, testing
 - Asks: "Ready to approve technical spec?" [Y/n]
 
@@ -230,7 +226,7 @@ For finer control within Standard mode:
 
 ## Hub Workflow (Multi-app)
 
-For teams working with ecosystems of multiple  apps that collaborate in a domain.
+For teams working with ecosystems of multiple apps that collaborate in a domain.
 
 ### Execution modes
 
@@ -317,7 +313,7 @@ After `/sdd.finish`, you may need to iterate on a completed feature. Use `--reop
 
 **Gate**: If any other feature references this one via `<!-- overrides/extends/deprecates: -->` annotations, reopen is **blocked**. Create a new feature instead.
 
-**After reopen**: The feature is a normal WIP feature. Use `/sdd.spec`, `/sdd.plan`, `/sdd.build`, and `/sdd.finish` as usual.
+**After reopen**: The feature is a normal WIP feature. Use `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.build`, and `/sdd.finish` as usual.
 
 ---
 
@@ -534,6 +530,7 @@ sdd/
 /sdd.start payment-gateway
 /sdd.spec
 /sdd.plan
+/sdd.test
 /sdd.build
 /sdd.finish
 ```

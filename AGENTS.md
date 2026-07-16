@@ -5,16 +5,12 @@ Fonte canônica dos agents do time. Pack **language-/platform-agnostic**: specs 
 ## Pipeline
 
 ```
-/sdd.start
-  → /sdd.spec          (Gate 1: aprovar spec)
-  → /sdd.plan          (Gate 2: aprovar tasks)
-  → /sdd.test          (Gate 2.5: aprovar testes — tests-first)
-  → /sdd.build         (implementar até testes passarem → validar)
-  → /sdd.check
-  → /sdd.finish        (Gate 3: conclusão)
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.check → /sdd.finish
 ```
 
 Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.test`).
+
+> **Fonte canônica completa** (diagrama Mermaid, gates, modos, papéis): [`framework/PIPELINE.md`](./framework/PIPELINE.md). Atualize lá primeiro se o pipeline mudar.
 
 ## Papéis
 

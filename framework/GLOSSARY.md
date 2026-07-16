@@ -16,7 +16,7 @@ Document that captures an important architectural decision along with its contex
 AI-powered assistant that performs specific tasks within the framework. Examples: sdd-system-designer, sdd-implementer.
 
 ### dependency security scanner
-MCP server from the Web Application Security team providing security vulnerability detection, dependency scanning, and access to internal security SDKs.
+Generic term for whatever MCP server/tool your organization uses for security vulnerability detection and dependency scanning (e.g. an internal security team's tool, Snyk, Dependabot, etc.). Not a specific product — configure the one your org actually has.
 
 ---
 
@@ -154,10 +154,10 @@ Reverting to a previous phase. Example: `/sdd.rollback spec`.
 ## S
 
 ### SDD (Specification-Driven Development)
-Methodology where development follows: Spec → Plan → Build → Finish.
+Methodology where development follows: Spec → Plan → Test (tests-first gate) → Build → Check → Finish.
 
 ### Security Rules
-Set of agentic security guidelines that Platform AI docs agents must follow during code generation and review. Integrated with dependency security scanner to validate compliance against known vulnerabilities and security best practices. Rules are technology-specific and cover input validation, authentication, secrets management, and other security patterns.
+Set of agentic security guidelines that AI agents must follow during code generation and review. Optionally integrated with a dependency security scanner to validate compliance against known vulnerabilities and security best practices. Rules are technology-specific and cover input validation, authentication, secrets management, and other security patterns.
 
 ### Skill
 Reusable knowledge module for Platform AI docs agents. Located in `.claude/skills/`.
@@ -230,19 +230,12 @@ Sequence of phases and commands in SDD development.
 
 ---
 
-## -Specific Services
+## Project-Specific Services
 
-| Service | Full Name | Description |
-|---------|-----------|-------------|
-| MessageQueue | MessageQueue | 's managed message queue service |
-| Cache |  Cache | 's managed Valkey/Redis caching service |
-| DS | Document Search | 's search service (legacy) |
-| GenIA | GenIA Gateway | 's LLM inference gateway |
-| NoSQL | NoSQL | 's document database service |
-| OS | Object Storage | 's file/blob storage service |
-| QKVS | Queryable KeyValueStore | KeyValueStore with query capabilities |
-| Streams |  Streams | 's CDC streaming service |
-| Workqueues |  Workqueues | 's distributed task queue service |
+This framework does not hardcode a catalog of internal platform services — every org has
+different ones. Document your org's actual services (message queue, cache, key-value store,
+object storage, etc.) in `sdd/PROJECT.md`, and the `sdd-system-designer` skill will use that
+list when recommending services during `/sdd.spec technical`.
 
 ---
 

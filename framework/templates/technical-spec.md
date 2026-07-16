@@ -139,29 +139,29 @@ graph TB
 ---
 
 <!-- IF: greenfield OR brownfield_with_infra_changes -->
-##  Platform compliance
+## Platform compliance (if your org requires it)
 
 | Requirement | Status | Notes |
 |-------------|--------|-------|
-| Dockerfile exists | ⬜ Pending | Required for  deployment |
+| Dockerfile exists | ⬜ Pending | Required for deployment |
 | Dockerfile.runtime | ⬜ Pending | For runtime configuration |
-| /ping endpoint | ⬜ Pending | Health check endpoint |
-| Scopes configured | ⬜ Pending | IAM scopes for service-to-service |
+| Health check endpoint | ⬜ Pending | If required by your platform |
+| Scopes/permissions configured | ⬜ Pending | IAM scopes for service-to-service, if applicable |
 
 <!-- ENDIF -->
 
 ---
 
-##  Services Used
+## Project Services Used
 
-> **For your team teams**: List project services to be used
+> List internal/org platform services this feature will use (if any)
 
 <!-- IF: greenfield OR brownfield_with_infra_changes OR feature_requires_new_scopes -->
 ### Authentication & Authorization
-- **Service**:  IAM
+- **Service**: [e.g. your org's IAM/SSO provider]
 - **Purpose**: [Why using this service]
 - **Integration**: [How it will be integrated]
-- **Documentation**: https://the project platform console (from PROJECT.md)/ai/mcp/mcps?id=487d3340-9bd4-41a9-a96e-3db46a958d2a
+- **Documentation**: [link to internal docs, if applicable]
 <!-- ENDIF -->
 
 ### [Service Category 2]
@@ -178,9 +178,9 @@ graph TB
 > Components built from scratch (not using project services)
 
 ### [Component Name]
-- **Why Custom**: [Rationale for not using ]
+- **Why Custom**: [Rationale for not using an existing project service]
 - **Approach**: [How it will be built]
-- **Alternatives Considered**: [Why not using  or other options]
+- **Alternatives Considered**: [Why not using an existing project service or other options]
 
 ---
 
@@ -312,7 +312,7 @@ CREATE INDEX idx_payments_status_created ON payments(status, created_at DESC);
 
 > **⚠️ CRITICAL**: Migrations MUST be created using `your-migration-tool init`. Manual .sql file creation is NOT supported and will break CI.
 
-**Create migrations using  CLI**:
+**Create migrations using the migration CLI**:
 ```bash
 # For each migration:
 your-migration-tool init \
@@ -469,7 +469,7 @@ pages/
 
 ### 🔐 Secrets Management (MANDATORY)
 
-> **BLOCKER**: ALL secrets MUST use  Secrets. Hardcoded secrets will block deployment.
+> **BLOCKER**: ALL secrets MUST use your org's secrets manager. Hardcoded secrets will block deployment.
 
 **Secrets Required for This Feature** (passwords, keys, tokens):
 
@@ -480,7 +480,7 @@ pages/
 | `JWT_SECRET` | Token signing | `{app-name}/jwt-signing-key` |
 | `EXTERNAL_API_KEY` | Third-party integration | `{app-name}/external-api-key` |
 
-> ⚠️ **Note**: Secrets use `SECRET_` prefix when read via  Secrets SDK v1.
+> ⚠️ **Note**: Secrets may use a `SECRET_` prefix, depending on your org's secrets-manager SDK convention.
 
 **Environment Variables (Non-Secret)** - URLs, endpoints, ports, timeouts:
 
@@ -502,7 +502,7 @@ pages/
 secrets:
   - name: DATABASE_PASSWORD
     secret: {app-name}/database-password
-# Note: Endpoints are automatically injected by  as env vars, no config needed
+# Note: Endpoints may be automatically injected by your platform as env vars — check your org's convention
 ```
 
 **Code Usage**:
@@ -510,7 +510,7 @@ secrets:
 // ✅ CORRECT: Endpoint from env var (no SECRET_ prefix)
 String dbHost = System.getenv("DB_MYSQL_CLUSTER_SCHEMA_SCHEMA_ENDPOINT");
 
-// ✅ CORRECT: Password from  Secrets (has SECRET_ prefix in SDK v1)
+// ✅ CORRECT: Password from your org's secrets manager (has SECRET_ prefix in this example)
 String dbPassword = System.getenv("SECRET_DB_MYSQL_CLUSTER_SCHEMA_SCHEMA_WPROD");
 
 // ❌ WRONG: Never hardcode passwords
@@ -555,7 +555,7 @@ String dbPassword = "password123";
 
 ### Optimization Strategies
 
-- **Caching**: Cache payment status with  Cache (TTL: 60 seconds)
+- **Caching**: Cache payment status in your cache layer (TTL: 60 seconds)
 - **Database**: Compound indexes on common queries
 - **REST API**: Pagination for list endpoints (max 100 items)
 - **Frontend**: Lazy load payment history
@@ -650,7 +650,7 @@ payment-integration-enabled:
   blacklist: []
 ```
 
-**Tool**:  Feature Flags (ML teams) or LaunchDarkly
+**Tool**: your org's feature-flag service, or an off-the-shelf option (LaunchDarkly, Unleash, etc.)
 
 ### Rollback Plan
 
@@ -692,7 +692,7 @@ payment-integration-enabled:
 }
 ```
 
-**Tool**:  DataDog (ML teams) or Winston/Pino
+**Tool**: your org's observability stack (DataDog, Grafana, etc.) or a logging library like Winston/Pino
 
 ### Metrics
 
@@ -793,11 +793,11 @@ Instrument the following:
 
 ---
 
-> **If NOT_FOUND in **: Remove "Auto-Discovered" label and document manually.
+> **If not found in your org's service catalog**: Remove "Auto-Discovered" label and document manually.
 
-### External Non- APIs (if applicable)
+### External Third-Party APIs (if applicable)
 
-> Document third-party APIs not in  ecosystem.
+> Document third-party APIs not covered by your org's internal service catalog.
 
 #### [external-api-name]
 

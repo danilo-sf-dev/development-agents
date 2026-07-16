@@ -333,6 +333,47 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
 | Playbook formal | Arquivo dedicado do "primeiro dia" |
 | Integração PR automática | Abertura de PR via `gh` — fora do escopo atual |
 
+### Redução de verbosidade — item 3 concluído (ramos raros)
+
+- Fluxos condicionais extraídos para `commands/references/` com lazy-load por flag/condição.
+- **10 comandos** com seção `Optional flags (lazy-loaded)` + roteamento flag-first onde aplicável.
+- Ramo comum (~90% das chamadas) permanece no arquivo principal; flags (`--reopen`, `--rename`, `--from-backlog`, `--audio`, `--hub`, `--view`, `--batch`, `--focus`, mobile, etc.) só carregam referência quando batem.
+- `audio-capture-flow.md` compartilhado entre 7 comandos com `--audio`.
+- `start-mobile-claude.md` reutilizado por `/sdd.start` e `/sdd.reverse-eng`.
+- Medição: ~13.900 linhas nos 20 comandos + 36 referências (~2.550 linhas) lazy-loaded.
+
+### Cleanup v2 — resíduo quebrado + consolidação de docs (concluído)
+
+Depois do Cleanup v1 (item 1, remoção de resíduo vendor-specific), uma varredura mais profunda
+(procurando `**` vazio, espaço duplo, frases quebradas) achou que a limpeza **tinha ficado
+incompleta**: um find-and-replace anterior tinha apagado nomes de vendors mas deixado buracos —
+bullets com label vazio, frases sem sentido, e o pior: referências `Skill("project-services-architect")`,
+`Skill("project-snippets-expert")`, `Skill("project-infra-operations")` e `PROJECT_SERVICES.json`
+que **não existem** no pack (skills reais são `sdd-system-designer` e `sdd-implementer`).
+
+O que foi corrigido (~25 arquivos):
+- Bullets/frases quebradas em `commands/sdd.build.md`, `sdd.plan.md`, `sdd.start.md`, `sdd.spec.md`,
+  `sdd.reverse-eng.md`, `sdd.finish.md`.
+- Catálogo de serviços internos proprietário removido de `GLOSSARY.md` e `FAQ.md` — serviços agora
+  vêm de `sdd/PROJECT.md`, não de uma lista hardcoded.
+- Regra de Dockerfile "`your-registry/base-image` obrigatório" tornada condicional a `sdd/PROJECT.md`
+  (não assume mais que todo projeto usa esse registry) em `QUICK_REFERENCE.md`, `AI_AGENT_GUIDELINES.md`,
+  `check-rare-workflows.md`, `sdd-validator/SKILL.md`, `sdd-code-reviewer/SKILL.md`.
+- Auth `TIGER_TOKEN` + `mcp-remote-proxy` hardcoded em `CONFIGURATION.md` → instrução genérica.
+- **Diagrama de pipeline consolidado**: criado `framework/PIPELINE.md` como fonte única (diagrama
+  Mermaid, gates, modos, papéis). `AGENTS.md`, `WORKFLOW.md`, `COMMANDS.md`, `QUICK_REFERENCE.md` e
+  `skills/sdd-kit-expert/SKILL.md` agora linkam para lá em vez de duplicar o bloco completo.
+- Bug real encontrado e corrigido: `WORKFLOW.md` tinha um exemplo "Standard Feature" sem `/sdd.test`
+  (esquecido quando o gate tests-first foi adicionado — exatamente o custo de manutenção que motivou
+  a consolidação). `COMMANDS.md` também tinha "Total Commands: 17" desatualizado (correto: 20) e a
+  tabela de categorias sem `test`/`doctor`/`hub`/`install`.
+- Validação: `rg -i 'meli|fury|nordic|everest|andes|furycloud|ltp'` → zero hits reais (fora de
+  MANIFEST/RESUMO e falsos positivos de "timeline").
+
+**Gap conhecido, não resolvido**: `COMMANDS.md` documenta `/sdd.skill` (gerenciamento de hooks de
+terceiros) que não existe como comando real no pack (`commands/sdd.skill.md` não existe). Decidir se
+é uma feature a implementar ou documentação morta a remover.
+
 ---
 
 ## 15. Como validar o pack
@@ -375,6 +416,7 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
 | Repo renomeado `development-agents` | ✅ Concluído |
 | Pastas legadas removidas | ✅ Concluído |
 | Gate tests-first (`/sdd.test`) | ✅ Concluído (branch `feat/tests-first-gate`) |
+| Redução de verbosidade e referências lazy-loaded | ✅ Concluído nesta etapa |
 | Profiles de stack | ⏳ Pendente |
 
 **Conclusão:** o núcleo do time agêntico SDD está **pronto para uso** em projetos reais, com pipeline tests-first entre plan e build.

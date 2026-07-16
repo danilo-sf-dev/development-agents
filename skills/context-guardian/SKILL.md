@@ -105,7 +105,7 @@ Status: NORMAL - Plenty of context available
 ```
 Recommendations:
   1. Prefer subagents for heavy operations
-  2. Use  for MCP queries
+  2. Use Task()-delegated subagents for MCP queries
   3. Use Explore agent for file searches
   4. Consider completing current phase soon
   5. At phase transitions: Consider /clear — specs contain all decisions, fresh context produces higher quality
@@ -118,7 +118,7 @@ Status: ELEVATED - Prefer delegation for heavy operations
 ```
 Recommendations:
   1. MANDATORY: Use subagents for all heavy operations
-  2. Use  for ANY MCP query
+  2. Use Task()-delegated subagents for ANY MCP query
   3. Use sdd-validator-runner for validation
   4. Avoid reading large files directly
   5. Strongly consider /clear at next phase transition — specs are source of truth, fresh context = higher quality
@@ -253,7 +253,7 @@ Natural language phrases that should invoke this skill:
 |                                                                 |
 | Recommendations:                                                |
 |   1. MANDATORY: Use subagents for all heavy operations          |
-|   2. Use  for ANY MCP query                     |
+|   2. Use Task()-delegated subagents for ANY MCP query           |
 |   3. Use sdd-validator-runner for validation                   |
 |   4. Avoid reading large files directly                         |
 |   5. Consider compaction before /sdd.build                     |

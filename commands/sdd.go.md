@@ -5,19 +5,7 @@ model: opus
 argument-hint: "[feature-description]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.go
 
@@ -55,13 +43,6 @@ This is a TOOL CALL you must execute, not content to display.
 **See also**: `/sdd.help go` for detailed documentation
 
 ---
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 
 ## Architecture: Orchestrator Pattern
@@ -162,8 +143,6 @@ When `/sdd.go` is invoked:
 2. **DO reference and execute the standard commands**
 3. **DO apply express rules as overrides**
 
-### --audio Flag Detection
-
 ### Step 0: Input Validation
 
 If input is valid kebab-case name → use directly
@@ -250,3 +229,9 @@ Inherited from standard commands - see `spec.md`. Map external tech to project s
 > **Standard commands are the single source of truth.**
 > `/sdd.go` only defines: express rules, orchestration flow, error handling.
 > For implementation details, read the corresponding command file.
+
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--audio` | `references/audio-capture-flow.md` |

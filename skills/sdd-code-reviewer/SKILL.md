@@ -68,10 +68,10 @@ If MCP not available, use this checklist:
 - [ ] Edge cases covered
 - [ ] Integration tests where needed
 
-####  Compliance
-- [ ] Dockerfile uses `your-registry/base-image
-- [ ] Dockerfile.runtime uses `your-registry/base-image
-- [ ] /ping endpoint implemented
+#### Runtime Compliance (if your org enforces these)
+- [ ] Dockerfile uses the org-approved base image (see `sdd/PROJECT.md`)
+- [ ] Dockerfile.runtime uses the org-approved base image (see `sdd/PROJECT.md`)
+- [ ] Health check endpoint implemented (if required)
 - [ ] Health checks configured
 
 #### Documentation

@@ -5,19 +5,7 @@ model: sonnet
 argument-hint: "[feature-name] [target-phase]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.rollback
 
@@ -63,13 +51,6 @@ This is a TOOL CALL you must execute, not content to display.
 **See also**: `/sdd.help rollback` for detailed documentation
 
 ---
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 ## When to Use
 
@@ -260,6 +241,16 @@ ls -la sdd/wip/[feature-name]/.rollback-history/
 
 ---
 
+## Optional flags (lazy-loaded)
+
+| Flag | Reference |
+|------|-----------|
+| `--task TASK-XXX` | `references/rollback-intelligent-revert.md` |
+| `--phase N` | `references/rollback-intelligent-revert.md` |
+| `[phase]` (numeric) | Standard phase rollback (inline workflow above) |
+
+---
+
 ## AI Agent Instructions
 
 
@@ -326,176 +317,7 @@ ELSE:
 
 ---
 
-## Intelligent Revert
-
-Git-aware reverting by logical units (Task or Phase) instead of just by phase number.
-
-### Why Intelligent Revert?
-
-Traditional rollback (`/sdd.rollback 3`) reverts to a phase boundary. But sometimes you need finer control:
-- Revert just one task that broke something
-- Undo all changes from a specific phase
-- Keep earlier tasks but redo one specific task
-
-### Commit Tracking
-
-During `/sdd.build`, each task completion records its commit(s) in `meta.md`:
-
-```yaml
-implementation:
-  tasks:
-    TASK-001:
-      status: completed
-      commits:
-        - hash: "abc123"
-          message: "feat(payment): TASK-001 - Create Dockerfile"
-        - hash: "def456"
-          message: "feat(payment): TASK-001 - Add Dockerfile.runtime"
-    TASK-002:
-      status: completed
-      commits:
-        - hash: "ghi789"
-          message: "feat(payment): TASK-002 - Setup project structure"
-```
-
-### `--task TASK-XXX` - Revert Specific Task
-
-Reverts all commits associated with a specific task.
-
-**Usage**:
-```bash
-/sdd.rollback --task TASK-005
-```
-
-**What happens**:
-1. Reads task commits from `meta.md`
-2. Creates snapshot before reverting
-3. Runs `git revert` for each commit (newest first)
-4. Updates task status to `pending`
-5. Updates `meta.md` with revert record
-
-**Output**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏪ INTELLIGENT REVERT: Task Level
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Feature: payment-gateway
-Target: TASK-005 (Service layer implementation)
-
-📸 Creating snapshot...
-   Saved to: .rollback-history/20251222_103022
-
-🔍 Finding commits for TASK-005...
-   Found 2 commits:
-   - xyz789: feat(payment): TASK-005 - Implement PaymentService
-   - uvw012: feat(payment): TASK-005 - Add service tests
-
-⚠️  This will revert these commits:
-   • uvw012 (newest)
-   • xyz789
-
-[AskUserQuestion: "Continue?"] → User: Yes
-
-Reverting commits...
-   ✅ Reverted uvw012
-   ✅ Reverted xyz789
-
-Updating meta.md...
-   ✅ TASK-005 status: completed → pending
-   ✅ Revert record added
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Task Revert Complete
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-TASK-005 is now pending. To re-implement:
-  /sdd.build task TASK-005
-```
-
-### `--phase N` - Revert to Phase End
-
-Reverts all commits from tasks after phase N (keeps phase N intact).
-
-**Usage**:
-```bash
-/sdd.rollback --phase 2
-```
-
-**What happens**:
-1. Identifies all tasks in phases > N
-2. Collects their commits
-3. Creates snapshot
-4. Reverts all commits (newest first)
-5. Updates all affected task statuses
-
-**Output**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏪ INTELLIGENT REVERT: Phase Level
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Feature: payment-gateway
-Target: Revert to end of Phase 2
-
-📸 Creating snapshot...
-   Saved to: .rollback-history/20251222_103522
-
-🔍 Analyzing commits by phase...
-
-Phase 3 (Tasks):
-   ✅ Keep - No code commits in task planning
-
-Phase 4 (Implementation):
-   ⚠️  Revert - 8 tasks with 15 commits
-
-Commits to revert (newest first):
-   • aaa111 - TASK-012: E2E setup
-   • bbb222 - TASK-011: Integration tests
-   ... (13 more)
-
-⚠️  This will:
-   • Revert 15 commits from Phase 4
-   • Reset 8 tasks to pending
-   • Keep Phase 1, 2, 3 intact
-
-[AskUserQuestion: "Continue?"] → User: Yes
-
-Reverting commits...
-   ✅ Reverted 15 commits
-
-Updating meta.md...
-   ✅ 8 tasks reset to pending
-   ✅ Phase 4 status: in-progress → pending
-   ✅ Revert record added
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Phase Revert Complete
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Feature is now at end of Phase 2.
-To continue: /sdd.plan (re-generate tasks if needed)
-         or: /sdd.build (start implementation)
-```
-
-### Comparison: Standard vs Intelligent Revert
-
-| Aspect | Standard Rollback | Intelligent Revert |
-|--------|-------------------|-------------------|
-| Granularity | Phase boundaries only | Task or phase level |
-| Git awareness | Archives files only | Reverts actual commits |
-| Re-implementation | Must redo entire phase | Can redo single task |
-| History preservation | Archives to folder | Git revert (clean history) |
-| Use case | Major scope changes | Bug fixes, redo specific work |
-
-### When to Use Each
-
-| Scenario | Use |
-|----------|-----|
-| "Requirements changed completely" | `/sdd.rollback 1` (standard) |
-| "TASK-005 broke the build" | `/sdd.rollback --task TASK-005` |
-| "Need to redo implementation with different approach" | `/sdd.rollback --phase 3` |
-| "Just one task needs fixes" | `/sdd.rollback --task TASK-XXX` |
+> **Lazy-loaded**: When `--task TASK-XXX` or `--phase N` is present, Read `references/rollback-intelligent-revert.md` instead of standard phase rollback.
 
 ---
 

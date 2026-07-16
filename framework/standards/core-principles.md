@@ -11,11 +11,11 @@
 **Rule**: If you don't know something, explicitly say so. Never make up information.
 
 ```
-❌ BAD: "The data warehouse uses  MySQL with TimescaleDB extension."
+❌ BAD: "The data warehouse uses MySQL with a TimescaleDB extension."
 
 ✅ GOOD: "I don't know which database the data warehouse uses.
-         Let me query  and ask you:
-         a)  MySQL  b)  DataStore  c) Other"
+         Let me check the project's service catalog and ask you:
+         a) MySQL  b) A managed data-store service  c) Other"
 ```
 
 ---

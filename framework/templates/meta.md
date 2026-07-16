@@ -115,13 +115,13 @@ migration:
 
 <!--
 ⚠️ CONDITIONAL SECTION:
-- If app was created via  or scaffolded interactively → Keep and fill in
+- If app was created via a scaffolding tool/generator or scaffolded interactively → Keep and fill in
 - If existing repo (no scaffolding) → DELETE THIS SECTION
 -->
 
 ```yaml
 scaffolding:
-  created_via: null         #  | platform-get-interactive | none
+  created_via: null         # scaffold-cli | interactive-wizard | none
   technology: null          # java | go | python | node
   platform: null            # backend | web | android | ios | (auto-detect via detect-stack.sh)
   scaffolding_template: null # spring-maven | spring-gradle | fastapi | express | etc.
@@ -137,7 +137,7 @@ scaffolding:
     ping_endpoint: false    # PingController | /ping handler
 ```
 
-> **Note**: This section tracks  scaffolding performed during `/sdd.start`. Scaffolded projects remain "greenfield" because they have infrastructure but no implementation code.
+> **Note**: This section tracks project scaffolding performed during `/sdd.start`. Scaffolded projects remain "greenfield" because they have infrastructure but no implementation code.
 
 ---
 

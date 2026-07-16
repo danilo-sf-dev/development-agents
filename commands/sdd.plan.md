@@ -5,19 +5,7 @@ model: opus
 argument-hint: "[--approve]"
 ---
 
-### HOW TO READ THIS SKILL
-
-When you see a block like this:
-
-⛔ INVOKE TOOL (do not print this, CALL the tool):
-AskUserQuestion(questions=[{...}])
-
-This is a TOOL CALL you must execute, not content to display.
-
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
 
 # Command: /sdd.plan
 
@@ -55,13 +43,6 @@ This is a TOOL CALL you must execute, not content to display.
 **See also**: `/sdd.help plan` for detailed documentation
 
 ---
-
-CRITICAL: USER INTERACTION RULES
-When this skill shows JSON for AskUserQuestion, you MUST:
-  1. CALL the AskUserQuestion TOOL with that exact JSON
-  2. DO NOT print options using Bash (no echo, cat, printf)
-  3. DO NOT ask "Which option?" as text
-  4. Tables marked "REFERENCE ONLY" are for docs - do NOT print
 
 
 ## Pre-Requisites (BLOCKING)
@@ -196,21 +177,7 @@ Generate tasks following these rules:
 > platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}')
 > ```
 
-**If `platform = android` or `platform = ios` (Mobile)**:
-- ❌ DO NOT generate: Dockerfile task, Dockerfile.runtime task, /ping endpoint task, task
-- ✅ INSTEAD generate: mobile build validation task (`./gradlew test` or `xcodebuild test`)
-- ✅ INSTEAD generate: design system + mobile SDK compliance task (correct lib usage, no custom networking)
-
-> **MOBILE TASK DESCRIPTIONS — ML LIBRARY ENFORCEMENT**:
-> Every task description, title, and acceptance criterion that references a technical
-> capability MUST use the mobile SDK library name taken from the technical spec
-> (Section 3 — "mobile SDK Libraries"), which was itself derived from the skill's
-> `mobile SDK docs from PROJECT.md`.
->
-> The technical spec's "mobile SDK Libraries" section is the source of truth for task generation.
-> If a capability is covered by an mobile SDK library listed there → use that library name.
-> If a task description contains a generic Android/iOS ecosystem library instead of the
-> mobile SDK equivalent from the spec → replace it before writing `tasks.json`.
+> **Lazy-loaded**: When `platform = android` or `platform = ios`, Read `references/plan-mobile-tasks.md` for mobile mandatory task rules and SDK library enforcement.
 
 **If `platform = backend | web**:
 - IF `Dockerfile` missing → Generate creation task
@@ -473,22 +440,7 @@ AskUserQuestion(
 
 ---
 
-## `--view` Flag
-
-**WHEN** user runs `/sdd.plan --view`:
-
-1. Resolve tasks.json:
-   ```bash
-   TASKS_FILE=$(ls -1 sdd/wip/*/3-tasks/tasks.json 2>/dev/null | head -1)
-   ```
-2. Verify exists (if not: "No tasks.json found. Run /sdd.plan first.")
-3. Open viewer:
-   ```bash
-   bash development-agents/framework/tools/state/view-tasks.sh "$TASKS_FILE"
-   ```
-4. Confirm: "Tasks viewer opened in browser"
-
-Accepts explicit path: `/sdd.plan --view sdd/wip/my-feature/3-tasks/tasks.json`
+> **Lazy-loaded**: When `--view` is present, Read `references/plan-view.md` and follow it instead of the standard workflow.
 
 ---
 
@@ -543,7 +495,7 @@ Accepts explicit path: `/sdd.plan --view sdd/wip/my-feature/3-tasks/tasks.json`
 | Layer | Name | Purpose | GATEs |
 |-------|------|---------|-------|
 | **1** | Local | Works locally | `build`, `test`, `curl localhost` |
-| **2** | Integration | project services | CI Pipeline (RP MCP), service configs |
+| **2** | Integration | project services | CI Pipeline, service configs |
 | **3** | Quality | Validation | `project-*-expert` skills |
 
 **Layer 3 MUST contain exactly 3 tasks**:
@@ -556,15 +508,7 @@ Accepts explicit path: `/sdd.plan --view sdd/wip/my-feature/3-tasks/tasks.json`
 
 ---
 
-## Refinement Options (--refine)
-
-Available actions via AskUserQuestion:
-- Add new task
-- Modify existing task
-- Split large task
-- Delete task
-- Adjust complexity/priority
-- Done refining
+> **Lazy-loaded**: When `--refine` is present (or user chooses "Adjust tasks"), Read `references/plan-refine.md`.
 
 ---
 
@@ -609,20 +553,19 @@ fi
 
 **Project Type → Layer Rules**:
 
-| Aspecto | Prototype | MVP | Production |
+| Aspect | Prototype | MVP | Production |
 |---------|-----------|-----|------------|
-| **app** | `demo=true` | `demo=false` | `demo=false` |
 | **Layer 1** | Implementation | Implementation | Implementation |
 | **Unit Tests** | ❌ Skip | ⚠️ Critical only | ✅ Full coverage |
 | **Coverage target** | 0% | Varies | 80%+ |
 | **Layer 2** | project services (if any) | project services (if any) | project services (if any) |
-| **CI Pipeline (RP MCP)** | Optional | Required | Required |
+| **CI Pipeline** | Optional | Required | Required |
 | **Layer 3 Quality** | ❌ Skip | ✅ Yes | ✅ Yes |
-| **E2E/E2E** | ❌ Skip | ❌ Skip | ✅ Opt-in |
+| **E2E Tests** | ❌ Skip | ❌ Skip | ✅ Opt-in |
 | **Dockerfile + /ping** | ✅ Always | ✅ Always | ✅ Always |
 
-> **Layer 2 Explanation**: Tasks that require  platform services (KeyValueStore, MessageQueue,
-> Object Storage, etc.). If your app doesn't use project services, Layer 2 will be empty.
+> **Layer 2 Explanation**: Tasks that require external platform services (key-value store, message queue,
+> object storage, etc.). If your app doesn't use project services, Layer 2 will be empty.
 
 ---
 
@@ -695,13 +638,27 @@ Agent cannot execute deployments. Focus on code, tests, and configs.
 
 ## References
 
-- ****: `standards/mandatory-standards.md`
+- **Mandatory standards**: `standards/mandatory-standards.md`
 - **Technology selection**: `standards/tech-stack.md`
 - **Layer execution**: `sdd-validator` skill
 - **Quality gates**: `sdd-validator` skill
 - **Context management**: `context-guardian` skill
 - **E2E detection**: `genai-analyze-e2e.sh` → `extract-e2e.sh`
 - **E2E tests**: `sdd-large-test-writer` subagent
+
+---
+
+## Optional flags (lazy-loaded)
+
+Read the matching reference **only** when the flag or condition is present:
+
+| Flag / condition | Reference |
+|------------------|-----------|
+| `--view` | `references/plan-view.md` — replaces standard path |
+| `--refine` | `references/plan-refine.md` |
+| `platform = android \| ios` (task generation) | `references/plan-mobile-tasks.md` |
+| `(NEW)` infrastructure markers in spec | `references/infra-tasks.md` |
+| `platform.type == frontend-web` | `references/frontend-tasks.md` |
 
 ---
 

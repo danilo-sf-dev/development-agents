@@ -32,7 +32,7 @@ platform=$(echo "$stack_result" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
 | Check | Android | iOS | Backend/Web |
 |-------|---------|-----|-------------|
 | code compliance (Dockerfile, /ping) | ❌ Skip | ❌ Skip | ✅ Run |
-| CI Pipeline (RP MCP) | ❌ Skip | ❌ Skip | ✅ Run |
+| CI Pipeline | ❌ Skip | ❌ Skip | ✅ Run |
 | Mobile build validation | ✅ Run | ✅ Run | ❌ Skip |
 | design system/mobile SDK compliance | ✅ Run | ✅ Run | ❌ Skip |
 
@@ -87,12 +87,12 @@ Detect stack by checking for:
 | `pyproject.toml` | Python | `pip install -e .` | `pytest` |
 | `Cargo.toml` | Rust | `cargo build` | `cargo test` |
 
-### CI Pipeline Validation (Release Process MCP)
+### CI Pipeline Validation
 
-> Build, tests, coverage, and CI are validated by the Release Process MCP local CI pipeline.
+> Build, tests, coverage, and CI are validated by the project's local CI pipeline (whatever tool your org uses — a CI-as-a-service MCP, a Makefile target, or plain `mvn verify`/`npm run ci`/etc.).
 > This runs as build.md Step 6D. The sdd-validator skill no longer runs these checks independently.
 
-The RP MCP pipeline covers: compilation, test execution, coverage analysis (>=80%), dependency scan, and static analysis.
+The CI pipeline should cover: compilation, test execution, coverage analysis (>=80%), dependency scan, and static analysis.
 
 See `build.md` Step 6D for invocation details.
 
@@ -125,15 +125,15 @@ Do not hard-require a corporate Nexus/BOM version unless PROJECT.md says so.
 ### Summary
 | Check | Status | Details |
 |-------|--------|---------|
-| CI Pipeline (RP MCP) | PASSED/FAILED | build, test, coverage, deps, SCA |
-|  Compliance | PASSED/FAILED | X/5 checks |
+| CI Pipeline | PASSED/FAILED | build, test, coverage, deps, SCA |
+| Runtime compliance | PASSED/FAILED | X/5 checks |
 
-###  Compliance
-- [x] Dockerfile exists (your-registry/base-image
-- [x] Dockerfile.runtime exists (your-registry/base-image
-- [ ] /ping endpoint - MISSING
+### Runtime Compliance
+- [x] Dockerfile exists (org-approved base image, per `sdd/PROJECT.md`)
+- [x] Dockerfile.runtime exists (org-approved base image, per `sdd/PROJECT.md`)
+- [ ] Health check endpoint - MISSING (if required by your org)
 - [x] Health check configured
-- [x] .platform-config file present
+- [x] Org-specific platform config file present (if applicable)
 
 ### Verdict
 [ ] PASSED - All validations passed
@@ -149,7 +149,7 @@ Do not hard-require a corporate Nexus/BOM version unless PROJECT.md says so.
 2. **Be Clear**: Report pass/fail unambiguously
 3. **Be Specific**: Show exact errors and locations
 4. **No False Positives**: Verify findings before reporting
-5. **CI Pipeline (RP MCP) is MANDATORY**: Cannot skip for /sdd.finish
+5. **CI Pipeline is MANDATORY**: Cannot skip for `/sdd.finish` when required by PROJECT.md/project type
 6. **Iterate until passing**: Pipeline failures must be fixed
 
 ---
@@ -200,8 +200,8 @@ Tasks execute in layers. This validator runs at specific layers:
 
 | Step | Validator Role |
 |------|----------------|
-| code compliance | **Run code compliance checks** |
-| CI Pipeline | **Run CI via Release Process MCP** |
+| Runtime compliance | **Run project-configured compliance checks** |
+| CI Pipeline | **Run the project's configured CI pipeline** |
 | Dependencies | **Run dependency validation** |
 
 ### Layer 3: Quality Gates
@@ -234,7 +234,7 @@ Per-Task Completion:
 
 | Gate | Pass Criteria | Blocking? |
 |------|---------------|-----------|
-| CI Pipeline (RP MCP) | Build, tests, coverage (>=80%), deps, SCA pass | YES |
+| CI Pipeline | Build, tests, coverage (>=80%), deps, SCA pass | YES |
 | Performance | No critical findings | YES |
 | Security | No HIGH/CRITICAL vulns | YES |
 | Code Review | No blocking comments | NO |
@@ -251,7 +251,7 @@ After all gates run, report:
 | Build | PASSED | Clean compile |
 | Tests | PASSED | 15/15 passing |
 | Coverage | WARNING | 72% (threshold: 80%) |
-| CI Pipeline (RP MCP) | PASSED | CI simulation OK |
+| CI Pipeline | PASSED | Project CI pipeline passed |
 | Performance | PASSED | No N+1 queries found |
 | Security | PASSED | No vulnerabilities |
 | Code Review | PASSED | 2 suggestions (non-blocking) |

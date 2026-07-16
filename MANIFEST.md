@@ -36,9 +36,23 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 
 Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
 
+Medição atual da redução de verbosidade:
+- 20 comandos: **~10.240 linhas** (caminho comum enxuto; ramos raros lazy-loaded)
+- `commands/references/`: **45 referências** lazy-loaded (~2.080 linhas)
+- `framework/_shared/agent-instructions.md`: instruções compartilhadas — **1 referência** substituindo 18 cópias
+- `sdd.start.md`: 1.689 → **~856 linhas**
+- `sdd.spec.md`: 2.223 → **~1.419 linhas**
+- `sdd.plan.md`: ~690 → **~511 linhas**
+- `sdd.check.md`: ~800 → **~227 linhas**
+- `sdd.rollback.md`: ~360 → **~237 linhas**
+- `sdd.build.md`: ~975 → **~716 linhas**
+- **15 comandos** com tabela `Optional flags/conditions (lazy-loaded)` + roteamento flag-first
+
 ### framework/
 
 Templates, standards, tools e docs do SDD (necessário para os commands).
+
+- `framework/PIPELINE.md`: **fonte canônica** do diagrama/gates/modos do pipeline — `AGENTS.md`, `WORKFLOW.md`, `COMMANDS.md`, `QUICK_REFERENCE.md` e `skills/sdd-kit-expert/SKILL.md` linkam para lá em vez de duplicar o diagrama completo (reduz custo de manutenção ao adicionar/mudar gates).
 
 Paths do pack:
 - **Hub (este repo):** raiz — `agents/`, `commands/`, `framework/`
@@ -69,6 +83,25 @@ O que foi generalizado nesta passagem:
 4. Código e specs existentes no repo alvo
 
 Menções residuais a marcas legadas devem ser **zero** no pack, exceto nesta seção “Cleanup v1 / removed”.
+
+### Cleanup v2 (resíduo quebrado + consolidação de docs)
+
+Uma segunda varredura (além do Cleanup v1) encontrou **resíduo de find-and-replace malsucedido** deixado pela limpeza inicial: bullets com label vazio (`- ****: ...`), frases quebradas com espaço duplo (`in  Systems model`, `use  Secrets`), tabelas com células vazias, e referências a skills/artefatos que **não existem no pack** (`project-services-architect`, `project-snippets-expert`, `project-infra-operations`, `PROJECT_SERVICES.json`). Corrigido em ~25 arquivos (`commands/`, `framework/`, `agents/`, `skills/`):
+
+| Problema | Correção |
+|----------|----------|
+| Labels/frases vazias (`****`, `in  X`, `for  Y`) | Texto genérico correto gramaticalmente |
+| Regra de Dockerfile hardcoded (`your-registry/base-image`) | Condicional a `sdd/PROJECT.md` (só valida se o projeto declarar um prefixo) |
+| Catálogo de serviços internos proprietário (`GLOSSARY.md`, `FAQ.md`) | Removido — serviços vêm de `sdd/PROJECT.md` |
+| `Skill("project-services-architect")` / `project-snippets-expert` / `project-infra-operations` (não existem) | `Skill("sdd-system-designer")` / `Skill("sdd-implementer")` (skills reais) ou lógica condicional a `sdd/PROJECT.md` |
+| Auth `TIGER_TOKEN` + `mcp-remote-proxy` hardcoded (`CONFIGURATION.md`) | Instrução genérica — configure o que seu MCP exigir |
+| Diagrama de pipeline duplicado em 5+ docs | `framework/PIPELINE.md` (fonte canônica) + demais docs linkam |
+| `WORKFLOW.md` exemplo "Standard Feature" sem `/sdd.test` | Corrigido (bug real causado pela duplicação) |
+| `COMMANDS.md` "Total Commands: 17" e tabela sem `test/doctor/hub/install` | Corrigido para 20, categorias atualizadas |
+
+Validação: `rg -i 'meli|fury|nordic|everest|andes|furycloud|ltp\b'` (ignorando falsos positivos de "timeline") → zero hits fora do MANIFEST/RESUMO.
+
+**Gap conhecido, não corrigido nesta rodada**: `COMMANDS.md` documenta `/sdd.skill` (hooks de terceiros) que não existe como comando no pack, e não tem seções para `/sdd.doctor`, `/sdd.hub`, `/sdd.install`. Decidir se `/sdd.skill` é uma feature a implementar ou doc morta a remover.
 
 ### Commit workflow
 
@@ -102,8 +135,6 @@ No **projeto alvo**, append em `.gitignore` — `development-agents/`, `.cursor/
 
 ## Ainda não feito
 
-- [ ] Gate **tests-first** (`/sdd.test` + approve antes do build)
-- [ ] Reordenar build: testes → approve → implement
 - [ ] Profiles opcionais de stack (`profiles/java`, `profiles/nextjs`, …)
 
 ## Como validar
