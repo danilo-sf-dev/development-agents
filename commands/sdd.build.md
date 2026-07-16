@@ -82,8 +82,12 @@ Before adding a library: run project dependency-security scanner if configured i
 
 ### Detection (per task)
 
-Diff approved files from `4-tests/tests-manifest.json`. If any touched → STOP, AskUserQuestion (revert | escalate `/sdd.test --refine` | show diff). Never auto-approve in Express.
-> **ONLY IF** needing bash + AskUserQuestion payload:
+Run hard guard first, then soft diff fallback:
+```bash
+bash development-agents/framework/tools/guard-approved-tests.sh check --root .
+```
+If exit `1` OR approved files in diff → STOP, AskUserQuestion (revert | escalate `/sdd.test --refine` | show diff). Never auto-approve in Express.
+> **ONLY IF** needing AskUserQuestion payload or bash fallback:
 > Read `references/build-anti-gaming-detection.md`.
 
 ## Mandatory Code Review Protocol (short)

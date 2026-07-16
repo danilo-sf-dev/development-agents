@@ -1,0 +1,19 @@
+#!/bin/sh
+# SDD hard gate — block commits that modify approved tests (Gate 2.5)
+# Installed by development-agents install.sh / install.ps1
+# Marker: sdd-guard-approved-tests
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+GUARD=""
+
+if [ -f "$ROOT/development-agents/framework/tools/guard-approved-tests.sh" ]; then
+  GUARD="$ROOT/development-agents/framework/tools/guard-approved-tests.sh"
+elif [ -f "$ROOT/framework/tools/guard-approved-tests.sh" ]; then
+  GUARD="$ROOT/framework/tools/guard-approved-tests.sh"
+fi
+
+if [ -n "$GUARD" ]; then
+  bash "$GUARD" check --root "$ROOT" --staged-only || exit 1
+fi
+
+exit 0

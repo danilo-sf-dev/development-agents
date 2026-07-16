@@ -130,7 +130,9 @@ All under `sdd/wip/[feature]/4-tests/`:
       "file": "tests/unit/UserService.test.ts",
       "covers": ["TASK-002", "AC-1", "US-1"],
       "edge_cases": ["empty input", "invalid id"],
-      "expected_initial_result": "fail"
+      "expected_initial_result": "fail",
+      "sha256": null,
+      "snapshotted_at": null
     }
   ],
   "red_verified": false,
@@ -247,8 +249,15 @@ AskUserQuestion(
 
 ### Step 7: On Approval (`--approve` or user confirms)
 
-1. Set `tests-manifest.json → status: approved`
-2. Update `meta.md`:
+1. **Hard gate snapshot** (deterministic — not optional):
+   ```bash
+   bash development-agents/framework/tools/guard-approved-tests.sh snapshot \
+     --root . \
+     --feature sdd/wip/[feature]
+   ```
+   Writes `sha256` per test file into `tests-manifest.json`. Pre-commit + CI use this to block edits during `/sdd.build`.
+2. Set `tests-manifest.json → status: approved`
+3. Update `meta.md`:
    ```yaml
    stages:
      tests:
@@ -258,7 +267,9 @@ AskUserQuestion(
        red_verified: true
    Current Stage: implementation
    ```
-3. **Do NOT** start implementation — user runs `/sdd.build`
+4. **Do NOT** start implementation — user runs `/sdd.build`
+
+> **Soft vs hard**: `meta.md` approval is the soft gate (agent convention). The snapshot + pre-commit/CI guard is the **hard** gate — see `framework/HARD_GATES.md`.
 
 ### Step 8: Interactive Next Steps
 

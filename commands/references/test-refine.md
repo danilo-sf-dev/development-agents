@@ -7,6 +7,16 @@
 - User request to adjust tests before implementation
 - **Escalation from `/sdd.build`**: implementer flagged an approved test as incorrect instead of silently editing it (see "Approved Tests Are Immutable" in `sdd.build.md`)
 
+## Unlock hard gate (required first step)
+
+Before editing any test file, set manifest back to editable state:
+
+1. `tests-manifest.json → status: in-progress` (NOT `approved` — hard guard blocks while approved)
+2. Increment `revision`, set `revised_reason`
+3. Update `meta.md → stages.tests.status: in-progress`
+
+Only after human re-approval + fresh snapshot does the hard guard re-lock files.
+
 ## Allowed actions
 
 - Add edge case test

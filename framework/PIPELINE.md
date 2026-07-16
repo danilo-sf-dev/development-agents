@@ -33,12 +33,14 @@ graph LR
 
 ## Gates
 
-| Gate | Command | What is approved |
-|------|---------|-------------------|
-| 1 | `/sdd.spec` | Functional + technical spec |
-| 2 | `/sdd.plan` | Task breakdown & implementation strategy |
-| 2.5 | `/sdd.test` | Failing tests (red phase) — approved BEFORE implementation |
-| 3 | `/sdd.finish` | Final validation & archive |
+| Gate | Command | What is approved | Hard enforcement |
+|------|---------|------------------|------------------|
+| 1 | `/sdd.spec` | Functional + technical spec | Soft only (meta.md) |
+| 2 | `/sdd.plan` | Task breakdown & implementation strategy | Soft only (tasks.json) |
+| 2.5 | `/sdd.test` | Failing tests (red phase) — approved BEFORE implementation | **Hard**: `guard-approved-tests.sh` + pre-commit + CI |
+| 3 | `/sdd.finish` | Final validation & archive | Soft only |
+
+> Hard gate details: [`framework/HARD_GATES.md`](./HARD_GATES.md)
 
 ## Execution modes
 
