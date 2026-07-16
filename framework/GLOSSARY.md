@@ -230,19 +230,12 @@ Sequence of phases and commands in SDD development.
 
 ---
 
-## -Specific Services
+## Project-Specific Services
 
-| Service | Full Name | Description |
-|---------|-----------|-------------|
-| MessageQueue | MessageQueue | 's managed message queue service |
-| Cache |  Cache | 's managed Valkey/Redis caching service |
-| DS | Document Search | 's search service (legacy) |
-| GenIA | GenIA Gateway | 's LLM inference gateway |
-| NoSQL | NoSQL | 's document database service |
-| OS | Object Storage | 's file/blob storage service |
-| QKVS | Queryable KeyValueStore | KeyValueStore with query capabilities |
-| Streams |  Streams | 's CDC streaming service |
-| Workqueues |  Workqueues | 's distributed task queue service |
+This framework does not hardcode a catalog of internal platform services — every org has
+different ones. Document your org's actual services (message queue, cache, key-value store,
+object storage, etc.) in `sdd/PROJECT.md`, and the `sdd-system-designer` skill will use that
+list when recommending services during `/sdd.spec technical`.
 
 ---
 

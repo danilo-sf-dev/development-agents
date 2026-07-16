@@ -638,7 +638,7 @@ Agent cannot execute deployments. Focus on code, tests, and configs.
 
 ## References
 
-- ****: `standards/mandatory-standards.md`
+- **Mandatory standards**: `standards/mandatory-standards.md`
 - **Technology selection**: `standards/tech-stack.md`
 - **Layer execution**: `sdd-validator` skill
 - **Quality gates**: `sdd-validator` skill

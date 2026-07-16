@@ -42,32 +42,24 @@ $ sdd-kit help              # Show help
 | Check | Rule | If Violated |
 |-------|------|-------------|
 | **Working Directory** | `pwd` must NOT contain `.sdd-kit` | `cd ..` to project root |
-| **Docker Images** | ONLY `your-registry/base-image | Deployment will FAIL |
-| **platform-services plugin** | ALWAYS use when "" is mentioned | Invoke `Skill("sdd-system-designer")` for selection or `Skill("sdd-implementer")` for SDK |
-| ** App** | App must exist in your platform | Create at the project platform console (from PROJECT.md) |
+| **Docker base image** | Use the prefix/registry declared in `sdd/PROJECT.md` (if your org mandates one) | Build/CI will likely fail org policy checks |
+| **Internal services/plugins** | Check `sdd/PROJECT.md` for org-specific skills/services before designing a new solution | Invoke the project's designated skill (e.g. `sdd-system-designer`, `sdd-implementer`) |
+| **App/project registration** | If your platform requires app registration, it must exist before `/sdd.start` | Register it per your org's onboarding docs (see `sdd/PROJECT.md`) |
 
-**Docker Images - ONLY USE THESE**:
-
-| Language | Build Image | Runtime Image |
-|----------|-------------|---------------|
-| **Java 21** | `distroless-java-dev:21-mini` | `distroless-java:21-mini` |
-| **Go 1.25** | `distroless-go-dev:1.25-mini` | `distroless-go:stable-mini` |
-| **Node.js 24** | `distroless-node-dev:24-mini` | `distroless-node:24-mini` |
-| **Python 3.13** | `distroless-python-dev:3.13-mini` | `distroless-python:3.13-mini` |
-
-> **All images MUST start with**: `your-registry/base-image
-> If it doesn't start with that prefix, it's WRONG. No exceptions.
+> Docker base images, mandatory internal services, and other org-specific policies are **not hardcoded** in this framework — declare them once in `sdd/PROJECT.md` and agents will enforce what's declared there.
 
 ---
 
 ## Workflow by Mode
+
+> Canonical pipeline, gates, and diagram: [`framework/PIPELINE.md`](./PIPELINE.md)
 
 ### Express (1 command)
 ```
 /sdd.go "feature description"    → Complete feature automatically
 ```
 
-### Standard (5 commands)
+### Standard (6 commands)
 ```
 /sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
@@ -495,8 +487,8 @@ Use `/sdd.check --sync` to **verify consistency** between specs, tasks, and code
 | Need to change spec | `/sdd.spec --iterate "change"` |
 | Need external context | `/sdd.spec --include "url or path"` |
 | MCP not working | Check `.mcp.json`, see MCP_SETUP_GUIDE.md |
-|  auth expired | `` (opens browser) |
-| App not found in  | Create at the project platform console (from PROJECT.md) first |
+| Platform auth expired | Re-authenticate per your org's login flow |
+| App/project not registered on your platform | Register it per your org's onboarding docs (see `sdd/PROJECT.md`) first |
 | CI Pipeline fails | Fix issues, retry before `/sdd.finish` |
 
 ---

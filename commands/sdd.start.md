@@ -1027,7 +1027,7 @@ AskUserQuestion(
 - **Lite spec template**: `development-agents/framework/templates/lite/spec.md`
 - **Gitignore templates**: `development-agents/framework/templates/gitignore/`
 - **PROJECT.md wizard**: `sdd-project-wizard` subagent
-- ****: `standards/mandatory-standards.md`
+- **Mandatory standards**: `standards/mandatory-standards.md`
 
 ---
 

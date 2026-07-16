@@ -878,8 +878,8 @@ Can return to specs if discoveries require changes:
    ┌────┴────┐
    │         │
    ▼         ▼
- Layer 1   Layer 2   Layer 3
- (Local)   ()    (Quality)
+ Layer 1     Layer 2       Layer 3
+ (Local)   (CI Pipeline)  (Quality)
    │         │         │
    └────┬────┴────┬────┘
         ▼         ▼
@@ -896,7 +896,7 @@ Can return to specs if discoveries require changes:
 - **Quality gates**: `sdd-validator` skill
 - **Layer execution**: `sdd-validator` skill
 - **Context management**: `context-guardian` skill
-- ****: `standards/mandatory-standards.md`
+- **Mandatory standards**: `standards/mandatory-standards.md`
 - **Coding standards**: `standards/coding-standards.md`
 - **Subagents (backend)**: `sdd-implementer`, `sdd-validator-runner` (tests written in `/sdd.test`)
 - **Subagents (frontend-web)**: `sdd-implementer`, `sdd-validator-runner` (tests written in `/sdd.test`)

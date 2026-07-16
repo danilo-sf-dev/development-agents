@@ -129,11 +129,11 @@ Do not hard-require a corporate Nexus/BOM version unless PROJECT.md says so.
 | Runtime compliance | PASSED/FAILED | X/5 checks |
 
 ### Runtime Compliance
-- [x] Dockerfile exists (your-registry/base-image
-- [x] Dockerfile.runtime exists (your-registry/base-image
-- [ ] /ping endpoint - MISSING
+- [x] Dockerfile exists (org-approved base image, per `sdd/PROJECT.md`)
+- [x] Dockerfile.runtime exists (org-approved base image, per `sdd/PROJECT.md`)
+- [ ] Health check endpoint - MISSING (if required by your org)
 - [x] Health check configured
-- [x] .platform-config file present
+- [x] Org-specific platform config file present (if applicable)
 
 ### Verdict
 [ ] PASSED - All validations passed

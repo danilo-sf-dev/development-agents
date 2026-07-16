@@ -454,13 +454,13 @@ Before ANY `/sdd.*` command:
 | Check | Rule |
 |-------|------|
 | **Working Directory** | NEVER inside `.development-agents/` |
-| ** Images** | ONLY `your-registry/base-image |
-| **Dockerfiles** | ONLY FROM line, nothing else |
-| **** | ALWAYS query when "" mentioned |
-| **Dependencies** | NEVER invent - query  for exact coordinates |
-| **SDK Methods** | NEVER invent - query  for exact API |
+| **Docker base image** | Use the prefix declared in `sdd/PROJECT.md` (if your org mandates one) |
+| **Dockerfiles** | ONLY FROM line, nothing else (if your org's convention requires it) |
+| **Internal services/plugins** | Check `sdd/PROJECT.md` for org-specific services before designing a new solution |
+| **Dependencies** | NEVER invent versions/coordinates — verify against the package manifest or registry |
+| **SDK Methods** | NEVER invent APIs — verify against the actual SDK/library docs |
 | **Tech Stack** | NEVER suggest different tech (Go→Java, Python→Node) - see `core-principles.md` |
-| **LLM Calls** | NEVER call LLM providers directly - ALWAYS use GenIA Gateway |
+| **LLM/AI provider calls** | If your org mandates a gateway/proxy for LLM calls (declared in `sdd/PROJECT.md`), follow it instead of calling providers directly |
 
 ---
 
@@ -559,7 +559,7 @@ After exiting Plan Mode, **ALWAYS**:
 
 ### Detection
 
-When reading a snippet file from `project-snippets-expert`, check for this marker at the top:
+When reading a snippet file returned by `Skill("sdd-implementer")`, check for this marker at the top:
 
 ```markdown
 > **🔒 EXPERT-VALIDATED** | Reviewed: YYYY-MM-DD | Author: reviewer_name | Commit: xxxxxxx
@@ -588,29 +588,29 @@ Validation markers themselves can be added/updated without confirmation (meta-op
 
 ### Validation Registry
 
-Expert-validated snippets are now managed via the `sdd-implementer` plugin (platform-services@tech-plugins-marketplace). The plugin is the source of truth — no local sync check is required.
+Expert-validated snippets are managed via the `sdd-implementer` skill. It is the source of truth — no local sync check is required.
 
 ---
 
-## 📚  Documentation Priority
+## 📚 Service Documentation Priority
 
-> **REGLA**: `sdd-implementer` (plugin) es la única fuente de  SDK docs.
+> **REGLA**: `sdd-implementer` es la única fuente de docs de SDKs de servicios del proyecto.
 
 ### Orden de Prioridad
 
 | Paso | Fuente | Cuándo |
 |------|--------|--------|
-| 1️⃣ | `sdd-implementer` plugin | **SIEMPRE primero** - cubre TODOS los servicios con docs oficiales |
-| 2️⃣ | Return PARTIAL | Si el plugin no cubre el servicio o el snippet es insuficiente |
+| 1️⃣ | `sdd-implementer` skill | **SIEMPRE primero** - cubre TODOS los servicios con docs oficiales |
+| 2️⃣ | Return PARTIAL | Si no cubre el servicio o el snippet es insuficiente |
 
 ### Rationale
 
-- **sdd-implementer**: Tiene snippets para TODOS los servicios  con documentación oficial actualizada y vive en el plugin (siempre fresco).
+- **sdd-implementer**: Tiene snippets para TODOS los servicios del proyecto, con documentación oficial actualizada.
 
 ### Reglas
 
 1. **SIEMPRE** empezar con `Skill("sdd-implementer")`
-2. **NUNCA** usar WebSearch para documentación 
+2. **NUNCA** usar WebSearch para documentación de servicios internos
 3. Si el plugin no cubre → return PARTIAL y sugerir documentación oficial
 
 ---
@@ -774,20 +774,22 @@ Before asking: Did user already mention this? Can I infer from context?
 
 ---
 
-##  Docker Images
+## Docker Base Images (only if your org enforces a policy)
 
-> **ONLY these images are allowed**
+> Not every project requires this. If `sdd/PROJECT.md` declares a mandatory base-image prefix, agents MUST use only images with that prefix.
+
+Illustrative example (replace with what **your** `sdd/PROJECT.md` actually declares):
 
 | Language | Image |
 |----------|-------|
-| Java 21 | `your-registry/base-image |
-| Node.js 24 | `your-registry/base-image |
-| Go 1.25 | `your-registry/base-image |
-| Python 3.13 | `your-registry/base-image |
+| Java 21 | `<org-registry>/base-image-java:21` |
+| Node.js 24 | `<org-registry>/base-image-node:24` |
+| Go 1.25 | `<org-registry>/base-image-go:1.25` |
+| Python 3.13 | `<org-registry>/base-image-python:3.13` |
 
 ```dockerfile
-# ✅ CORRECT - Dockerfile must be ONLY this line
-FROM your-registry/base-image
+# Dockerfile should reference only the org-approved base image
+FROM <org-registry>/base-image-<lang>:<version>
 ```
 
 **Full requirements**: [mandatory-standards.md](standards/mandatory-standards.md#1-dockerfile--dockerfile-runtime---mandatory)
@@ -796,7 +798,7 @@ FROM your-registry/base-image
 
 ## 🔐 Secrets Management (BLOCKER)
 
-> **CRITICAL**: ALL secrets MUST use  Secrets. Hardcoded secrets BLOCK deployment.
+> **CRITICAL**: ALL secrets MUST use your org's secrets manager. Hardcoded secrets BLOCK deployment.
 
 ### What MUST Use  Secrets
 
@@ -824,7 +826,7 @@ FROM your-registry/base-image
 ### Correct Pattern
 
 ```java
-// ✅ CORRECT: Read from environment (injected by  Secrets)
+// ✅ CORRECT: Read from environment (injected by your org's secrets manager)
 String dbPassword = System.getenv("DATABASE_PASSWORD");
 
 // ❌ WRONG: NEVER hardcode secrets
@@ -857,13 +859,13 @@ GET /ping → "pong" (status 200)
 
 | Endpoint | Why Wrong |
 |----------|-----------|
-| `/ping/liveness` |  maps `/ping` to liveness probe |
-| `/ping/readiness` |  maps `/ping` to readiness probe |
-| `/health/live` | Not  standard |
-| `/health/ready` | Not  standard |
-| `/healthz` | K8s style - not for  |
+| `/ping/liveness` | Your platform already maps `/ping` to the liveness probe |
+| `/ping/readiness` | Your platform already maps `/ping` to the readiness probe |
+| `/health/live` | Not this project's standard (if it uses `/ping`) |
+| `/health/ready` | Not this project's standard (if it uses `/ping`) |
+| `/healthz` | K8s style - not this project's convention (if it uses `/ping`) |
 
-**Rule**: Create ONLY `/ping`.  infrastructure handles everything else.
+**Rule**: If your platform's convention is a single `/ping` health endpoint (per `sdd/PROJECT.md`), create ONLY `/ping` — the platform infrastructure handles the rest.
 
 **Full requirements**: [mandatory-standards.md](standards/mandatory-standards.md#2-ping-endpoint---mandatory)
 
@@ -984,7 +986,7 @@ Automatic via hooks. No manual logging required.
 |--------|--------|
 | "check context" | `Skill(skill="context-guardian")` |
 | "compact context" | `bash ~/.development-agents/tools/genai/genai-compact-state.sh` |
-| "" mentioned | Invoke `Skill("sdd-implementer")` (plugin) first |
+| Org-specific internal service/plugin mentioned | Check `sdd/PROJECT.md`, then invoke the project's designated skill (e.g. `sdd-implementer`) first |
 
 ---
 

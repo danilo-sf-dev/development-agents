@@ -206,9 +206,9 @@ They are complementary, not overlapping:
 
 Check:
 1. Are you in the project root? (not inside `.development-agents/`)
-2. Is the  app created? (`project platform info`)
-3. Are you logged in? (``)
-4. Is VPN connected?
+2. If your org requires app registration, is the app created? (check per `sdd/PROJECT.md`)
+3. Are you logged in / authenticated with any required internal tooling?
+4. Is VPN connected (if your org's internal services require it)?
 
 ### How do I see my current features?
 
@@ -385,60 +385,45 @@ Then review specs and try again.
 
 ---
 
-##  Integration
+## Platform / App Registration
 
-### "App not found in " error
+### "App not found" error
 
-The app must exist in  before using the framework:
-1. Go to https://the project platform console (from PROJECT.md)/
-2. Create the application
+If your organization requires app/project registration on an internal platform before using the framework:
+1. Go to your platform's console (referenced in `sdd/PROJECT.md`)
+2. Create/register the application
 3. Run `/sdd.start` again
 
 ### "Not logged in" error
 
-```bash
-
-```
-
-This opens a browser for authentication. After login, retry your command.
+Run your org's login/authentication command for the platform or MCP server in question
+(see `sdd/PROJECT.md` or the MCP server's own docs). This typically opens a browser for
+authentication. After login, retry your command.
 
 ### How does the framework discover existing project services?
 
 During `/sdd.spec technical`, when the architecture recommends project services
-(KeyValueStore, MessageQueue, Cache, etc.), the framework:
-1. Runs `project services <type> list` (CLI first,  for services without CLI list)
-2. Shows you existing instances
+(key-value store, message queue, cache, etc.), the framework:
+1. If your org declares a discovery CLI/skill in `sdd/PROJECT.md`, runs it to list existing instances
+2. Shows you existing instances (if any tooling is available)
 3. Lets you choose: use existing or create new
-4. If "create new": `/sdd.build` runs the creation automatically
+4. If "create new": `/sdd.build` runs the creation automatically (following your org's conventions)
 
-Requirements: platform CLI installed, logged in, VPN connected.
-If platform CLI unavailable, falls back to manual service naming.
+If no discovery tooling is declared, this step is skipped and services are documented manually.
 
 ### Which project services should I use?
 
-Use the **project-services-architect** skill which classifies your needs and loads expert reference data for 6 service families:
+Use the **`sdd-system-designer`** skill, which classifies your capability needs (async processing,
+key-value storage, caching, object storage, etc.) and recommends candidates with trade-offs based
+on what's declared in `sdd/PROJECT.md` and detected in the repo.
 
-| Service Family | Services |
-|----------------|----------|
-| Database | KeyValueStore, QKVS, Cache, MySQL, PostgreSQL, NoSQL, NewSQL, GraphDB, TSMetrics, Oracle, BigQuery, DS (12) |
-| Communication | MessageQueue, Streams, Workqueues, Director, Jobs, Schedule Engine, Verdi Flows, Mails, Template Processing (9) |
-| Storage | Object Storage, Audits, Media Storage, Entity Tracing (4) |
-| Config | Config, Secrets, Feature Flags, Experiments, Rules Engine, Business Configs (6) |
-| Runtime | Lock, Quotas, Rate Limit, CKaaS,  Schemas, Sequences ⚠️, Event Sourcing (7) |
-| AI | GenIA Gateway (LLM inference), VectorDB (RAG/embeddings) (2) |
+For code implementation snippets, invoke `Skill("sdd-implementer")` to get ready-to-use examples
+for the services actually chosen.
 
-For code implementation snippets, the **project-snippets-expert** provides ready-to-use examples.
+### How do I run tests in CI?
 
-The architect classifies your needs first, then loads the appropriate reference domain.
-Always query  for current documentation.
-
-### How do I run tests in ?
-
-```bash
-project CI test
-```
-
-This runs tests in a container matching production environment.
+Use whatever CI entrypoint your project already has (e.g. `make test`, `npm test`, a CI script
+declared in `sdd/PROJECT.md`). This framework does not assume a specific CI tool.
 
 ---
 
@@ -548,10 +533,8 @@ Yes. The framework:
 1. `/sdd.help` - In-tool help
 2. This FAQ
 3. `RECOVERY.md` - Error recovery
-4. **Slack Channels**:
-   - `#open-beta-sdd-kit` - Framework usage and testing
-   - `#spec-driven-development` - SDD methodology discussions
-5. **[ AI](https://the project platform console (from PROJECT.md)/platform-ai)**: Ask questions about the documentation interactively
+4. Your org's internal support channels (Slack/Teams/etc.), if any
+5. Your org's internal AI/docs assistant, if any
 
 ### How do I report bugs?
 

@@ -298,18 +298,18 @@ Fix:
 5. Consider adding pre-commit hooks to prevent data loss
 ```
 
-### Scenario 5:  Compliance Failing at Complete
+### Scenario 5: Compliance Checks Failing at Complete
 
 ```
-Problem: /sdd.finish blocked by  validation.
+Problem: /sdd.finish blocked by compliance validation.
 
 Fix:
-1. Run  validator: bash .development-agents/tools/validation/validate-code.sh .
+1. Run the code validator: bash .development-agents/tools/validation/validate-code.sh .
 2. Review each error
 3. Common fixes:
-   - Add Dockerfile with  image
-   - Add Dockerfile.runtime with  image
-   - Implement /ping endpoint
+   - Add Dockerfile with the org-approved base image (see sdd/PROJECT.md)
+   - Add Dockerfile.runtime with the org-approved base image (see sdd/PROJECT.md)
+   - Implement health check endpoint (if required)
 4. Re-run complete command
 ```
 
@@ -432,7 +432,7 @@ bash .development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/$fe
 echo "=== Validating Tasks ==="
 bash .development-agents/tools/validation/validate-tasks.sh sdd/wip/$feature
 
-echo "=== Validating  Compliance ==="
+echo "=== Validating Code Compliance ==="
 bash .development-agents/tools/validation/validate-code.sh .
 ```
 

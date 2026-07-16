@@ -6,15 +6,19 @@ Complete reference for all `/sdd.` commands.
 
 ## Command Overview
 
-**Total Commands**: 17
+**Total Commands**: 20
+
+> Canonical pipeline order and gates: [`framework/PIPELINE.md`](./PIPELINE.md)
 
 | Category | Commands |
 |----------|----------|
 | **Express** | `go` |
 | **Setup** | `project` |
-| **Core Workflow** | `start`, `spec`, `plan`, `build`, `finish` |
-| **Utilities** | `check`, `list`, `rollback`, `cancel`, `fix`, `backlog`, `skill`, `help` |
+| **Core Workflow** | `start`, `spec`, `plan`, `test`, `build`, `finish` |
+| **Utilities** | `check`, `list`, `rollback`, `cancel`, `fix`, `backlog`, `help`, `doctor` |
 | **Import & Analysis** | `import`, `reverse-eng` |
+| **Multi-app** | `hub` |
+| **Installation** | `install` |
 
 ---
 
@@ -273,7 +277,7 @@ All 17 command files follow a standard structure for consistency:
 **Layer-based execution**:
 ```
 📦 Layer 1 (Local) → commit
-☁️ Layer 2 () → commit
+☁️ Layer 2 (CI Pipeline) → commit
 🔒 Layer 3 (Quality) → commit
 <signal>ALL_TASKS_COMPLETE</signal>
 ```
@@ -497,7 +501,7 @@ During `/sdd.build`, when improvement patterns are detected (TODO comments, code
 ```
 
 **What it does** (4 phases):
-- **Phase 1**: Extract raw data from  AND code (both mandatory)
+- **Phase 1**: Extract raw data from existing docs/specs AND code (both mandatory)
 - **Phase 2**: Basic cross-validation, calculate coverage %
 - **Phase 2.5**: Deep cross-validation (field-by-field comparison)
 - **Phase 3**: Synthesize specs with 5-level confidence indicators

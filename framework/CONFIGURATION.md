@@ -256,30 +256,16 @@ project_type: prototype     # This feature only
 
 ## MCP Environment Variables
 
-Some MCP servers require authentication tokens set as environment variables.
+Some MCP servers require authentication tokens set as environment variables. This framework
+does not hardcode a specific auth token/proxy — configure whatever your org's internal MCP
+servers require (declare it in `sdd/PROJECT.md` if agents need to know about it).
 
-### TIGER_TOKEN ()
-
-**Required for**:  ( app management)
-
- uses Tiger token for authentication. This is handled by **mcp-remote-proxy >= 0.6.0**:
-
-**How Authentication Works**:
-
-1. **mcp-remote-proxy** handles token injection automatically
-2. **Token acquisition**: The proxy calls `project auth token` internally when needed
-3. **Token refresh**: The proxy handles token expiration and re-acquisition
-
-**Prerequisites**:
-- `mcp-remote-proxy >= 0.6.0` installed (`pip install --upgrade mcp-remote-proxy`)
-- User must be logged in to  CLI (``)
-
-**No agent-level token management required** - the proxy handles all authentication.
-
-**Note**: If  authentication fails repeatedly:
-- Verify you're logged in: ``
-- Upgrade proxy: `pip install --upgrade mcp-remote-proxy`
-- You can still use "local validation mode" (see `/sdd.start` Step 1.5b.2)
+**Typical pattern** (adapt to your org):
+1. An auth proxy or CLI handles token injection/refresh automatically, if your org provides one
+2. Otherwise, set the required environment variable(s) per your MCP server's documentation
+3. If authentication fails repeatedly, verify you're logged in with your org's tooling and
+   check the MCP server's own docs for troubleshooting
+4. You can still use "local validation mode" (see `/sdd.start` Step 1.5b.2) if MCP auth is unavailable
 
 ---
 

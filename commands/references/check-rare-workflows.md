@@ -136,46 +136,42 @@ Validates technical compliance (build, tests, linting, dependencies) and propose
 
 ### What It Checks
 
-1. ** Compliance** (type-aware based on `.platform-config` file)
-   - Dockerfile exists and uses valid  base image
+1. **Platform Compliance** (type-aware, based on `sdd/PROJECT.md` conventions and any org-specific config file the project uses)
+   - Dockerfile exists and uses the base image declared in `sdd/PROJECT.md` (if your org mandates one)
    - Dockerfile.runtime exists (only for web services, NOT for CLIs)
    - Version consistency across files
-   - /ping endpoint implemented (only for web services, NOT for CLIs)
+   - Health check endpoint implemented (only for web services, NOT for CLIs, and only if required)
 
-   > **IMPORTANT**: Read `.platform-config` file to determine application type. If `type: cli`, skip Dockerfile.runtime and /ping checks.
+   > **IMPORTANT**: Read the project's app-type config (if one exists, per `sdd/PROJECT.md`) to determine application type. If `type: cli`, skip Dockerfile.runtime and health-check checks.
 
-2. **🔐 Secrets Platform compliance** (BLOCKER)
+2. **🔐 Secrets Compliance** (BLOCKER)
    - No hardcoded secrets in source code
    - No secrets in configuration files
    - No credentials in Dockerfiles
    - Secrets documented in technical spec
 
-   #### Dockerfile Image Validation CRITICAL
+   #### Dockerfile Image Validation (only if `sdd/PROJECT.md` declares a mandatory base-image prefix)
 
-   **Validation Rule**: ALL `FROM` statements MUST start with `your-registry/base-image
+   **Validation Rule**: ALL `FROM` statements MUST start with the prefix declared in `sdd/PROJECT.md`.
 
    ```bash
-   # Check: Extract FROM statements and verify prefix
-   grep -E "^FROM " Dockerfile Dockerfile.runtime 2>/dev/null | \
-     grep -v "your-registry/base-image" && echo "❌ INVALID IMAGE" || echo "✅ OK"
+   # Check: Extract FROM statements and verify against the prefix declared in sdd/PROJECT.md
+   BASE_IMAGE_PREFIX="$(grep -A1 'base_image' sdd/PROJECT.md 2>/dev/null | tail -1 | xargs)"
+   if [ -n "$BASE_IMAGE_PREFIX" ]; then
+     grep -E "^FROM " Dockerfile Dockerfile.runtime 2>/dev/null | \
+       grep -v "$BASE_IMAGE_PREFIX" && echo "❌ INVALID IMAGE" || echo "✅ OK"
+   else
+     echo "ℹ️ No mandatory base-image prefix declared in sdd/PROJECT.md — skipping"
+   fi
    ```
 
-   **Allowed Images** (ONLY THESE):
-
-   | Language | Build Image | Runtime Image |
-   |----------|-------------|---------------|
-   | Java 21 | `your-registry/base-image | `your-registry/base-image |
-   | Node.js 24 | `your-registry/base-image | `your-registry/base-image |
-   | Go 1.25 | `your-registry/base-image | `your-registry/base-image |
-   | Python 3.13 | `your-registry/base-image | `your-registry/base-image |
-
-   **Example Error Output**:
+   **Example Error Output** (when `sdd/PROJECT.md` declares a prefix):
    ```
    ❌ Dockerfile: INVALID BASE IMAGE
       Found: FROM eclipse-temurin:21-jdk
-      Required: Image MUST start with "your-registry/base-image"
+      Required: Image MUST start with the prefix declared in sdd/PROJECT.md
 
-      Fix: Use your-registry/base-image
+      Fix: Use the org-approved base image
    ```
 
 3. **Tests**
@@ -333,7 +329,7 @@ sdd/
 | `## Architecture` | v1.0.0 | Must exist |
 | `## API Contracts` | v1.0.0 | Must exist if feature has endpoints |
 | `## Data Model` | v1.0.0 | Must exist if feature has persistence |
-| `##  Services` | v1.1.4 | Must exist (-first) |
+| `## Project Services` | v1.1.4 | Must exist if the feature uses project services |
 | `## Security Considerations` | v1.0.0 | Must exist |
 | `## Environment Variables` | v1.2.1 | Separate from Secrets |
 

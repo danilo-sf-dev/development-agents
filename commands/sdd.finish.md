@@ -250,7 +250,7 @@ if [ "$current_stage" != "implementation" ]; then
     exit 1
 fi
 
-# Detect platform — mobile skips all  steps
+# Detect platform — mobile skips all platform-compliance steps
 stack_result=$(bash development-agents/framework/tools/detection/detect-stack.sh . --json 2>/dev/null)
 platform=$(echo "$stack_result" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
 IS_MOBILE=false
@@ -310,7 +310,7 @@ fi
 
 > **Lazy-loaded**: When `IS_MOBILE = true`, Read `references/finish-mobile-validation.md` § Platform compliance.
 
-**If `IS_MOBILE = false`** — run  platform compliance:
+**If `IS_MOBILE = false`** — run platform compliance:
 ```bash
 bash development-agents/framework/tools/validation/validate-code.sh .
 ```
@@ -350,9 +350,9 @@ grep -rEn "(password|api_key|secret|token|credential)\s*[:=]\s*[\"'][^\"']+[\"']
 - [ ] No API keys in source files
 - [ ] No tokens in configuration
 - [ ] All secrets reference `System.getenv()` or equivalent
-- [ ] `platform.yml` references  Secrets paths
+- [ ] `platform.yml` references your org's secrets-manager paths
 
-**If fails**: Feature CANNOT be completed. Remove hardcoded secrets and use  Secrets.
+**If fails**: Feature CANNOT be completed. Remove hardcoded secrets and use your org's secrets manager.
 
 ---
 
@@ -768,7 +768,7 @@ echo "✅ Archive complete - wip/ cleaned, features/ populated"
 
 **Promotion criteria** (must meet ALL):
 - ✅ Applies to multiple features (not feature-specific)
-- ✅ Non-obvious (not in official  docs)
+- ✅ Non-obvious (not in official project/vendor docs)
 - ✅ Saves significant time (avoids repeating mistakes)
 
 ### Duplicate Detection
@@ -845,7 +845,7 @@ From progress.md "Learnings per Task":
 **DO NOT promote**:
 - ❌ Feature-specific details ("Endpoint /users returns 200")
 - ❌ Temporary workarounds
-- ❌ Info already in  docs
+- ❌ Info already in existing project docs
 
 **If no PATTERNS.md exists**: Create it using template from `development-agents/framework/templates/PATTERNS.md`
 

@@ -136,17 +136,17 @@ This document establishes the governance principles, development standards, and 
 
 ---
 
-### 6. your team Standards Platform compliance
+### 6. Internal platform compliance
 
-**Principle**: your platform is the default choice.
+**Principle**: prefer your org's internal/approved platform services over building from scratch.
 
 **What this means**:
-- Invoke `Skill("sdd-system-designer")` (platform-services plugin) for existing services before designing any solution
-- Use project services (IAM, Messaging, DataStore, etc.) for all standard needs
+- Check `sdd/PROJECT.md` for internal services/plugins before designing a new solution — invoke the project's designated architecture skill (e.g. `sdd-system-designer`) to discover them
+- Use existing project services (IAM, messaging, data store, etc.) for standard needs when available
 - Document all project services used in technical specs
-- Follow project standards (validated via code review tool)
+- Follow your org's coding/review standards (validated via code review tooling, if configured)
 
-**Why**: Consistency across your team projects, reduced duplication, battle-tested solutions.
+**Why**: Consistency across projects, reduced duplication, battle-tested solutions.
 
 ---
 
@@ -197,9 +197,9 @@ AI: [Executes command]
 
 ## Decision-Making Framework
 
-### When to Use  Services
+### When to Use an Existing Project Service
 
-**Always use  when service exists and**:
+**Always use an existing project service when one exists and**:
 - ✅ Meets functional requirements
 - ✅ Performance characteristics are acceptable
 - ✅ Integration effort is acceptable (< 2 days setup)

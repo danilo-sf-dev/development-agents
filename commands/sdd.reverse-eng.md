@@ -140,7 +140,7 @@ Performs comprehensive reverse engineering in **eight phases** (0-7):
 | Phase | Name | Purpose |
 |-------|------|---------|
 | **0** | Repository State Detection | Identify existing specs/frameworks before extraction |
-| **1** | Parallel Extraction | Extract data from  AND code (both mandatory) |
+| **1** | Parallel Extraction | Extract data from existing docs/specs AND code (both mandatory) |
 | **2** | Basic Cross-Validation | Compare sources, calculate coverage |
 | **3** | Deep Cross-Validation | Field-by-field comparison, detect phantom endpoints |
 | **4** | Synthesis | Generate specs with 6-level confidence indicators |
@@ -465,8 +465,8 @@ APP_NAME=$(grep "^application_name:" .platform-config | sed 's/application_name:
 
 | Priority | Source | What it provides | Reliability |
 |----------|--------|------------------|-------------|
-| 1. PRIMARY | **ProjectSystemMCP** | Clients, Dependencies, Platform Services | Authoritative |
-| 2. SECONDARY |  | Documentation, MessageQueue consumers | High |
+| 1. PRIMARY | **ProjectSystemMCP** (if configured — an example internal service-graph MCP; replace with whatever your org uses) | Clients, Dependencies, Platform Services | Authoritative |
+| 2. SECONDARY | API docs search | Documentation, message-queue consumers | High |
 | 3. FALLBACK | Code analysis | Inferred from patterns | Medium |
 
 ---
@@ -494,7 +494,7 @@ mcp__ProjectSystemMCP__platform_services(app_name)
 | `dependencies` | Services + datastores this app calls (outbound) | Integration discovery |
 | `platform_services` | KeyValueStore, MessageQueue, OS resources owned | Platform resource mapping |
 
-**If ProjectSystemMCP unavailable**: Skip to Step 2 (). Note in `DOCUMENTATION_GAPS.md`:
+**If ProjectSystemMCP unavailable**: Skip to Step 2. Note in `DOCUMENTATION_GAPS.md`:
 ```markdown
 ## Actor Discovery Limitations
 
@@ -504,20 +504,19 @@ mcp__ProjectSystemMCP__platform_services(app_name)
 
 ---
 
-**Step 2: Supplement with API docs and `project-infra-operations` skill (SECONDARY)**
+**Step 2: Supplement with API docs and org-specific infra tooling (SECONDARY, if available)**
 
 ```
-# API documentation
+# API documentation (example MCP call — replace with whatever your org's docs MCP exposes)
 mcp__platform__search_api_docs(app_name, query="architecture consumers integrations")
 
-# MessageQueue consumer discovery
-Skill("project-infra-operations") → "list consumers of topic <topic_name> for <app_name>"
+# Message-queue consumer discovery (if your org has a skill/CLI for this — check sdd/PROJECT.md)
 ```
 
 Use these to:
 - Fill gaps not covered by ProjectSystemMCP
 - Get documentation context for discovered actors (via `search_api_docs`)
-- Identify MessageQueue consumers (via `Skill("project-infra-operations")`)
+- Identify message-queue consumers, if your org provides tooling for this
 
 ---
 
@@ -544,13 +543,13 @@ Scan for known actor patterns in code:
 
 | Client | Type | Interaction | Source |
 |--------|------|-------------|--------|
-| [name] | Internal/External | [description] | ProjectSystemMCP /  / code |
+| [name] | Internal/External | [description] | ProjectSystemMCP / API docs / code |
 
 ### Outbound Dependencies (what we call)
 
 | Dependency | Type | Purpose | Source |
 |------------|------|---------|--------|
-| [name] | Service/Datastore | [description] | ProjectSystemMCP /  / code |
+| [name] | Service/Datastore | [description] | ProjectSystemMCP / API docs / code |
 
 ### Platform Services Owned
 
@@ -583,9 +582,9 @@ If all sources fail to provide complete actor data:
    ## Missing Actor Information
 
    - ProjectSystemMCP: [unavailable / no data returned]
-   - : [no architecture data found]
+   - API docs search: [no architecture data found]
    - Code analysis: [limited patterns detected]
-   - Recommended: Verify application exists in  Systems model
+   - Recommended: Verify application is registered in your org's systems/service catalog, if one exists
    ```
 2. Use code analysis to infer actors from:
    - Access log patterns (if available)
@@ -604,10 +603,10 @@ If all sources fail to provide complete actor data:
 
 | Category | Marker | Criteria |
 |----------|--------|----------|
-| **Verified** | ✅✅ | In  AND code, schemas match |
+| **Verified** | ✅✅ | In docs/ProjectSystemMCP AND code, schemas match |
 | **Partial** | ✅⚠️ | In both, but schemas differ |
 | **Code Only** | 🔸 | In code only (undocumented) |
-| **Docs Only** | ⚠️ | In  only (PHANTOM - verify!) |
+| **Docs Only** | ⚠️ | In docs/ProjectSystemMCP only (PHANTOM - verify!) |
 | **Internal** | 🔸 INTERNAL | `/internal/*`, `/admin/*` paths |
 
 ---
@@ -673,7 +672,7 @@ Transform data into specs, marking the **origin** of each piece of information.
 **Source Priority for Conflicts**:
 1. **CODE** - Always the source of truth
 2. **existing-specs** - Pre-validated, higher trust than 
-3. **** - May be stale, lowest priority
+3. **Plain Docs (Wiki/Confluence)** - May be stale, lowest priority
 4. **Plain Docs (README)** - HINTS ONLY, never trust without verification
 
 #### Override Rules for Plain Docs
@@ -1005,16 +1004,16 @@ When `sdd/specs/` already exists (re-extraction):
 
 1. Read `optimization_strategy` from DETECTION_REPORT.md
 2. Apply strategy-specific behavior
-3. Execute  queries (ALL primary queries)
+3. Execute ProjectSystemMCP queries, if configured (ALL primary queries)
 4. Delegate code analysis to sdd-explorer
 5. Store results in `sdd/extracted/raw/`
 
 ### Phase 2: Cross-Validation Rules
 
-1. Compare THREE sources: existing-specs vs  vs Code
+1. Compare THREE sources: existing-specs vs ProjectSystemMCP vs Code
 2. Calculate coverage percentage per source
-3. If coverage < 70%, execute conditional  queries
-4. **Source Priority**: CODE > existing-specs > 
+3. If coverage < 70%, execute conditional ProjectSystemMCP queries
+4. **Source Priority**: CODE > existing-specs > ProjectSystemMCP
 
 ### Phase 3: Deep Cross-Validation Rules
 

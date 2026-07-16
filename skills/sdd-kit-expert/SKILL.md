@@ -74,6 +74,8 @@ sdd/
 ### 6. Phased Workflow (NEVER SKIP)
 
 **Standard Mode** (manual control):
+> Canonical pipeline, gates, and diagram: `framework/PIPELINE.md`
+
 ```
 /sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
@@ -205,7 +207,7 @@ Mandatory validations at every phase:
 
 - **External API Auto-Discovery** - Automatically look up API docs/contracts when third-party APIs are mentioned (via whatever internal service directory or API catalog the project has configured)
 - **E2E Testing** - Opt-in E2E test generation via the project's E2E test framework
-- **Scaffolding Cleanup** - Auto-cleanup example code from  scaffolding
+- **Scaffolding Cleanup** - Auto-cleanup example/boilerplate code left over from project scaffolding tools
 - **Greenfield/Brownfield Detection** - Adapts workflow based on project state
 - **tasks.json** - Single source of truth for task tracking
 - **LOCAL-SETUP Tasks** - Mock project services during local development
@@ -246,7 +248,7 @@ As a user, I can now log in using Google OAuth in addition to email/password.
 
 ## Hub Workflow (Multi-app)
 
-For teams with multiple  apps collaborating in a domain, `/sdd.hub` coordinates specs, planning, and build across apps from a central hub repo.
+For teams with multiple apps collaborating in a domain, `/sdd.hub` coordinates specs, planning, and build across apps from a central hub repo.
 
 - **Detection**: `sdd/PROJECT.md` with `## Hub members` table → hub mode
 - **Flow**: `/sdd.hub start` → `spec functional` → `spec technical` → `plan` → `build` → `finish`

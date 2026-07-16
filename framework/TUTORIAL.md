@@ -315,9 +315,9 @@ CREATE TABLE user_preferences (
 );
 ```
 
-##  Integration
--  IAM: Authentication via JWT
--  Metrics: Performance monitoring
+## Integration
+- IAM/SSO: Authentication via JWT
+- Metrics: Performance monitoring
 ```
 
 #### 2.2 Approve Technical Spec
@@ -647,9 +647,9 @@ Feature moves to `sdd/cancelled/` with full history preserved.
 | Greenfield | New feature from scratch | Specs describe new functionality |
 | Brownfield | Modifying existing system | Specs describe changes, meta.md tracks affected system specs |
 
-### Q: Do I need ?
+### Q: Do I need ProjectSystemMCP (or an equivalent internal service-discovery MCP)?
 
-**Recommended but not required.**  helps discover existing project services. Without it, manually document  integrations.
+**Recommended but not required.** It helps discover existing project services automatically. Without it, manually document project service integrations.
 
 ### Q: What is E2E test framework?
 

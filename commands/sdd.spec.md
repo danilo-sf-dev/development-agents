@@ -145,8 +145,8 @@ profile=$(grep "type:" sdd/wip/*/meta.md | grep -o 'technical\|non-technical')
 
 | Aspect | Technical | Non-Technical |
 |--------|-----------|---------------|
-| **Code snippets** | Show full implementation examples via `sdd-implementer` (platform-services plugin skill) | Hide code, show "Configuration ready ✓" |
-| ** services** | Show service names, containers, TTLs | Show "Data storage configured" |
+| **Code snippets** | Show full implementation examples via `sdd-implementer` skill | Hide code, show "Configuration ready ✓" |
+| **Project services** | Show service names, containers, TTLs | Show "Data storage configured" |
 | **Architecture diagrams** | Show full Mermaid diagrams | Show simplified flow: "Input → Processing → Output" |
 | **API contracts** | Show full REST contracts with schemas | Show "API structure: N endpoints" |
 
@@ -355,13 +355,13 @@ Use AskUserQuestion:
 
 > **MANDATORY — Architect-First Protocol (no skipping)**:
 >
-> If `genai-detect-gaps.sh` returns any `detected_need` with `delegate_to: project-services-architect`,
+> If `genai-detect-gaps.sh` returns any `detected_need` with `delegate_to: sdd-system-designer`,
 > **OR** the inline fallback matches `topic/queue/event`, `save/store/persist`, or `concurrent/simultaneous`,
-> you **MUST** invoke `Skill("project-services-architect")` BEFORE asking the user any gap question on
-> that need. The plugin is the only authority on project service candidates and trade-offs.
+> you **MUST** invoke `Skill("sdd-system-designer")` BEFORE asking the user any gap question on
+> that need. This skill is the authority on project service candidates and trade-offs.
 >
 > ```
-> Skill("project-services-architect")  # redirects to sdd-system-designer plugin skill
+> Skill("sdd-system-designer")
 > # context: pass the feature description and the detected_need(s), e.g.:
 > #   "User needs async/event processing AND key-value storage. Classify project services and
 > #    return candidates with trade-offs."
@@ -588,12 +588,12 @@ Use AskUserQuestion with options:
 >
 > ```
 > [ ] The Dependencies section does NOT name concrete project services
->     (no "MessageQueue", "KeyValueStore", "Audits", "Streams", etc.). It lists CAPABILITIES instead
+>     (no specific message-queue/database/cache product names). It lists CAPABILITIES instead
 >     (e.g. "async event processing", "key-value storage", "immutable audit trail").
 > [ ] No gap question exposed implementation jargon to the user
->     (no "MessageQueue at-least-once", "TTL", "consumer", "producer", "topic", "container").
+>     (no "at-least-once delivery", "TTL", "consumer", "producer", "topic", "container").
 > [ ] If any architectural classification was needed (async vs sync, storage type, etc.),
->     I invoked Skill("project-services-architect") to inform candidate selection — and
+>     I invoked Skill("sdd-system-designer") to inform candidate selection — and
 >     surfaced the candidates as "tentative — to be confirmed in technical spec",
 >     NOT as final dependencies.
 > ```
@@ -601,8 +601,8 @@ Use AskUserQuestion with options:
 > If ANY checkbox is unchecked: STOP. Reword the offending sections in product terms
 > (or invoke the missing skill) before proceeding to Step 3a.
 >
-> ❌ ANTI-PATTERN: outputting "Dependencies:  MessageQueue · KeyValueStore · Audits" in the
->    functional summary. Service selection belongs to the technical spec.
+> ❌ ANTI-PATTERN: outputting "Dependencies: MessageQueueX · KeyValueStoreY · AuditServiceZ" (concrete
+>    product/service names) in the functional summary. Service selection belongs to the technical spec.
 > ✅ CORRECT: "Dependencies (capabilities): async event processing, key-value storage,
 >    immutable audit trail. Concrete services to be selected in technical spec."
 
@@ -624,7 +624,7 @@ bash development-agents/framework/tools/validation/validate-functional.sh sdd/wi
 ### Scope: In/Out
 ### Dependencies (capabilities): [list of capabilities, NOT project service names]
   e.g. "async event processing, key-value storage, immutable audit trail"
-  Concrete services chosen in technical spec via project-services-architect plugin.
+  Concrete services chosen in technical spec via the sdd-system-designer skill.
 ```
 
 **Step 3c: Context Check Before Approval**
@@ -861,36 +861,35 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 > **MANDATORY — Architect-First Protocol (no skipping, BLOCKING)**:
 >
 > Before producing ANY design decision (DD-1, DD-2, …), service selection, dependency list,
-> code snippet, or architecture diagram, you **MUST** invoke the architect plugin skill.
+> code snippet, or architecture diagram, you **MUST** invoke the `sdd-system-designer` skill.
 >
 > ```
-> Skill("project-services-architect")  # redirects to sdd-system-designer plugin skill
+> Skill("sdd-system-designer")
 > # context: pass the functional spec summary plus a list of capabilities derived from it:
 > #   "Capabilities: [async event processing | key-value storage | object storage | audit
 > #    trail | distributed lock | …]. Recommend project services with trade-offs and
 > #    anti-patterns. Project language: [go|java|python|node]."
 > ```
 >
-> The plugin is the **single source of truth** for:
-> - Which project service to pick for each capability (KeyValueStore vs NoSQL vs MySQL, MessageQueue vs
->   Streams vs Workqueues, Object Storage vs Audits, etc.)
+> This skill is the **single source of truth** for:
+> - Which project service to pick for each capability (e.g. key-value store vs document DB vs
+>   relational DB, message queue vs streaming vs work queue, object storage vs audit log, etc.)
 > - Trade-off rationale that feeds the Design Decisions section
 > - Anti-patterns to call out
 > - Segmentation strategy when relevant
 >
 > ❌ ANTI-PATTERN: writing DD-1, DD-2, … from pre-training knowledge or "what we already saw
->    in discovery" without invoking the plugin. This is the #1 regression mode — the agent
->    "knows" KeyValueStore+MessageQueue+Audits is the answer and skips the call. Don't.
-> ✅ CORRECT: invoke `Skill("project-services-architect")` first; let the plugin response drive
+>    in discovery" without invoking the skill. This is the #1 regression mode — the agent
+>    assumes a specific service combo is the answer and skips the call. Don't.
+> ✅ CORRECT: invoke `Skill("sdd-system-designer")` first; let its response drive
 >    the candidates; THEN present architecture options to the user (next subsection).
 >
-> If the plugin recommends 2-3 viable approaches with similar scores, surface those via the
+> If the skill recommends 2-3 viable approaches with similar scores, surface those via the
 > "Architecture Options" subsection below. If it returns a single recommendation, use it
 > directly (skip Architecture Options) and document the rationale in the spec.
 >
-> After the architect, for each selected service, invoke `Skill("project-snippets-expert")`
-> (which redirects to `sdd-implementer`) to fetch live SDK details before writing the
->  Services section of the spec.
+> After the architect step, for each selected service, invoke `Skill("sdd-implementer")`
+> to fetch live SDK details before writing the Project Services section of the spec.
 
 #### Architecture Options (Standard Mode + Technical Profile)
 
@@ -1059,7 +1058,7 @@ ELIF mode == "brownfield":
 ```markdown
 # ❌ DO NOT include in brownfield pure-logic spec:
 
-##  Platform compliance
+## Platform compliance
 | Requirement | Status | Notes |
 |-------------|--------|-------|
 | Dockerfile exists | ✅ | ... |
@@ -1094,34 +1093,22 @@ bash development-agents/framework/tools/templates/process-template.sh \
   --output sdd/wip/[feature]/2-technical/spec.md
 ```
 
-###  Services with Code Snippets
+### Project Services with Code Snippets
 
-> When documenting project services, auto-include code examples by delegating to the `sdd-implementer` plugin skill, which fetches live official toolkit documentation.
-
-**Plugin availability check** (before delegating):
-
-```bash
-PLUGIN_PATH="$HOME/.claude/plugins/cache/tech-plugins-marketplace/platform-services"
-if [ ! -d "$PLUGIN_PATH" ]; then
-    echo "⚠️ platform-services plugin not installed — snippets unavailable"
-    echo "   Run: sdd-kit init claude --force"
-    # Skip snippet section and continue without code examples
-fi
-```
+> When documenting project services, auto-include code examples by delegating to the `sdd-implementer` skill, which fetches live documentation for the actual service/library in use.
 
 **Workflow**:
 1. After `sdd-explorer` identifies services
-2. Verify plugin is installed (check above)
-3. For each service, invoke: `Skill("sdd-implementer")` passing the service name and detected project language
-4. The skill fetches live documentation from official toolkit repos and returns ready-to-use snippets
-5. Include the returned snippet in the spec under the service entry
+2. For each service, invoke: `Skill("sdd-implementer")` passing the service name and detected project language
+3. The skill fetches live documentation and returns ready-to-use snippets
+4. Include the returned snippet in the spec under the service entry
 
 **Format in Technical Spec**:
 
 ```markdown
-##  Services
+## Project Services
 
-### KeyValueStore - User Sessions
+### Key-Value Store - User Sessions
 - **Container**: `user-sessions`
 - **TTL**: 3600s (1 hour)
 - **Criticality**: HIGH
@@ -1129,7 +1116,7 @@ fi
 **Implementation Example** (via `sdd-implementer`):
 [snippet returned by Skill("sdd-implementer")]
 
-### MessageQueue - Order Events
+### Message Queue - Order Events
 - **Topic**: `order-events`
 - **Visibility**: private
 - **Consumer**: `order-processor`
@@ -1162,21 +1149,19 @@ fi
 ✓ Technical configuration ready - agent will implement automatically
 ```
 
-###  Service Instance Selection (Live Discovery)
+### Project Service Instance Selection (Live Discovery, if applicable)
 
-> CRITICAL: When the technical spec identifies project services, run live
-> discovery to let the user choose existing instances or create new ones.
-> This happens DURING spec creation, NOT during build.
+> When the technical spec identifies project services, and your org provides a CLI/skill for
+> discovering existing instances, run live discovery to let the user choose existing instances
+> or create new ones. This happens DURING spec creation, NOT during build. Skip entirely if
+> your org has no such tooling — just document the service in the spec.
 
 FOR EACH project service type identified:
-  1. Read `PROJECT_SERVICES.json` → get `cli_list` and `discovery_skill_prompt`
-     for this service
-  2. If `cli_list` exists (Tier 1) → run: `project services <type> list`
-  3. If `cli_list` is null but `discovery_skill_prompt` exists (Tier 2) →
-     invoke `Skill("project-infra-operations")` with that prompt
-     (substituting `{app_name}`). The service-specific platform docs
-     tools no longer exist.
-  4. If neither exists (Tier 3) → inform user: "Manage at the project platform console (from PROJECT.md)"
+  1. Check `sdd/PROJECT.md` for any declared CLI or skill used to list existing instances
+     of this service type
+  2. If a CLI is declared → run it to list existing instances
+  3. If a discovery skill is declared instead → invoke it with the service type and app name
+  4. If neither is declared → inform user: "Manage this service manually — see your org's platform console (referenced in sdd/PROJECT.md)"
   5. If CLI/skill call fails (not logged in, VPN) → inform user to fix
      and retry
   6. If instances found → AskUserQuestion: select existing or "Create new"
@@ -1315,17 +1300,17 @@ migration:
 >
 > If `platform = backend` or `platform = web` (NOT mobile), and the spec contains any of:
 > - `## Design Decisions` with DD-* entries that pick project services, OR
-> - `##  Services` section with concrete service names (KeyValueStore, MessageQueue, Audits, etc.), OR
-> - `## Dependencies` listing  SDKs
+> - `## Project Services` section with concrete service names, OR
+> - `## Dependencies` listing SDKs
 >
-> Then this spec was generated under the rule "architect plugin is the source of truth".
+> Then this spec was generated under the rule "the sdd-system-designer skill is the source of truth".
 > Verify in your own working memory:
 >
 > ```
-> [ ] I invoked Skill("project-services-architect") this session BEFORE writing the
->     Design Decisions /  Services / Dependencies sections.
-> [ ] The service choices in the spec reflect the plugin's response, not pre-training knowledge.
-> [ ] For each selected service, I invoked Skill("project-snippets-expert") to fetch
+> [ ] I invoked Skill("sdd-system-designer") this session BEFORE writing the
+>     Design Decisions / Project Services / Dependencies sections.
+> [ ] The service choices in the spec reflect that skill's response, not pre-training knowledge.
+> [ ] For each selected service, I invoked Skill("sdd-implementer") to fetch
 >     the live SDK details (envvars, dependency coordinates, client setup).
 > ```
 >
@@ -1375,7 +1360,7 @@ fi
 ### Architecture: [1-2 lines]
 ### Endpoints (N): [list]
 ### Database: [services + tables]
-###  Services: [list]
+### Project Services: [list]
 ### Key Decisions: [list]
 ### Secrets: [count + names]
 ```
