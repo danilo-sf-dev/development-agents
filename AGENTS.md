@@ -12,6 +12,8 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 
 > **Fonte canônica completa** (diagrama Mermaid, gates, modos, papéis): [`framework/PIPELINE.md`](./framework/PIPELINE.md). Atualize lá primeiro se o pipeline mudar.
 
+**Hard gates** (enforcement determinístico, independente do LLM): [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) — Gate 2.5 (testes aprovados imutáveis) via `guard-approved-tests.sh` + pre-commit.
+
 ## Papéis
 
 | Papel | Onde |

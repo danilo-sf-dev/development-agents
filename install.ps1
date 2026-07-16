@@ -41,6 +41,52 @@ function Copy-DirContents([string]$Source, [string]$Destination) {
     Copy-Item -Path (Join-Path $Source "*") -Destination $Destination -Recurse -Force
 }
 
+function Install-SddPreCommitHook {
+    param(
+        [string]$TargetRoot,
+        [string]$SourceDir
+    )
+
+    $gitDir = Join-Path $TargetRoot ".git"
+    $hookTemplate = Join-Path $SourceDir "framework\templates\git-hooks\pre-commit-sdd"
+    $hookFile = Join-Path $gitDir "hooks\pre-commit"
+    $chainedFile = Join-Path $gitDir "hooks\pre-commit.sdd-chained"
+    $marker = "# sdd-guard-approved-tests"
+
+    if (-not (Test-Path -LiteralPath $gitDir)) {
+        Write-WarnMsg "Nao e repositorio git — pulando pre-commit hook SDD"
+        return
+    }
+    if (-not (Test-Path -LiteralPath $hookTemplate)) {
+        Write-WarnMsg "Template pre-commit SDD nao encontrado — pulando"
+        return
+    }
+
+    $hooksDir = Join-Path $gitDir "hooks"
+    New-Item -ItemType Directory -Force -Path $hooksDir | Out-Null
+
+    if ((Test-Path -LiteralPath $hookFile) -and (Select-String -LiteralPath $hookFile -Pattern $marker -Quiet)) {
+        Write-Ok "pre-commit hook SDD ja instalado"
+        return
+    }
+
+    if (Test-Path -LiteralPath $hookFile) {
+        Copy-Item -LiteralPath $hookFile -Destination $chainedFile -Force
+        $chainedBlock = @"
+
+# --- chained pre-commit (existing hook) ---
+if [ -f "`$(git rev-parse --git-path hooks)/pre-commit.sdd-chained" ]; then
+  sh "`$(git rev-parse --git-path hooks)/pre-commit.sdd-chained" || exit 1
+fi
+"@
+        $content = (Get-Content -LiteralPath $hookTemplate -Raw -Encoding UTF8).TrimEnd() + $chainedBlock
+        Set-Content -LiteralPath $hookFile -Value $content -Encoding UTF8 -NoNewline
+    } else {
+        Copy-Item -LiteralPath $hookTemplate -Destination $hookFile -Force
+    }
+    Write-Ok "pre-commit hook SDD instalado (guard approved tests)"
+}
+
 function Ensure-Gitignore {
     param([string]$TargetRoot)
 
@@ -239,6 +285,10 @@ if (-not $SkipPackCopy) {
     Write-Host "Updating .gitignore (pack e adapters locais)..."
     Ensure-Gitignore -TargetRoot $TargetDir
 }
+
+Write-Host ""
+Write-Host "Installing SDD hard gate (pre-commit)..."
+Install-SddPreCommitHook -TargetRoot $TargetDir -SourceDir $ScriptDir
 
 Write-Host ""
 Write-Host "============================================================"

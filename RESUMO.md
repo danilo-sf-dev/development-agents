@@ -306,7 +306,7 @@ Para **prototype**, `/sdd.test` pode ser ignorado automaticamente.
 | Artefatos | `sdd/wip/<feature>/4-tests/` (`test-plan.md`, `tests-manifest.json`) |
 | `detect-phase.sh` | Novo stage `tests` (fase 4) antes de `implementation` (fase 5) |
 | Prototype | Gate ignorado (`stages.tests.status: skipped`) |
-| **Anti-gaming guard** | `/sdd.build` detecta se algum arquivo listado em `tests-manifest.json` foi alterado durante a implementação → bloqueia e pergunta (nunca edita/afrouxa teste aprovado silenciosamente) |
+| **Anti-gaming guard** | **Soft**: `/sdd.build` detecta diff em arquivos de `tests-manifest.json` → STOP + AskUserQuestion. **Hard** (novo): `guard-approved-tests.sh` + pre-commit + CI — ver §15 |
 
 ### Fluxo
 
@@ -322,6 +322,27 @@ Para **prototype**, `/sdd.test` pode ser ignorado automaticamente.
 ```
 
 Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca falha) **e** evitar que a implementação depois afrouxe/edite o teste aprovado pra fingir sucesso — o contrato só muda passando de novo pelo gate humano.
+
+---
+
+## 15. Hard gates — enforcement determinístico (em andamento)
+
+**Problema**: a maior parte dos gates SDD são *soft* — instruções em markdown que o LLM deveria seguir. Um modelo confuso pode ignorar sem segunda camada pegando a violação.
+
+**Primeira implementação (Gate 2.5)** — branch `feat/hard-enforcement-gates`:
+
+| Camada | Mecanismo |
+|--------|-----------|
+| Soft | `sdd.build.md`, `sdd-implementer`, `meta.md` |
+| **Hard** | `framework/tools/guard-approved-tests.sh` |
+| Pre-commit | Instalado por `install.sh` / `install.ps1` (`--staged-only`) |
+| CI | Snippet em `framework/templates/ci/sdd-guard-approved-tests.yml` |
+| Snapshot | `/sdd.test --approve` grava `sha256` por arquivo em `tests-manifest.json` |
+| Refine | `/sdd.test --refine` desbloqueia (`status: in-progress`) antes de editar testes |
+
+Documentação canônica: [`framework/HARD_GATES.md`](./framework/HARD_GATES.md)
+
+**Próximos hard gates candidatos**: validação de schema de spec/tasks, checklist de artefatos no `/sdd.finish`.
 
 ---
 

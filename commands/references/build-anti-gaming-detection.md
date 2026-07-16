@@ -2,6 +2,20 @@
 
 **Used by**: `/sdd.build` when approved tests appear in the diff.
 
+## Hard layer (deterministic — run first)
+
+```bash
+bash development-agents/framework/tools/guard-approved-tests.sh check --root .
+```
+
+- Exit `0` → continue implementation
+- Exit `1` → STOP (same UX as soft detection below)
+- Pre-commit runs `--staged-only` automatically if installed via `install.sh` / `install.ps1`
+
+> Full spec: `framework/HARD_GATES.md`
+
+## Soft layer (agent diff check — fallback if script unavailable)
+
 ### Detection (run per task, as part of Step 5)
 
 ```bash
