@@ -6,14 +6,14 @@ Complete reference for all `/sdd.` commands.
 
 ## Command Overview
 
-**Total Commands**: 21
+**Total Commands**: 22
 
 > Canonical pipeline order and gates: [`framework/PIPELINE.md`](./PIPELINE.md)
 
 | Category | Commands |
 |----------|----------|
 | **Express** | `go` |
-| **Setup** | `project` |
+| **Setup** | `project`, `mcp` |
 | **Core Workflow** | `start`, `spec`, `plan`, `test`, `build`, `finish`, `pr` |
 | **Utilities** | `check`, `list`, `rollback`, `cancel`, `fix`, `backlog`, `help`, `doctor` |
 | **Import & Analysis** | `import`, `reverse-eng` |
@@ -120,6 +120,29 @@ All 17 command files follow a standard structure for consistency:
 **Best for**: First-time setup, new projects, standardizing team conventions
 
 **Documentation**: [skills/sdd.project/SKILL.md](./skills/sdd.project/SKILL.md)
+
+---
+
+### /sdd.mcp
+
+**Configure optional MCP integrations (host-agnostic)**
+
+```bash
+/sdd.mcp                                         # Wizard: detect host → setup → smoke test
+/sdd.mcp --status                                # Flag + config inventory
+/sdd.mcp --test "https://…/browse/PROJ-123"      # Read-only smoke test
+/sdd.mcp --disable                               # Turn off pack flag
+```
+
+**What it does**:
+- Detects Cursor / Claude Code / VS Code / JetBrains / other
+- Prefers native host MCP/plugin path; otherwise generic `.mcp.json` wizard
+- Human completes OAuth; agent guides steps and verifies read-only fetch
+- Sets `atlassian_mcp_enabled` in `sdd/PROJECT.md` after smoke test (v1: Atlassian)
+
+**Best for**: Enabling `/sdd.spec --include` with Jira/Confluence URLs without copy-paste
+
+**Documentation**: [commands/sdd.mcp.md](../commands/sdd.mcp.md) · [MCP_SETUP_GUIDE.md](./MCP_SETUP_GUIDE.md)
 
 ---
 

@@ -54,6 +54,16 @@ Defina: stack, comandos de teste/build, convenções de branch/commit, review.
 
 Sem `PROJECT.md`, `/sdd.start` pode bloquear ou inferir stack de forma incompleta.
 
+### Passo 1.1 — MCP Jira/Confluence (opcional)
+
+Se for usar cards/epics via URL em `/sdd.spec --include` (sem colar o texto à mão):
+
+```
+/sdd.mcp
+```
+
+Wizard agnóstico ao IDE: detecta o host, guia plugin nativo ou `.mcp.json`, OAuth, smoke test read-only. Ver [`MCP_SETUP_GUIDE.md`](./MCP_SETUP_GUIDE.md).
+
 ---
 
 ## Passo 2 — Preparar git (manual)
@@ -174,7 +184,7 @@ Template pack: [`templates/pull-request-template.md`](./templates/pull-request-t
 ## Fluxo resumido (cola na parede)
 
 ```
-install → /sdd.project → git branch → /sdd.start
+install → /sdd.project → [/sdd.mcp opcional] → git branch → /sdd.start
   → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build
   → /sdd.finish → /sdd.pr
 ```
@@ -192,6 +202,7 @@ Atalho express (features simples): `/sdd.go "descrição"` — inclui test gate 
 | Process gates / validator | [`HARD_GATES.md`](./HARD_GATES.md) |
 | Tutorial detalhado | [`TUTORIAL.md`](./TUTORIAL.md) |
 | FAQ / recovery | [`FAQ.md`](./FAQ.md), [`RECOVERY.md`](./RECOVERY.md) |
+| MCP / Jira opcional | [`MCP_SETUP_GUIDE.md`](./MCP_SETUP_GUIDE.md) · `/sdd.mcp` |
 | Papéis do time | [`../AGENTS.md`](../AGENTS.md) |
 
 ---
@@ -201,6 +212,7 @@ Atalho express (features simples): `/sdd.go "descrição"` — inclui test gate 
 | Situação | Ação |
 |----------|------|
 | `PROJECT.md` ausente | `/sdd.project` |
+| Jira URL sem auto-fetch | `/sdd.mcp` ou colar conteúdo no `--include` |
 | Teste aprovado foi alterado no build | STOP → `/sdd.test --refine` |
 | `gh` não funciona | Copiar `pr-draft.md` e abrir PR manual no GitHub |
 | Pack no commit por engano | Nunca add `sdd/`, `development-agents/` — revisar `.gitignore` |

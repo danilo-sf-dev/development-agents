@@ -249,6 +249,15 @@ frontend:
 
 ---
 
+### Step 4.5: Atlassian MCP (Optional)
+
+Ask whether the team wants Jira/Confluence auto-fetch for `/sdd.spec --include`.
+
+- **No** (default): do not write `atlassian_mcp_enabled` (framework default false)
+- **Yes**: write `atlassian_mcp_enabled: true` and tell the user to run `/sdd.mcp` after PROJECT.md is saved (host-agnostic OAuth + smoke test). Do not assume MCP is ready until `/sdd.mcp` succeeds.
+
+---
+
 ### Summary & Confirmation
 
 ```

@@ -114,7 +114,7 @@ Options:
 **Logic**:
 - If "No" (default): Do not write property to PROJECT.md (uses default: false)
 - If "Yes": Write `atlassian_mcp_enabled: true` to PROJECT.md
-- Note: User will need to run `/sdd.start` after enabling to configure local MCP
+- Note: After PROJECT.md is saved, tell the user to run `/sdd.mcp` (host-agnostic) to configure Atlassian MCP + smoke test — do **not** assume `/sdd.start` alone finishes MCP setup
 
 ### Step 6: Summary and Confirmation
 

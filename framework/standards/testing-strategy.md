@@ -482,7 +482,7 @@ Add to `.mcp.json`:
 2. **During `/sdd.build`**: When executing AUTO-TASK-E2E, E2E test framework tools are called
 3. **During `/sdd.finish`**: E2E test presence is validated (warning if missing)
 
-See [MCP_SETUP_GUIDE.md](../MCP_SETUP_GUIDE.md#e2e-mcp-setup) for detailed setup instructions.
+See [MCP_SETUP_GUIDE.md](../MCP_SETUP_GUIDE.md#other-mcp-servers-org-specific) for optional org MCP setup; E2E servers are not shipped by this pack.
 
 ---
 

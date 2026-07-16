@@ -85,6 +85,7 @@ $ sdd-kit help              # Show help
 | Command | Description |
 |---------|-------------|
 | `/sdd.project` | Initialize PROJECT.md (team conventions) |
+| `/sdd.mcp` | Configure optional MCP (Atlassian Jira read-only) |
 
 ### Core Workflow
 | Command | Description |
@@ -486,7 +487,7 @@ Use `/sdd.check --sync` to **verify consistency** between specs, tasks, and code
 | Need to iterate on completed feature | `/sdd.start --reopen [NNN]` |
 | Need to change spec | `/sdd.spec --iterate "change"` |
 | Need external context | `/sdd.spec --include "url or path"` |
-| MCP not working | Check `.mcp.json`, see MCP_SETUP_GUIDE.md |
+| MCP not working | Run `/sdd.mcp --status` or `/sdd.mcp`; see [MCP_SETUP_GUIDE.md](./MCP_SETUP_GUIDE.md) |
 | Platform auth expired | Re-authenticate per your org's login flow |
 | App/project not registered on your platform | Register it per your org's onboarding docs (see `sdd/PROJECT.md`) first |
 | CI Pipeline fails | Fix issues, retry before `/sdd.finish` |
@@ -501,7 +502,7 @@ Use `/sdd.check --sync` to **verify consistency** between specs, tasks, and code
 | Workflow Guide | `.development-agents/WORKFLOW.md` |
 | Governance | `~/.development-agents/standards/governance.md` |
 | **Boundaries** | `~/.development-agents/standards/boundaries.md` |
-| MCP Setup | `.development-agents/MCP_SETUP_GUIDE.md` |
+| MCP Setup | `development-agents/framework/MCP_SETUP_GUIDE.md` (or hub `framework/MCP_SETUP_GUIDE.md`) |
 | Templates | `~/.development-agents/templates/` |
 | Standards | `~/.development-agents/standards/` |
 

@@ -319,7 +319,7 @@ frontend:
 defaults:
   project_type: production     # prototype | mvp | production
   e2e_enabled: false           # true | false - E2E testing with E2E
-  atlassian_mcp_enabled: false # true = Enable Jira/Confluence auto-fetch via AtlassianMCP
+  atlassian_mcp_enabled: false # true = Enable Jira/Confluence auto-fetch; configure with /sdd.mcp
   execution_strategy: sequential  # sequential | batched | parallel
   user_profile: non-technical  # technical | non-technical - See below
 ```

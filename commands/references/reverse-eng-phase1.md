@@ -61,7 +61,7 @@ APP_NAME=$(grep "^application_name:" .platform-config | sed 's/application_name:
 
 **Step 1: Query ProjectSystemMCP (PRIMARY)**
 
-> **REQUIRES**: `ProjectSystemMCP` configured in `.mcp.json`. See [MCP_SETUP_GUIDE.md](../MCP_SETUP_GUIDE.md#ProjectSystemMCP-system-architecture).
+> **REQUIRES**: `ProjectSystemMCP` configured in `.mcp.json` (org-specific; not shipped by this pack). See [MCP_SETUP_GUIDE.md](../../framework/MCP_SETUP_GUIDE.md#other-mcp-servers-org-specific).
 
 ```
 # Inbound clients (who calls this app)

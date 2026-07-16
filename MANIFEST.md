@@ -5,7 +5,7 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 
 ## Incluído
 
-### agents/ (11)
+### agents/ (12)
 
 | Agent | Papel no time |
 |-------|----------------|
@@ -20,6 +20,7 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 | `sdd-debugger` | RCA / bugs profundos |
 | `sdd-backlog-manager` | Ops de backlog (`sdd/backlog.md`) |
 | `sdd-project-wizard` | Setup `sdd/PROJECT.md` |
+| `sdd-mcp-setup` | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`) |
 
 ### skills/ (6) — núcleo de processo
 
@@ -32,12 +33,12 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 | `context-guardian` | Controle de contexto/tokens |
 | `commit-workflow` | Formatação, validação e commit agnósticos |
 
-### commands/ (20) — orquestração `/sdd.*`
+### commands/ (22) — orquestração `/sdd.*`
 
-Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
+Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, **mcp**, install, hub, pr, etc.
 
 Medição atual da redução de verbosidade:
-- 20 comandos: caminho comum enxuto; ramos raros lazy-loaded
+- 22 comandos: caminho comum enxuto; ramos raros lazy-loaded
 - `commands/references/`: **~120** referências lazy-loaded (P0 `spec-*` + P1 `start-*`/`build-*`/`finish-*`/`reverse-eng-*`)
 - `framework/_shared/agent-instructions.md`: instruções compartilhadas — **1 referência** substituindo 18 cópias
 - `sdd.spec.md`: 2.223 → **~287 linhas** (P0 ≤400)

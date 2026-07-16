@@ -172,6 +172,7 @@ Never invent a corporate platform stack when the repo uses something else.
 | `sdd-layer-analyzer` | Cross-layer consistency validation | `/sdd.check --sync`, `/sdd.fix` |
 | `sdd-debugger` | Deep debugging and root cause analysis | `/sdd.fix` for complex bugs |
 | `sdd-project-wizard` | Interactive PROJECT.md creation | `/sdd.start` when PROJECT.md missing |
+| `sdd-mcp-setup` | Host-agnostic MCP setup (Atlassian read-only) | `/sdd.mcp` |
 | `context-guardian` | Context and tool delegation for efficiency | All specs requiring external documentation |
 | `sdd-system-designer` | Architecture decisions, multi-stack options | `/sdd.spec technical` |
 | `sdd-explorer` | Project service discovery and configuration | `/sdd.spec technical` |

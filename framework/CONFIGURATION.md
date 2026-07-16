@@ -265,7 +265,7 @@ servers require (declare it in `sdd/PROJECT.md` if agents need to know about it)
 2. Otherwise, set the required environment variable(s) per your MCP server's documentation
 3. If authentication fails repeatedly, verify you're logged in with your org's tooling and
    check the MCP server's own docs for troubleshooting
-4. You can still use "local validation mode" (see `/sdd.start` Step 1.5b.2) if MCP auth is unavailable
+4. For Atlassian Jira/Confluence read-only setup, prefer `/sdd.mcp` (see [MCP_SETUP_GUIDE.md](./MCP_SETUP_GUIDE.md)). If MCP auth is unavailable, `/sdd.spec --include` falls back to paste-manual.
 
 ---
 

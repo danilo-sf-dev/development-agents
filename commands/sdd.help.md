@@ -86,6 +86,9 @@ Quick reference for all SDD Kit commands. Shows commands organized by workflow p
 
 🏗️ SETUP
 ────────────────────────────────────────
+/sdd.project          Initialize PROJECT.md (team conventions)
+/sdd.install          Install pack adapters in a target project
+/sdd.mcp              Configure optional MCP (Atlassian Jira read-only)
 /sdd.import           Import existing specs
 /sdd.reverse-eng      Reverse engineer from code
 
@@ -228,6 +231,9 @@ Execution Modes:
 | `/sdd.backlog` | Manage backlog | `/sdd.backlog list` |
 | `/sdd.doctor` | Diagnose project config | `/sdd.doctor` |
 | `/sdd.doctor --apply` | Apply config fixes | `/sdd.doctor --apply` |
+| `/sdd.project` | Team conventions (PROJECT.md) | `/sdd.project` |
+| `/sdd.install` | Install pack in target project | `/sdd.install` |
+| `/sdd.mcp` | Optional MCP setup (Atlassian read-only) | `/sdd.mcp` |
 | `/sdd.rollback` | Undo/revert to previous phase | `/sdd.rollback 2` |
 | `/sdd.cancel` | Cancel feature | `/sdd.cancel` |
 | `/sdd.import` | Import specs | `/sdd.import` |

@@ -168,7 +168,15 @@ Only if your organization's internal MCP servers (code review tool, E2E test fra
 
 ### How do I configure MCP servers?
 
-Configure the specific MCP servers your project actually uses (if any) following your MCP client's documentation (Claude Code, Cursor, etc.) and your organization's internal MCP endpoint URLs. Example shape:
+**Preferred (Atlassian Jira/Confluence read-only for `/sdd.spec --include`)**:
+
+```text
+/sdd.mcp
+```
+
+Host-agnostic wizard (Cursor, Claude Code, VS Code, JetBrains, other): detect → native or generic `.mcp.json` → OAuth → smoke test → `atlassian_mcp_enabled`. See [MCP_SETUP_GUIDE.md](./MCP_SETUP_GUIDE.md).
+
+For org-internal MCP servers, follow your MCP client's documentation and internal endpoint URLs. Example shape (Claude Code):
 
 ```bash
 claude mcp add --scope project --transport stdio <your-mcp-name> -- mcp-remote-proxy <your-org-mcp-endpoint> --transport http

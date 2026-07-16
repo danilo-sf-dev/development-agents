@@ -35,13 +35,15 @@
    **Option 2**: Describe the feature in your own words.
 
    **Enable auto-fetch for next time** (optional):
-   Add to `sdd/PROJECT.md`: `atlassian_mcp_enabled: true`
+   Run `/sdd.mcp` (host-agnostic wizard: detect IDE → configure → smoke test → sets `atlassian_mcp_enabled`).
+   Or add manually to `sdd/PROJECT.md`: `atlassian_mcp_enabled: true` and configure MCP per `framework/MCP_SETUP_GUIDE.md`.
 
    **Your input**:
    ```
 
 3. **If enabled but MCP not responding**:
    - User may need to complete OAuth login
-   - Show: "AtlassianMCP requires OAuth login. Please complete authentication when prompted."
+   - Show: "Atlassian MCP requires OAuth login. Complete authentication when prompted, or run `/sdd.mcp --status` / `/sdd.mcp` to repair."
+   - Keep paste-manual as immediate fallback so the spec is not blocked.
 
 ---
