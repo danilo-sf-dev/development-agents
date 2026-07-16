@@ -33,14 +33,14 @@ graph LR
 
 ## Gates
 
-| Gate | Command | What is approved | Hard enforcement |
-|------|---------|------------------|------------------|
-| 1 | `/sdd.spec` | Functional + technical spec | Soft only (meta.md) |
-| 2 | `/sdd.plan` | Task breakdown & implementation strategy | Soft only (tasks.json) |
-| 2.5 | `/sdd.test` | Failing tests (red phase) — approved BEFORE implementation | **Hard**: `guard-approved-tests.sh` + pre-commit + CI |
-| 3 | `/sdd.finish` | Final validation & archive | Soft only |
+| Gate | Command | What is approved | Enforcement |
+|------|---------|------------------|---------------|
+| 1 | `/sdd.spec` | Functional + technical spec | Soft (`meta.md`) + process check when relevant |
+| 2 | `/sdd.plan` | Task breakdown & implementation strategy | Soft (`tasks.json`) + process check when relevant |
+| 2.5 | `/sdd.test` | Failing tests (red phase) — approved BEFORE implementation | Soft approval + **Process Compliance** via `sdd-validator-runner` during build (no OS hooks) |
+| 3 | `/sdd.finish` | Final validation & archive | Soft + validator |
 
-> Hard gate details: [`framework/HARD_GATES.md`](./HARD_GATES.md)
+> Process gates (LLM, portable): [`framework/HARD_GATES.md`](./HARD_GATES.md)
 
 ## Execution modes
 
@@ -64,6 +64,6 @@ See `commands/sdd.start.md` and `commands/references/reopen-workflow.md` for the
 | Architect | agent `sdd-system-designer` + `/sdd.plan` |
 | Developer | agent `sdd-implementer` |
 | Test Writer | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E optional) |
-| Code Reviewer | skill `sdd-code-reviewer` + agent `sdd-validator-runner` |
+| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (quality + Process Compliance) |
 | Orchestrator | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert` |
 | Installer | command `/sdd.install` + agent `development-agents-installer` |

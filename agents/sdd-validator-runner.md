@@ -35,7 +35,8 @@ Task(
     subagent_type="sdd-validator-runner",
     prompt="""
     Validate these files: [list]
-    Run checks: build, tests, security, performance
+    Feature WIP path: sdd/wip/[feature]
+    Run checks: build, tests, security, performance, quality, process
     Return structured JSON verdict.
     """
 )
@@ -124,6 +125,26 @@ Check for common issues:
 | Dead Code | Unused imports/variables | minor |
 | Missing Error Handling | Unhandled promise/exception | major |
 
+#### Check 6: Process Compliance (SDD pipeline integrity)
+
+> **Always run** when a WIP feature path is known (`sdd/wip/<feature>/`). This is **not** code-quality review — it answers: “Is this change allowed at this stage?”
+>
+> Use Read / Glob / Grep / git diff only. **Do not require** `bash`, `jq`, or project hooks. If a shell command fails, fall back to reading files with tools.
+
+| Rule ID | Check | Severity |
+|---------|-------|----------|
+| PROC-IMMUTABLE-TESTS | If `4-tests/tests-manifest.json` → `status` is `approved`, any listed test file must **not** appear in git diff (working tree or staged) | critical |
+| PROC-IMMUTABLE-SPEC | If `meta.md` shows functional/technical `status: approved`, do not allow unapproved edits to those approved spec files unless stage is explicitly refine/reopen | critical |
+| PROC-IMMUTABLE-TASKS | If `tasks.json` / tasks stage is `approved`, structural task contract must not be silently rewritten during `/sdd.build` | major |
+| PROC-PHASE-ORDER | `Current Stage` / stages must allow the invoking command (e.g. implementation only if `stages.tests` is `approved` or `skipped`) | critical |
+| PROC-NO-IMPL-IN-TEST | During tests stage (`Current Stage: tests` or manifest not approved): production feature paths must not gain real implementation (stubs/mocks only) | critical |
+| PROC-NO-NEW-TESTS-IN-BUILD | During implementation: no **new** unit/integration test files beyond those already listed in `tests-manifest.json` (E2E only if deferred/enabled) | major |
+| PROC-MANIFEST-CONSISTENCY | Every `tests[].file` in manifest exists on disk when status is approved/in-progress; `meta.md` stages.tests aligns with manifest `status` | major |
+
+**Process vs quality**: Code review asks “is this code good?”. Process Compliance asks “may this diff exist in this phase?”. Do not merge the two into one vague opinion.
+
+Process failures → include in `issues` with `category: "process"` and force verdict `CANNOT_PROCEED` (critical/major process issues are never warnings).
+
 ---
 
 ## Output Format
@@ -139,13 +160,14 @@ Check for common issues:
     "src/services/UserService.ts",
     "src/controllers/UserController.ts"
   ],
-  "checks_run": ["build", "tests", "security", "performance", "quality"],
+  "checks_run": ["build", "tests", "security", "performance", "quality", "process"],
   "results": {
     "build": { "status": "passed", "message": "Build successful" },
     "tests": { "status": "passed", "message": "15/15 tests passed", "coverage": 85 },
     "security": { "status": "failed", "issues_found": 1 },
     "performance": { "status": "passed", "issues_found": 0 },
-    "quality": { "status": "warning", "issues_found": 2 }
+    "quality": { "status": "warning", "issues_found": 2 },
+    "process": { "status": "passed", "issues_found": 0 }
   },
   "summary": {
     "critical": 0,
@@ -187,13 +209,14 @@ Check for common issues:
 
 | Condition | Verdict | Description |
 |-----------|---------|-------------|
+| Any `category: process` critical/major | `CANNOT_PROCEED` | SDD pipeline integrity violated |
 | `critical > 0` | `CANNOT_PROCEED` | Critical security/functionality issue |
 | `major > 0` | `CANNOT_PROCEED` | Significant issue must be fixed |
 | `minor > 0` | `CANNOT_PROCEED` | Minor issue should be fixed |
 | `warnings > 0` only | `CAN_PROCEED_WITH_WARNINGS` | Non-blocking warnings |
 | All zero | `APPROVED` | All checks passed |
 
-**Important**: The verdict is computed by YOU and returned to the main agent. The main agent MUST obey this verdict without interpretation.
+**Important**: The verdict is computed by YOU and returned to the main agent. The main agent MUST obey this verdict without interpretation. On `CANNOT_PROCEED` for process, the main agent MUST AskUserQuestion (always include **Outros**) — see `commands/references/ask-user-question-outros.md`.
 
 ---
 
@@ -253,6 +276,8 @@ Found 2 warnings:
 4. **JSON Required**: ALWAYS include the JSON block at the end
 5. **No Context Leakage**: If you somehow receive implementation context, IGNORE it
 6. **Fail Safe**: If uncertain, mark as issue (false positive is better than false negative)
+7. **Process over convenience**: Never skip Check 6 to “help the build pass”
+8. **No OS hard deps**: Prefer Read/Grep/git via available tools; missing `jq`/bash is not a reason to skip Process Compliance
 
 ---
 

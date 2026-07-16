@@ -306,7 +306,7 @@ Para **prototype**, `/sdd.test` pode ser ignorado automaticamente.
 | Artefatos | `sdd/wip/<feature>/4-tests/` (`test-plan.md`, `tests-manifest.json`) |
 | `detect-phase.sh` | Novo stage `tests` (fase 4) antes de `implementation` (fase 5) |
 | Prototype | Gate ignorado (`stages.tests.status: skipped`) |
-| **Anti-gaming guard** | **Soft**: `/sdd.build` detecta diff em arquivos de `tests-manifest.json` → STOP + AskUserQuestion. **Hard** (novo): `guard-approved-tests.sh` + pre-commit + CI — ver §15 |
+| **Anti-gaming / process** | Soft: diff em testes aprovados → STOP + AskUserQuestion (**Outros** obrigatório). Endurecido via `sdd-validator-runner` Process Compliance — ver §15. Sem hooks/`jq` |
 
 ### Fluxo
 
@@ -325,24 +325,18 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
 
 ---
 
-## 15. Hard gates — enforcement determinístico (em andamento)
+## 15. Process gates — validator LLM (sem hard OS)
 
-**Problema**: a maior parte dos gates SDD são *soft* — instruções em markdown que o LLM deveria seguir. Um modelo confuso pode ignorar sem segunda camada pegando a violação.
-
-**Primeira implementação (Gate 2.5)** — branch `feat/hard-enforcement-gates`:
+**Decisão**: hard gates baseados em `bash`/`jq`/pre-commit/CI foram **removidos** — frota corporativa Windows costuma não garantir esses executores. O pack permanece agnóstico de máquina.
 
 | Camada | Mecanismo |
 |--------|-----------|
 | Soft | `sdd.build.md`, `sdd-implementer`, `meta.md` |
-| **Hard** | `framework/tools/guard-approved-tests.sh` |
-| Pre-commit | Instalado por `install.sh` / `install.ps1` (`--staged-only`) |
-| CI | Snippet em `framework/templates/ci/sdd-guard-approved-tests.yml` |
-| Snapshot | `/sdd.test --approve` grava `sha256` por arquivo em `tests-manifest.json` |
-| Refine | `/sdd.test --refine` desbloqueia (`status: in-progress`) antes de editar testes |
+| Process | `sdd-validator-runner` → Check 6 Process Compliance |
+| Humano | AskUserQuestion com **Outros** obrigatório (pode trocar de modelo) |
+| Refine | `/sdd.test --refine` → `status: in-progress` antes de editar testes |
 
-Documentação canônica: [`framework/HARD_GATES.md`](./framework/HARD_GATES.md)
-
-**Próximos hard gates candidatos**: validação de schema de spec/tasks, checklist de artefatos no `/sdd.finish`.
+Documentação: [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) · template Ask: `commands/references/ask-user-question-outros.md`
 
 ---
 

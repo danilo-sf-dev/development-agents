@@ -249,53 +249,6 @@ if [[ "$SKIP_PACK_COPY" == false ]]; then
   fi
 fi
 
-# ── 6) Git pre-commit hook (hard gate: approved tests) ───────────────────────
-install_sdd_pre_commit_hook() {
-  local target="$1"
-  local git_dir="$target/.git"
-  local hook_template="$SCRIPT_DIR/framework/templates/git-hooks/pre-commit-sdd"
-  local hook_file="$git_dir/hooks/pre-commit"
-  local chained_file="$git_dir/hooks/pre-commit.sdd-chained"
-  local marker="# sdd-guard-approved-tests"
-
-  if [[ ! -d "$git_dir" ]]; then
-    warn "Não é repositório git — pulando pre-commit hook SDD"
-    return 0
-  fi
-  if [[ ! -f "$hook_template" ]]; then
-    warn "Template pre-commit SDD não encontrado — pulando"
-    return 0
-  fi
-
-  mkdir -p "$git_dir/hooks"
-
-  if [[ -f "$hook_file" ]] && grep -qF "$marker" "$hook_file"; then
-    ok "pre-commit hook SDD já instalado"
-    return 0
-  fi
-
-  if [[ -f "$hook_file" ]]; then
-    cp "$hook_file" "$chained_file"
-    chmod +x "$chained_file"
-    {
-      cat "$hook_template"
-      echo ""
-      echo "# --- chained pre-commit (existing hook) ---"
-      echo 'if [ -f "$(git rev-parse --git-path hooks)/pre-commit.sdd-chained" ]; then'
-      echo '  sh "$(git rev-parse --git-path hooks)/pre-commit.sdd-chained" || exit 1'
-      echo "fi"
-    } > "$hook_file"
-  else
-    cp "$hook_template" "$hook_file"
-  fi
-  chmod +x "$hook_file"
-  ok "pre-commit hook SDD instalado (guard approved tests)"
-}
-
-echo ""
-echo "Installing SDD hard gate (pre-commit)..."
-install_sdd_pre_commit_hook "$TARGET_DIR"
-
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "============================================================"

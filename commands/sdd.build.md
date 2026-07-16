@@ -82,18 +82,14 @@ Before adding a library: run project dependency-security scanner if configured i
 
 ### Detection (per task)
 
-Run hard guard first, then soft diff fallback:
-```bash
-bash development-agents/framework/tools/guard-approved-tests.sh check --root .
-```
-If exit `1` OR approved files in diff → STOP, AskUserQuestion (revert | escalate `/sdd.test --refine` | show diff). Never auto-approve in Express.
-> **ONLY IF** needing AskUserQuestion payload or bash fallback:
-> Read `references/build-anti-gaming-detection.md`.
+Agent diff check (no OS hard scripts): if any file listed in `tests-manifest.json` appears in the working-tree diff → STOP, AskUserQuestion (always include **Outros**). Never auto-approve in Express.
+> Read `references/build-anti-gaming-detection.md` for detection steps + AskUserQuestion payload.
+> AskUserQuestion shape: `references/ask-user-question-outros.md`.
 
 ## Mandatory Code Review Protocol (short)
 
-Per task: Implement → Test (skip prototype) → `sdd-validator-runner` (perf/security/review) → Fix **all** findings → Re-check → Complete/commit.
-Minor findings are NOT optional.
+Per task: Implement → run approved tests (skip prototype) → `sdd-validator-runner` with **Process Compliance +** perf/security/quality → Fix **all** findings → Re-check → Complete/commit.
+Process Compliance failures are BLOCKING — AskUserQuestion (incl. Outros) before continuing. Minor quality findings are NOT optional.
 
 ## Behavior by Mode
 
