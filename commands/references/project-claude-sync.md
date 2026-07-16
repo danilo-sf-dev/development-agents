@@ -34,7 +34,7 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 
 ### Quick Reference
 - Framework expert: `Skill("sdd-kit-expert")`
-- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.finish`
+- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish` (canonical: `framework/PIPELINE.md`)
 - Project conventions: `sdd/PROJECT.md`
 - Discovered patterns: `sdd/PATTERNS.md`
 

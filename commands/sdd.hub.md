@@ -84,7 +84,7 @@ Before executing ANY sub-command, verify this is a hub:
 1. Run: `Bash: bash development-agents/framework/tools/detection/detect-stack.sh --level`
 2. If result is NOT `hub`, stop and show:
    > "This directory is not a hub. A hub requires `sdd/PROJECT.md` with a `## Hub members` table.
-   > For single-app features, use `/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.build`."
+   > For single-app features, use `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` (see `framework/PIPELINE.md`)."
 
 ---
 
