@@ -6,6 +6,8 @@ description: Build and compliance validator for SDD Kit. This is a SKILL (invoke
 # SDD Validator
 
 > **SKILL**: Run mechanical validation tasks - build, tests, coverage, code compliance. Invoke with `Skill("sdd-validator")`. Do NOT confuse with the `sdd-validator-runner` subagent.
+>
+> **Process integrity** (approved tests immutable, phase order, anti-shortcut) is owned by `sdd-validator-runner` Check 6 — see `framework/HARD_GATES.md`. Prefer delegating Process Compliance to that agent rather than re-implementing it here.
 
 ---
 

@@ -12,7 +12,7 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 
 > **Fonte canônica completa** (diagrama Mermaid, gates, modos, papéis): [`framework/PIPELINE.md`](./framework/PIPELINE.md). Atualize lá primeiro se o pipeline mudar.
 
-**Hard gates** (enforcement determinístico, independente do LLM): [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) — Gate 2.5 (testes aprovados imutáveis) via `guard-approved-tests.sh` + pre-commit.
+**Process gates** (LLM, sem dependência de bash/jq/hooks): [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) — `sdd-validator-runner` (Process Compliance) + AskUserQuestion (sempre com **Outros**).
 
 ## Papéis
 
@@ -22,7 +22,7 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 | Arquiteto | agent `sdd-system-designer` + `/sdd.plan` |
 | Developer | agent `sdd-implementer` |
 | Test Writer | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E opcional) |
-| Code Reviewer | skill `sdd-code-reviewer` + agent `sdd-validator-runner` |
+| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (qualidade **e** integridade do pipeline) |
 | Orquestrador | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert` |
 | Instalador | command `/sdd.install` + agent `development-agents-installer` (alternativa a `install.ps1`) |
 | Commit | skill `commit-workflow` com 4 opções e Graphify opcional |

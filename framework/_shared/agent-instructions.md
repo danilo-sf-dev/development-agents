@@ -34,3 +34,7 @@ When a command shows JSON for `AskUserQuestion`, you MUST:
 ## AskUserQuestion format reminder
 
 Blocks marked with ⛔ INVOKE TOOL are executable tool calls. Pass the JSON parameters exactly as written; never simulate the prompt in chat or terminal output.
+
+### Outros (mandatory on gates)
+
+Every **gate** AskUserQuestion (approve / process failure / anti-gaming / ambiguous next step) MUST include an option labeled **Outros** with free-text intent: the user describes what they will do or suggests another path. See `commands/references/ask-user-question-outros.md`.

@@ -130,9 +130,7 @@ All under `sdd/wip/[feature]/4-tests/`:
       "file": "tests/unit/UserService.test.ts",
       "covers": ["TASK-002", "AC-1", "US-1"],
       "edge_cases": ["empty input", "invalid id"],
-      "expected_initial_result": "fail",
-      "sha256": null,
-      "snapshotted_at": null
+      "expected_initial_result": "fail"
     }
   ],
   "red_verified": false,
@@ -238,26 +236,22 @@ AskUserQuestion(
     "options": [
       {"label": "Sim, aprovar", "description": "Desbloqueia /sdd.build"},
       {"label": "Ajustar testes", "description": "Refinar plano ou arquivos"},
-      {"label": "Cancelar", "description": "Voltar sem aprovar"}
+      {"label": "Cancelar", "description": "Voltar sem aprovar"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
 )
 ```
 
+> Gate AskUserQuestion **always** includes **Outros** — see `references/ask-user-question-outros.md`.
+
 **Express mode** (`execution_mode: express` in meta.md): auto-approve if `red_verified: true`.
 
 ### Step 7: On Approval (`--approve` or user confirms)
 
-1. **Hard gate snapshot** (deterministic — not optional):
-   ```bash
-   bash development-agents/framework/tools/guard-approved-tests.sh snapshot \
-     --root . \
-     --feature sdd/wip/[feature]
-   ```
-   Writes `sha256` per test file into `tests-manifest.json`. Pre-commit + CI use this to block edits during `/sdd.build`.
-2. Set `tests-manifest.json → status: approved`
-3. Update `meta.md`:
+1. Set `tests-manifest.json → status: approved`
+2. Update `meta.md`:
    ```yaml
    stages:
      tests:
@@ -267,9 +261,9 @@ AskUserQuestion(
        red_verified: true
    Current Stage: implementation
    ```
-4. **Do NOT** start implementation — user runs `/sdd.build`
+3. **Do NOT** start implementation — user runs `/sdd.build`
 
-> **Soft vs hard**: `meta.md` approval is the soft gate (agent convention). The snapshot + pre-commit/CI guard is the **hard** gate — see `framework/HARD_GATES.md`.
+> **Process enforcement**: Approval is recorded in `meta.md` / manifest. During `/sdd.build`, `sdd-validator-runner` (Process Compliance) + anti-gaming AskUserQuestion enforce immutability — no OS hard hooks. See `framework/HARD_GATES.md`.
 
 ### Step 8: Interactive Next Steps
 
@@ -284,7 +278,8 @@ AskUserQuestion(
       {"label": "/clear + /sdd.build (Recommended)", "description": "Contexto limpo para implementar"},
       {"label": "/sdd.build", "description": "Implementar no contexto atual"},
       {"label": "/sdd.test --refine", "description": "Ajustar testes antes de codar"},
-      {"label": "/sdd.check", "description": "Revisar estrutura da feature"}
+      {"label": "/sdd.check", "description": "Revisar estrutura da feature"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]

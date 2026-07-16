@@ -1,101 +1,53 @@
-# Hard Gates — Deterministic enforcement (SDD)
+# Process gates — LLM validator (no OS hard deps)
 
-> **Problem**: Most SDD gates are *soft* — markdown instructions the LLM is expected to follow.
-> A confused or miscalibrated model can skip them with no second layer catching the violation.
+> **Decision (2026)**: Machine-level hard gates (`bash` + `jq` + git hooks + CI scripts) were
+> removed. Corporate Windows fleets often lack a reliable shell/`jq` path; blocking the pipeline
+> on those tools made the pack less portable.
 >
-> **Solution**: *Hard* gates — shell scripts, git hooks, and CI steps that **exit non-zero**
-> independently of the agent. The agent can still *try* to cheat; the repo refuses the commit/PR.
+> Enforcement of SDD process rules is now **agent-based**: `sdd-validator-runner` runs a
+> **Process Compliance** check (isolated context), and the orchestrating command **must** pause
+> with AskUserQuestion (always including **Outros**) when a process rule fails or is ambiguous.
 
 ## Layer model
 
 | Layer | Mechanism | Enforces | Bypass |
 |-------|-----------|----------|--------|
-| **Soft** | Command/skill markdown | Agent behavior | Human review, luck |
-| **Hard** | `framework/tools/*.sh`, git hooks, CI | Repo state | `SDD_GUARD_SKIP=1` (local only — never in CI) |
+| **Soft convention** | Command/skill markdown | Agent behavior | Human review |
+| **Process validator** | `agents/sdd-validator-runner.md` → Check: Process Compliance | Pipeline integrity | User authorizes via AskUserQuestion (incl. Outros) |
+| **Optional local tooling** | Project’s own CI / hooks | Whatever the team installs | Outside this pack |
 
-Gate 2.5 (tests-first) is the first gate with a **hard** layer:
+This pack does **not** install pre-commit hooks or require `jq`/`bash` for gate enforcement.
 
-```
-/sdd.test --approve
-    │
-    ├─ soft: meta.md stages.tests.status = approved
-    └─ hard: guard-approved-tests.sh snapshot → sha256 per test file in tests-manifest.json
+## What the validator checks (process)
 
-/sdd.build (implementation)
-    │
-    ├─ soft: "Approved Tests Are Immutable" in sdd.build.md + sdd-implementer
-    └─ hard: guard-approved-tests.sh check
-              ├─ pre-commit (--staged-only)
-              └─ CI (full working tree vs snapshot)
-```
+See `agents/sdd-validator-runner.md` → **Check 6: Process Compliance**:
 
-## Script: `guard-approved-tests.sh`
+1. Approved artifact immutability (tests / specs / tasks while `status: approved`)
+2. Phase order (e.g. build only after tests approved or skipped)
+3. Anti-shortcut (no production feature code during `/sdd.test`; no new unit tests during `/sdd.build`)
+4. Manifest consistency (`tests-manifest.json` ↔ files ↔ `meta.md`)
 
-Location: `framework/tools/guard-approved-tests.sh` (in target projects: `development-agents/framework/tools/`).
+Quality/security/build/test execution remain separate checks (same agent).
 
-### Snapshot (on approval)
+## Human authorization
 
-Run when `/sdd.test --approve` completes — **before** setting `status: approved`:
+When process compliance fails or is unclear:
 
-```bash
-bash development-agents/framework/tools/guard-approved-tests.sh snapshot \
-  --root . \
-  --feature sdd/wip/my-feature
-```
+1. STOP — do not continue the task cycle silently
+2. Call AskUserQuestion with closed options **and always** an **Outros** free-text option
+3. User may keep the current model, switch to a stronger one for the validator pass, skip with risk accepted, or describe another path via Outros
 
-Writes `sha256` + `snapshotted_at` per entry in `tests-manifest.json`.
-
-### Check (pre-commit / CI / manual)
-
-```bash
-# Pre-commit (staged files only)
-bash development-agents/framework/tools/guard-approved-tests.sh check --root . --staged-only
-
-# CI or manual audit (staged + unstaged vs snapshot hash)
-bash development-agents/framework/tools/guard-approved-tests.sh check --root . --json
-```
-
-**Blocks when**:
-- `tests-manifest.json → status: approved`, AND
-- An approved test file appears in git diff, OR
-- On-disk content hash ≠ stored `sha256`
-
-**Does not block when**:
-- No WIP feature with approved tests
-- Manifest `status` is `pending`, `in-progress`, etc. (e.g. during `/sdd.test --refine`)
-- `SDD_GUARD_SKIP=1` (local emergency only — logged warning)
-
-## Installation
-
-### Pre-commit hook
-
-Installed automatically by `install.sh` / `install.ps1` into `.git/hooks/pre-commit` (chains with existing hooks).
-
-Template source: `framework/templates/git-hooks/pre-commit-sdd`
-
-### CI
-
-Copy snippet from `framework/templates/ci/sdd-guard-approved-tests.yml` into your pipeline.
+Template: `commands/references/ask-user-question-outros.md`
 
 ## Refine path (legitimate test edits)
 
-1. `/sdd.test --refine` sets `tests-manifest.json → status: in-progress` (unlocks edits)
+1. `/sdd.test --refine` sets `tests-manifest.json → status: in-progress`
 2. Human adjusts tests + re-approves
-3. Snapshot runs again → new sha256 values → `status: approved`
-
-Escalation from `/sdd.build` uses the same path — never edit approved tests silently.
-
-## Future hard gates (not yet implemented)
-
-| Gate | Soft today | Hard candidate |
-|------|------------|----------------|
-| Spec approval | meta.md flags | Validate required sections exist before plan |
-| Task approval | tasks.json status | Schema + AC coverage linter |
-| Build quality | sdd-validator-runner | Existing `validate-code.sh` in CI (partial) |
-| Finish archive | sdd.finish checks | Script verifying meta stage + artifact completeness |
+3. Return to `/sdd.build`
 
 ## See also
 
-- `framework/PIPELINE.md` — gate table (soft + hard columns)
-- `commands/sdd.test.md` — snapshot on approve
-- `commands/sdd.build.md` — anti-gaming (soft + hard reference)
+- `framework/PIPELINE.md` — gate table
+- `commands/sdd.build.md` — anti-gaming (soft + validator)
+- `commands/sdd.test.md` — approval gate
+- `agents/sdd-validator-runner.md` — process + quality checks
