@@ -374,6 +374,24 @@ O que foi corrigido (~25 arquivos):
 terceiros) que não existe como comando real no pack (`commands/sdd.skill.md` não existe). Decidir se
 é uma feature a implementar ou documentação morta a remover.
 
+### P0 + P1 + P2 — Slim happy path (token budget) — concluído
+
+Branch: `chore/slim-command-happy-path`. Meta: arquivo principal ≤400 linhas; refs só com `ONLY IF`.
+
+| Comando | Antes | Depois | Status |
+|---------|-------|--------|--------|
+| `sdd.spec.md` | ~1805 | **~287** | ✅ P0 |
+| `sdd.fix.md` | ~1834 | **~273** | ✅ P0 |
+| `sdd.project.md` | ~1671 | **~158** | ✅ P0 |
+| `sdd.start.md` | ~1097 | **~199** | ✅ P1 |
+| `sdd.reverse-eng.md` | ~1125 | **~386** | ✅ P1 |
+| `sdd.build.md` | ~937 | **~230** | ✅ P1 |
+| `sdd.finish.md` | ~950 | **~168** | ✅ P1 |
+| `sdd.plan.md` | ~672 | **~192** | ✅ P2 |
+| `sdd.backlog.md` | ~540 | **~111** | ✅ P2 |
+
+Todos os `commands/sdd*.md` estão ≤400. Detalhes em `commands/references/*`. Scripts one-shot de migração removidos após o corte.
+
 ---
 
 ## 15. Como validar o pack
