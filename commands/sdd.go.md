@@ -44,7 +44,7 @@ This is a TOOL CALL you must execute, not content to display.
 | `--audio` | Record feature description via microphone |
 | `--resume` | Resume interrupted express workflow |
 
-**Flow**: start → spec → plan → build → finish (3-5 questions total)
+**Flow**: start → spec → plan → test → build → finish (3-5 questions total)
 
 **Examples**:
 ```bash
@@ -69,7 +69,7 @@ When this skill shows JSON for AskUserQuestion, you MUST:
 > **CRITICAL**: `/sdd.go` is an **orchestrator**, NOT a standalone implementation.
 > It invokes standard commands with express mode rules. **DO NOT duplicate logic here.**
 
-**Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.build` → `/sdd.finish`
+**Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish`
 
 **Express Rules**:
 - 3-5 critical questions only
@@ -131,8 +131,9 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 | 1 | `/sdd.start "<name>" --express` | `start.md` → "Express Mode" | - |
 | 2 | `/sdd.spec` | `spec.md` → "Express Mode" | Consolidated questions |
 | 3 | `/sdd.plan` | `plan.md` → "Express Mode" | Auto-select Batched |
-| 4 | `/sdd.build` | `build.md` → "Express Mode" | Auto-retry 2x max |
-| 5 | `/sdd.finish` | `finish.md` → "Express Mode" | All validations mandatory |
+| 4 | `/sdd.test` | `test.md` → "Express Mode" | Auto-approve if red verified |
+| 5 | `/sdd.build` | `build.md` → "Express Mode" | Auto-retry 2x max |
+| 6 | `/sdd.finish` | `finish.md` → "Express Mode" | All validations mandatory |
 
 ---
 
@@ -189,14 +190,21 @@ Execute `/sdd.plan` (reads mode from meta.md)
 
 **Override**: Auto-select "Batched" strategy, no confirmation.
 
-### Step 4: Implementation
+### Step 4: Tests-First
+
+Execute `/sdd.test` (reads mode from meta.md)
+→ Reference: `test.md` → "Express Mode" section
+
+**Override**: Auto-approve if red phase verified; skip entirely for prototype.
+
+### Step 5: Implementation
 
 Execute `/sdd.build` (reads mode from meta.md)
 → Reference: `build.md` → "Express Mode" section
 
 **Override**: Auto-retry failures (max 2x), then pause.
 
-### Step 5: Finalization
+### Step 6: Finalization
 
 Execute `/sdd.finish` (reads mode from meta.md)
 → Reference: `finish.md` → "Express Mode" section

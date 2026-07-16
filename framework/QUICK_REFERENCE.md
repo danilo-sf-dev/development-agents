@@ -69,7 +69,7 @@ $ sdd-kit help              # Show help
 
 ### Standard (5 commands)
 ```
-/sdd.start → /sdd.spec → /sdd.plan → /sdd.build → /sdd.finish
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
 
 ### Granular Control (optional flags)
@@ -371,7 +371,7 @@ Every feature MUST have:
 /sdd.start --reopen 003              # Reopen by number (asks phase)
 /sdd.start --reopen user-auth        # Reopen by name
 /sdd.start --reopen 003 --phase 2    # Reopen directly to technical spec
-# Then: /sdd.spec → /sdd.plan → /sdd.build → /sdd.finish (normal flow)
+# Then: /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish (normal flow)
 ```
 
 ### Need More Control

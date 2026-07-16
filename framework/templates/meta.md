@@ -280,6 +280,16 @@ stages:
     iterations: 0
     final_tasks_count: 0
 
+  tests:
+    started: null
+    completed: null
+    status: pending | in-progress | approved | skipped
+    approved_by: null        # Username/email of person who approved tests (Gate 2.5)
+    approved_at: null        # ISO-8601 timestamp of approval
+    red_verified: false      # true after /sdd.test confirms new tests fail
+    skipped_reason: null     # e.g. "prototype" when tests-first gate is bypassed
+    test_files_count: 0
+
   implementation:
     started: null
     completed: null

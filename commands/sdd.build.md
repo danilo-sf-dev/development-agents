@@ -217,6 +217,58 @@ mcp__dependency security scanner__safe_add_dependency(
 
 ---
 
+## Approved Tests Are Immutable (Anti-Gaming Guard)
+
+> **BLOCKING RULE**: Tests approved in `/sdd.test` are the frozen behavior contract for this feature. `/sdd.build` writes code to make them pass — it never edits, weakens, deletes, disables, or skips them to force a green result. This applies in **every mode**, including Express.
+
+**Forbidden during `/sdd.build`**:
+- Editing assertions, expected values, or fixtures in any file listed in `tests-manifest.json`
+- Deleting or renaming an approved test file
+- Disabling tests (`.skip()`, `@Disabled`, `xit()`, commenting out, etc.)
+- Loosening mocks/setup in a way that changes what the test actually verifies
+
+**Allowed** (narrow exceptions, must be logged in the task report, not silent):
+- Fixing a broken import path caused by a file move/rename during implementation (mechanical fix only, no assertion change)
+- Adding brand-new tests is **not** this command's job either — that belongs to `/sdd.test`
+
+### Detection (run per task, as part of Step 5)
+
+```bash
+approved_test_files=$(jq -r '.tests[].file' sdd/wip/[feature]/4-tests/tests-manifest.json 2>/dev/null)
+changed_files=$(git diff --name-only; git diff --cached --name-only)
+
+touched_approved_tests=false
+for f in $approved_test_files; do
+    if echo "$changed_files" | grep -qF "$f"; then
+        echo "🚫 Approved test file modified: $f"
+        touched_approved_tests=true
+    fi
+done
+```
+
+**If `touched_approved_tests=true`** — STOP the task cycle, do not commit, do not mark task completed:
+
+**⛔ INVOKE TOOL (do not print this, CALL the tool)**:
+
+```
+AskUserQuestion(
+  questions=[{
+    "question": "Um teste aprovado foi alterado durante a implementação. Isso pode indicar que o teste está sendo ajustado pra passar, em vez do código ser corrigido. Como proceder?",
+    "header": "Test Integrity",
+    "options": [
+      {"label": "Reverter o teste e corrigir o código (Recommended)", "description": "Descarta o diff no arquivo de teste, implementação continua até bater no teste original"},
+      {"label": "O teste está realmente errado — escalar para /sdd.test --refine", "description": "Pausa o build, volta ao gate de testes com novo ciclo de aprovação humana"},
+      {"label": "Ver o diff antes de decidir", "description": "Mostra o diff do arquivo de teste"}
+    ],
+    "multiSelect": false
+  }]
+)
+```
+
+> **NEVER** auto-approve a test file change — this check always pauses and asks, even in Express mode. Silent edits to approved tests are the exact failure mode this gate exists to prevent.
+
+---
+
 ## Mandatory Code Review Protocol
 
 > **BLOCKING**: Code review is not optional. ALL findings must be fixed, including minor issues.
@@ -283,13 +335,20 @@ This skill supports external skill hooks at 3 trigger points. At each point, the
 > **Use script for deterministic phase detection** - Saves ~500-1000 tokens vs manual parsing.
 
 ```bash
-# Deterministic phase detection (FIRST - verify we're in correct phase)
+# Verify tasks AND tests are approved (must be in phase 5 = implementation)
+tests_status=$(grep -A5 "tests:" sdd/wip/[feature]/meta.md 2>/dev/null | grep "status:" | head -1 | sed 's/.*: *//' | tr -d ' ')
+
+if [ "$tests_status" != "approved" ] && [ "$tests_status" != "skipped" ]; then
+    echo "❌ Tests not approved. Run /sdd.test --approve first."
+    exit 1
+fi
+
 phase_result=$(bash development-agents/framework/tools/detection/detect-phase.sh sdd/wip/[feature] --json)
 current_stage=$(echo "$phase_result" | grep -o '"stage":"[^"]*"' | cut -d'"' -f4)
 
-# Verify tasks are approved (must be in phase 4 = implementation)
+# Verify ready for implementation (tests approved → stage implementation)
 if [ "$current_stage" != "implementation" ]; then
-    echo "❌ Tasks not approved. Run /sdd.plan --approve first."
+    echo "❌ Not ready for build. Run /sdd.test --approve first."
     exit 1
 fi
 
@@ -501,6 +560,9 @@ infra: provision <service-name> per technical spec / PROJECT.md
 
 ### Step 4: Per-Task Implementation
 
+> **Tests-first**: Tests were written and approved in `/sdd.test`. **Do NOT spawn `sdd-small-test-writer` for new unit/integration tests** — only run existing tests and implement production code until they pass (green).
+> ⚠️ **Never edit the approved test files themselves to force a pass** — see "Approved Tests Are Immutable" above. Fix the code, not the contract.
+
 > **Platform routing**: Read `platform.type` in `PROJECT.md` before dispatching.
 
 For each task, delegate to subagents based on platform:
@@ -509,9 +571,9 @@ For each task, delegate to subagents based on platform:
 
 | Task Type | Subagent | Notes |
 |-----------|----------|-------|
-| Production code | `sdd-implementer` | Follow detected stack + technical spec |
-| Unit/integration tests | `sdd-small-test-writer` | Skip for prototype |
-| E2E tests | `sdd-large-test-writer` | Only if project configures E2E tooling (`testing.e2e.enabled` or existing suite) |
+| Production code | `sdd-implementer` | Follow detected stack + technical spec; make approved tests pass |
+| Run tests (verify) | `sdd-validator` skill or project test command | Re-run after each task — no new test files |
+| E2E tests (if not done in /sdd.test) | `sdd-large-test-writer` | Only if E2E was deferred and `testing.e2e.enabled` |
 | Validation | `sdd-validator-runner` | Independent context |
 
 **Optional mobile / design-system preamble** (only when `platform.type` is android/ios **and** PROJECT.md names stack docs/skills):
@@ -557,10 +619,11 @@ File: sdd/wip/{feature}/2-technical/spec.md
 
 After each task implementation:
 
-1. Invoke `sdd-validator-runner` (independent context)
-2. Parse verdict: APPROVED / CAN_PROCEED_WITH_WARNINGS / CANNOT_PROCEED
-3. If CANNOT_PROCEED: Fix and re-invoke
-4. **Persist task status to disk** (always, after quality gate passes):
+1. **Check approved test files weren't touched** — run the detection in "Approved Tests Are Immutable" above. If triggered, resolve via the AskUserQuestion flow before continuing.
+2. Invoke `sdd-validator-runner` (independent context)
+3. Parse verdict: APPROVED / CAN_PROCEED_WITH_WARNINGS / CANNOT_PROCEED
+4. If CANNOT_PROCEED: Fix and re-invoke
+5. **Persist task status to disk** (always, after quality gate passes):
    ```bash
    # Update tasks.json: mark task completed
    jq '(.tasks[] | select(.id == "TASK-XXX")) .status = "completed"' \
@@ -854,6 +917,9 @@ Can return to specs if discoveries require changes:
 /sdd.plan --approve
         │
         ▼
+   /sdd.test --approve
+        │
+        ▼
    /sdd.build
         │
    ┌────┴────┐
@@ -879,8 +945,8 @@ Can return to specs if discoveries require changes:
 - **Context management**: `context-guardian` skill
 - ****: `standards/mandatory-standards.md`
 - **Coding standards**: `standards/coding-standards.md`
-- **Subagents (backend)**: `sdd-implementer`, `sdd-small-test-writer`, `sdd-large-test-writer`, `sdd-validator-runner`
-- **Subagents (frontend-web)**: `sdd-implementer`, `sdd-small-test-writer`, `sdd-large-test-writer`, `sdd-validator-runner`
+- **Subagents (backend)**: `sdd-implementer`, `sdd-validator-runner` (tests written in `/sdd.test`)
+- **Subagents (frontend-web)**: `sdd-implementer`, `sdd-validator-runner` (tests written in `/sdd.test`)
 
 ---
 

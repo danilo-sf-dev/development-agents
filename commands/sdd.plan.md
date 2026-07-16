@@ -406,6 +406,7 @@ fi
    - Validate tasks (see Validation Checks)
    - Write `tasks.json` to `sdd/wip/[feature]/3-tasks/`
    - Update `meta.md` with execution strategy
+   - Set `Current Stage: tests` (next gate: `/sdd.test`)
    - Output success message
 
 ### Step 8: Post-Approval Context Check
@@ -422,7 +423,7 @@ Before presenting next steps, estimate context usage. If > 50%, show advisory:
 ║                                                       ║
 ║  All tasks are saved in tasks.json.                   ║
 ║  Primary recommendation:                              ║
-║    /clear then /sdd.build                            ║
+║    /clear then /sdd.test                             ║
 ║  Fresh context (~187K tokens) outperforms              ║
 ║  compaction (~140K degraded tokens).                   ║
 ║                                                       ║
@@ -447,12 +448,12 @@ Before presenting next steps, estimate context usage. If > 50%, show advisory:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Tasks ready. Start implementation?",
+    "question": "Tasks ready. Write tests first?",
     "header": "Next",
     "options": [
-      {"label": "/clear + /sdd.build (Recommended)", "description": "Fresh context for implementation"},
-      {"label": "/sdd.build", "description": "Start implementing in current context"},
-      {"label": "/sdd.build --layer 1", "description": "Build only local layer first"},
+      {"label": "/clear + /sdd.test (Recommended)", "description": "Fresh context for tests-first gate"},
+      {"label": "/sdd.test", "description": "Write failing tests before implementation"},
+      {"label": "/sdd.test --refine", "description": "Skip if tests already exist — refine only"},
       {"label": "/sdd.check", "description": "Review task structure"}
     ],
     "multiSelect": false
@@ -464,9 +465,9 @@ AskUserQuestion(
 
 | Selection | Action |
 |-----------|--------|
-| /clear + /sdd.build (Recommended) | Inform user to run `/clear`, then `/sdd.build` |
-| /sdd.build | `Skill(skill="sdd.build")` |
-| /sdd.build --layer 1 | `Skill(skill="sdd.build", args="--layer 1")` |
+| /clear + /sdd.test (Recommended) | Inform user to run `/clear`, then `/sdd.test` |
+| /sdd.test | `Skill(skill="sdd.test")` |
+| /sdd.test --refine | `Skill(skill="sdd.test", args="--refine")` |
 | /sdd.check | `Skill(skill="sdd.check")` |
 | Other | User types custom input |
 
@@ -682,7 +683,7 @@ Agent cannot execute deployments. Focus on code, tests, and configs.
 /sdd.spec technical (approved)
         │
         ▼
-   /sdd.plan ─────────────► /sdd.build
+   /sdd.plan ─────────────► /sdd.test ─────────────► /sdd.build
         │
    ┌────┴────┐
    │         │

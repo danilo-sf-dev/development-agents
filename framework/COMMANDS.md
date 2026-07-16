@@ -519,7 +519,7 @@ During `/sdd.build`, when improvement patterns are detected (TODO comments, code
 
 # Option 3: Step by step (auto-advances)
 /sdd.start "user-auth" --express
-/sdd.spec → /sdd.plan → /sdd.build → /sdd.finish
+/sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
 
 ### Standard (4-5 commands)

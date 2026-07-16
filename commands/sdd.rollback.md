@@ -107,7 +107,8 @@ When this skill shows JSON for AskUserQuestion, you MUST:
 ```
 Current Phase → Can Rollback To
 ─────────────────────────────────
-Phase 4 (Impl)  → 3, 2, 1
+Phase 5 (Impl)  → 4, 3, 2, 1
+Phase 4 (Tests) → 3, 2, 1
 Phase 3 (Tasks) → 2, 1
 Phase 2 (Tech)  → 1
 Phase 1 (Func)  → Cannot rollback
@@ -128,7 +129,8 @@ The `meta.md` file uses `Current Stage:` field (not `current_phase:`). Map stage
 | `functional` | 1 |
 | `technical` | 2 |
 | `tasks` | 3 |
-| `implementation` | 4 |
+| `tests` | 4 |
+| `implementation` | 5 |
 
 **Also check the `stages:` YAML section** for `status: in-progress` to confirm:
 
@@ -140,8 +142,10 @@ stages:
     status: approved        # Phase 2 complete
   tasks:
     status: approved        # Phase 3 complete
+  tests:
+    status: approved        # Phase 4 complete
   implementation:
-    status: in-progress     # ← Currently in Phase 4
+    status: in-progress     # ← Currently in Phase 5
     completed_tasks: 5
     total_tasks: 12
 ```
@@ -156,7 +160,8 @@ case "$CURRENT_STAGE" in
     functional) CURRENT_PHASE=1 ;;
     technical)  CURRENT_PHASE=2 ;;
     tasks)      CURRENT_PHASE=3 ;;
-    implementation) CURRENT_PHASE=4 ;;
+    tests)      CURRENT_PHASE=4 ;;
+    implementation) CURRENT_PHASE=5 ;;
     *) echo "Unknown stage"; exit 1 ;;
 esac
 

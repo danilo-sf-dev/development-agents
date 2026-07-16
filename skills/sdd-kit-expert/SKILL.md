@@ -73,7 +73,7 @@ sdd/
 
 **Standard Mode** (manual control):
 ```
-/sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.build → /sdd.finish
+/sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
 ```
 
 **Express Mode** (orchestrated):
@@ -104,7 +104,8 @@ SDD Kit is a command-based framework that helps teams build software predictably
 | `/sdd.start` | Initialize new feature (also `--reopen` for completed features) |
 | `/sdd.spec` | Create functional/technical specs |
 | `/sdd.plan` | Generate implementation tasks |
-| `/sdd.build` | Implement tasks with quality gates |
+| `/sdd.test` | Write and approve tests (tests-first gate) |
+| `/sdd.build` | Implement tasks until approved tests pass |
 | `/sdd.finish` | Validate and archive |
 | `/sdd.check` | View progress and consistency |
 | `/sdd.fix` | Fix errors across all layers |
@@ -168,8 +169,8 @@ Never invent a corporate platform stack when the repo uses something else.
 | `` | MCP query delegation for context efficiency | All specs requiring  docs |
 | `sdd-system-designer` | Architecture decisions, multi-stack options | `/sdd.spec technical` |
 | `sdd-explorer` |  service discovery and configuration | `/sdd.spec technical` |
-| `sdd-large-test-writer` | E2E test generation via E2E | `/sdd.build` for E2E tasks |
-| `sdd-small-test-writer` | Unit and integration tests | `/sdd.build` for test tasks |
+| `sdd-large-test-writer` | E2E test generation via E2E | `/sdd.test` or `/sdd.build` if E2E deferred |
+| `sdd-small-test-writer` | Unit and integration tests | `/sdd.test` (tests-first) |
 | `sdd-implementer` | Code implementation from specs | `/sdd.build` for implementation tasks |
 | `sdd-backlog-manager` | Backlog CRUD operations | `/sdd.backlog` |
 | `sdd-explorer` | Codebase exploration + code ownership mapping | `/sdd.reverse-eng` |

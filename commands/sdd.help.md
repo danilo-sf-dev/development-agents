@@ -78,7 +78,8 @@ Quick reference for all SDD Kit commands. Shows commands organized by workflow p
 /sdd.start --reopen feature-name Reopen completed feature for iteration
 /sdd.spec             Create functional & technical specs
 /sdd.plan             Generate and approve tasks
-/sdd.build            Implement tasks
+/sdd.test             Write and approve tests (tests-first)
+/sdd.build            Implement tasks (make approved tests pass)
 /sdd.finish           Validate and archive feature
 
 ⚡ EXPRESS MODE
@@ -183,7 +184,7 @@ Shows:
 Standard Flow:
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│  /sdd.start ──► /sdd.spec ──► /sdd.plan ──► /sdd.build │
+│  /sdd.start ──► /sdd.spec ──► /sdd.plan ──► /sdd.test ──► /sdd.build │
 │       │              │              │              │        │
 │       ▼              ▼              ▼              ▼        │
 │   [meta.md]    [functional]    [tasks.json]    [code +       │

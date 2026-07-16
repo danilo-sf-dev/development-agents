@@ -14,7 +14,7 @@ description: Context monitoring skill to prevent token exhaustion. Monitors cont
 ## When to Use This Skill
 
 Invoke this skill:
-- Before starting a new phase (`/sdd.spec`, `/sdd.plan`, `/sdd.build`)
+- Before starting a new phase (`/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.build`)
 - After reading multiple large files (5+)
 - After multiple MCP queries (3+)
 - When you feel the conversation is getting long
