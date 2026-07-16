@@ -78,7 +78,7 @@ When this skill shows JSON for AskUserQuestion, you MUST:
 
 ## Subagent Delegation (MANDATORY for --sync)
 
-> **⚠️ MANDATORY**: See [warning-hierarchy.md](../standards/warning-hierarchy.md#subagent-delegation) for the central principle.
+> **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
 > The `--sync` flag MUST delegate analysis to specialized subagents.
 
 ```bash
@@ -339,13 +339,13 @@ fi
 - Each new function/class is documented in tasks
 - No undocumented code
 
-> **Lazy-loaded**: When `--sync` flag is used, Read `references/output-examples.md` section "## --sync examples" for output format reference.
+> **Lazy-loaded**: When `--sync` flag is used, Read `references/check-output-examples.md` section "## --sync examples" for output format reference.
 
 ---
 
 ## `/sdd.check --compliance` - Technical Validation
 
-Validates technical compliance (, tests, linting) and proposes fixes.
+Validates technical compliance (build, tests, linting, dependencies) and proposes fixes.
 
 ### What It Checks
 
@@ -404,7 +404,7 @@ Validates technical compliance (, tests, linting) and proposes fixes.
    - No vulnerable dependencies
    - No outdated critical dependencies
 
-> **Lazy-loaded**: When `--compliance` flag is used, Read `references/output-examples.md` section "## --compliance examples" for output format reference.
+> **Lazy-loaded**: When `--compliance` flag is used, Read `references/check-output-examples.md` section "## --compliance examples" for output format reference.
 
 ---
 
@@ -428,15 +428,15 @@ fi
 
 2. **Technology vs tech-stack.md**
    - If `forbidden` contains framework-recommended libs: Requires override
-   - If `orm` is not JPA/Hibernate: Warning for  compatibility
+   - If `orm` differs from the project's declared default ORM: Warning for compatibility
 
-3. ** Compliance vs coding-standards.md**
+3. **Coding Standards Compliance vs coding-standards.md**
    - Mandatory requirements cannot be overridden
 
 4. **Project Type**
    - Must be: `prototype`, `mvp`, or `production`
 
-> **Lazy-loaded**: When `--project` flag is used, Read `references/output-examples.md` section "## --project examples" for output format reference.
+> **Lazy-loaded**: When `--project` flag is used, Read `references/check-output-examples.md` section "## --project examples" for output format reference.
 
 ---
 
@@ -596,7 +596,7 @@ sdd/
 | Item format | v1.1.10 | ID format: `TODO-XXX`, `DEBT-XXX`, `IDEA-XXX` |
 | No `sdd/backlog/` directory | v1.1.10 | Deprecated: use file, not directory |
 
-> **Lazy-loaded**: When `--version` flag is used, Read `references/output-examples.md` section "## --version examples" for output format reference.
+> **Lazy-loaded**: When `--version` flag is used, Read `references/check-output-examples.md` section "## --version examples" for output format reference.
 
 ### Deprecated Patterns Detection
 

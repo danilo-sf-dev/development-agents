@@ -27,7 +27,9 @@ sdd/
 │       │   └── spec.md               # Technical spec file
 │       ├── 3-tasks/                  # Phase 3: Tasks
 │       │   └── tasks.json            # Task list
-│       ├── 4-implementation/         # Phase 4: Code
+│       ├── 4-tests/                   # Phase 4: Tests-first gate
+│       │   └── test-plan.md           # Approved test contract
+│       ├── 5-implementation/          # Phase 5: Code
 │       │   └── progress.md           # Progress tracking
 │       └── meta.md                   # Feature metadata
 ├── features/                         # Completed features (archived)
@@ -89,18 +91,19 @@ sdd/
 
 ## Framework Overview
 
-SDD Kit is a command-based framework that helps teams build software predictably using Platform AI docs coding assistants. It enforces a 4-phase workflow:
+SDD Kit is a command-based framework that helps teams build software predictably with AI coding assistants. It enforces a tests-first workflow:
 
 1. **Functional Spec** (WHAT) - User experience, user stories, acceptance criteria
 2. **Technical Spec** (HOW) - Architecture, APIs, data models, project services
 3. **Tasks** - Granular implementation tasks with dependencies (tasks.json)
-4. **Implementation** - Code generation with mandatory quality gates
+4. **Tests-first** - Approved tests fail before implementation
+5. **Implementation** - Code generation with mandatory quality gates
 
 ## Key Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/sdd.go` | **Express mode** - orchestrates start→spec→plan→build→finish |
+| `/sdd.go` | **Express mode** - orchestrates start→spec→plan→test→build→finish |
 | `/sdd.start` | Initialize new feature (also `--reopen` for completed features) |
 | `/sdd.spec` | Create functional/technical specs |
 | `/sdd.plan` | Generate implementation tasks |
@@ -166,9 +169,9 @@ Never invent a corporate platform stack when the repo uses something else.
 | `sdd-layer-analyzer` | Cross-layer consistency validation | `/sdd.check --sync`, `/sdd.fix` |
 | `sdd-debugger` | Deep debugging and root cause analysis | `/sdd.fix` for complex bugs |
 | `sdd-project-wizard` | Interactive PROJECT.md creation | `/sdd.start` when PROJECT.md missing |
-| `` | MCP query delegation for context efficiency | All specs requiring  docs |
+| `context-guardian` | Context and tool delegation for efficiency | All specs requiring external documentation |
 | `sdd-system-designer` | Architecture decisions, multi-stack options | `/sdd.spec technical` |
-| `sdd-explorer` |  service discovery and configuration | `/sdd.spec technical` |
+| `sdd-explorer` | Project service discovery and configuration | `/sdd.spec technical` |
 | `sdd-large-test-writer` | E2E test generation via E2E | `/sdd.test` or `/sdd.build` if E2E deferred |
 | `sdd-small-test-writer` | Unit and integration tests | `/sdd.test` (tests-first) |
 | `sdd-implementer` | Code implementation from specs | `/sdd.build` for implementation tasks |
@@ -193,15 +196,15 @@ Never invent a corporate platform stack when the repo uses something else.
 Mandatory validations at every phase:
 
 1. **Per-Task Code Review** - code review tool after EVERY file written
-2. ** Compliance** - Dockerfile must use the project container registry (from PROJECT.md) images
-3. **CI Pipeline (RP MCP)** - Must pass before finish
+2. **Container Compliance** - Dockerfile must use the project container registry (from PROJECT.md) images
+3. **CI Pipeline** - Must pass before finish
 4. **Performance Analysis** - sdd-performance-expert on full codebase
 5. **Security Analysis** - sdd-code-reviewer on full codebase
 
 ## Key Features
 
-- **External API Auto-Discovery** - Automatically query  when APIs mentioned
-- **E2E E2E Testing** - Opt-in E2E test generation via E2E test framework
+- **External API Auto-Discovery** - Automatically look up API docs/contracts when third-party APIs are mentioned (via whatever internal service directory or API catalog the project has configured)
+- **E2E Testing** - Opt-in E2E test generation via the project's E2E test framework
 - **Scaffolding Cleanup** - Auto-cleanup example code from  scaffolding
 - **Greenfield/Brownfield Detection** - Adapts workflow based on project state
 - **tasks.json** - Single source of truth for task tracking

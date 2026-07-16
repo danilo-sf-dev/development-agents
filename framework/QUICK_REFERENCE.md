@@ -82,7 +82,7 @@ $ sdd-kit help              # Show help
 
 ---
 
-## All Commands (16 total)
+## Core Commands
 
 ### Express
 | Command | Description |
@@ -100,7 +100,8 @@ $ sdd-kit help              # Show help
 | `/sdd.start "name"` | Initialize feature (selects project type) |
 | `/sdd.spec` | Create specifications |
 | `/sdd.plan` | Generate tasks |
-| `/sdd.build` | Implement feature (runs CI via release-process skill) |
+| `/sdd.test` | Write and approve failing tests before implementation |
+| `/sdd.build` | Implement feature until approved tests pass |
 | `/sdd.finish` | Validate and archive |
 
 ### Utilities
@@ -304,8 +305,8 @@ Telemetry is captured **automatically by hooks** - no manual logging required.
 
 ## Project Types
 
-| Type | Tests | CI Pipeline (RP MCP) | Coverage |
-|------|-------|----------------------|----------|
+| Type | Tests | CI Pipeline | Coverage |
+|------|-------|-------------|----------|
 | **Prototype** | ❌ Disabled | Skip | 0% |
 | **MVP** | ⚠️ Critical only | Run | varies |
 | **Production** | ✅ Full | Required | 80%+ |
@@ -320,8 +321,8 @@ Every feature MUST have:
 - ✅ Functional spec with user stories + acceptance criteria
 - ✅ Technical spec with API contracts + data model
 - ✅ Tests (coverage varies by project type)
-- ✅ CI Pipeline (RP MCP) before `/sdd.finish` (MVP/Production)
-- ✅ code compliance (Dockerfile, Dockerfile.runtime, /ping)
+- ✅ CI Pipeline passing before `/sdd.finish` (MVP/Production)
+- ✅ Container/runtime compliance (Dockerfile, Dockerfile.runtime, /ping)
 
 ---
 

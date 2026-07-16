@@ -185,7 +185,7 @@ sdd/specs/
 
 ## Subagent Delegation (MANDATORY)
 
-> **⚠️ MANDATORY**: See [warning-hierarchy.md](../standards/warning-hierarchy.md#subagent-delegation) for the central principle.
+> **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
 > This command MUST delegate exploration work to the `sdd-explorer` subagent.
 
 ```

@@ -164,25 +164,17 @@ sdd-kit init claude  # or cursor, codex, project
 
 ### Do I need to be on VPN?
 
-Yes, for:
-- MCP servers (, code review tool, E2E, dependency security scanner)
-- `platform` CLI commands
-- Accessing internal project services
+Only if your organization's internal MCP servers (code review tool, E2E test framework, dependency security scanner, service directory, etc.) require it. This framework has no opinion on network setup — check with your platform/infra team about what's needed to reach whatever internal MCP servers your project uses.
 
 ### How do I configure MCP servers?
 
+Configure the specific MCP servers your project actually uses (if any) following your MCP client's documentation (Claude Code, Cursor, etc.) and your organization's internal MCP endpoint URLs. Example shape:
+
 ```bash
-#  (required)
-claude mcp add --scope project --transport stdio  -- mcp-remote-proxy https://mcp.example.com/namespaces/backend/mcp --transport http
-
-# code review tool (optional)
-claude mcp add --scope project --transport stdio code review tool -- mcp-remote-proxy https://genai-code-review-mcp.example.com/mcp --transport http
-
-# dependency security scanner (required)
-claude mcp add --scope project --transport stdio dependency security scanner -- mcp-remote-proxy https://codeguard-mcp.example.com/mcp --transport http
+claude mcp add --scope project --transport stdio <your-mcp-name> -- mcp-remote-proxy <your-org-mcp-endpoint> --transport http
 ```
 
-See `MCP_SETUP_GUIDE.md` for complete instructions.
+None of these MCP servers are required by the framework itself — they're optional integrations you wire up if your org has them.
 
 ---
 

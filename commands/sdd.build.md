@@ -201,10 +201,11 @@ When `EnterPlanMode` is not available:
 
 ### Dependency Scanning
 
-**MANDATORY before adding any library**: Run vulnerability check via `dependency security scanner`.
+**MANDATORY before adding any library**: Run a vulnerability check via your dependency-security-scanning MCP/tool, if one is configured for this project (check `PROJECT.md`).
 
 ```python
-mcp__dependency security scanner__safe_add_dependency(
+# Example shape — replace with whatever dependency-scanner MCP/tool your project has configured
+mcp__<your-dependency-scanner>__safe_add_dependency(
   technology="java",
   ecosystem="maven",
   name_user="<user>",
@@ -396,9 +397,9 @@ LAYER 1 (Local) - Parallel Execution
 ├─ git commit "feat: layer 1 complete"
 └─ /sdd.check --compact (if context > 50%)
 
-LAYER 2 ()
+LAYER 2 (Integration)
 ├─ Execute all Layer 2 tasks
-├─ Validate CI Pipeline (RP MCP) passes
+├─ Validate CI Pipeline passes
 ├─ git commit "feat: layer 2 complete"
 └─ /sdd.check --compact (if context > 50%)
 
@@ -683,10 +684,10 @@ After ALL tasks complete:
 
 | Step | Action | On Failure |
 |------|--------|------------|
-| A |  Compliance (3-layer validation) | FIX |
+| A | Code Compliance (3-layer validation) | FIX |
 | B | Layer 3 Quality Gates (via `sdd-validator-runner`) | FIX ALL |
-| C | Code Pattern Validation (-specific patterns) | FIX |
-| D | **Local CI Pipeline (RP MCP)** — full pipeline: build, test, coverage, deps, SCA | Auto-fix via RP |
+| C | Code Pattern Validation (stack-specific patterns) | FIX |
+| D | **Local CI Pipeline** — full pipeline: build, test, coverage, deps, SCA | Auto-fix where the pipeline supports it |
 
 **Step B - Layer 3 Quality Gates** (consolidated):
 ```python

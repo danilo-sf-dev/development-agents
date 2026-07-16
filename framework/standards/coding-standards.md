@@ -295,13 +295,15 @@ it('should calculate discount correctly', () => {
 
 ---
 
-## Git Standards ( GitFlow)
+## Git Standards (project-configured GitFlow)
 
-> **Referencia**: https://project release-process docs (from PROJECT.md)
+> **Reference**: Use the repository's Git workflow and `sdd/PROJECT.md` when
+> they define branch, merge, or release conventions.
 
-### Branch Prefixes (Estándar  - No configurables)
+### Branch Prefixes (default convention)
 
-Estos prefijos están definidos por GitFlow de  y **no son configurables** a nivel de proyecto:
+These prefixes are defaults only; the target project may configure different
+branch names:
 
 | Branch | Uso |
 |--------|-----|

@@ -20,18 +20,7 @@ Parse the user's input and route to the correct reference file.
 
 | Input | Action |
 |-------|--------|
-| `/sdd.hub start <name>` | Read `references/hub-start.md` and follow it |
-| `/sdd.hub spec functional [flags]` | Read `references/hub-spec.md` and follow the **functional** section |
-| `/sdd.hub spec technical [flags]` | Read `references/hub-spec.md` and follow the **technical** section |
-| `/sdd.hub plan [flags]` | Read `references/hub-plan.md` and follow it |
-| `/sdd.hub build [flags]` | Read `references/hub-build.md` and follow it |
-| `/sdd.hub check [flags]` | Read `references/hub-check.md` and follow it |
-| `/sdd.hub finish [flags]` | Read `references/hub-finish.md` and follow it |
-| `/sdd.hub list` | Read `references/hub-list.md` and follow it |
-| `/sdd.hub cancel` | Read `references/hub-cancel.md` and follow it |
-| `/sdd.hub go "description"` | Read `references/hub-go.md` and follow it |
-| `/sdd.hub sync [--pull]` | Read `references/hub-sync.md` and follow it |
-| `/sdd.hub add <app-name>` | Read `references/hub-add.md` and follow it |
+| Any `/sdd.hub` action | Read the matching section in `references/hub-workflows.md` and follow it |
 | `/sdd.hub` (no action) | Show help below |
 
 ### Flag parsing

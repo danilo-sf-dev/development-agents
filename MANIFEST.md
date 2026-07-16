@@ -36,6 +36,12 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 
 Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, etc.
 
+Medição atual da redução de verbosidade:
+- 20 comandos: **15.658 linhas**
+- `commands/references/`: 20 referências lazy-loaded, **1.088 linhas**
+- `sdd.start.md`: 1.689 → 1.355 linhas
+- `sdd.spec.md`: 2.223 → 2.002 linhas
+
 ### framework/
 
 Templates, standards, tools e docs do SDD (necessário para os commands).
@@ -102,8 +108,6 @@ No **projeto alvo**, append em `.gitignore` — `development-agents/`, `.cursor/
 
 ## Ainda não feito
 
-- [ ] Gate **tests-first** (`/sdd.test` + approve antes do build)
-- [ ] Reordenar build: testes → approve → implement
 - [ ] Profiles opcionais de stack (`profiles/java`, `profiles/nextjs`, …)
 
 ## Como validar

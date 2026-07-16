@@ -83,7 +83,7 @@ This is a TOOL CALL you must execute, not content to display.
 
 **What happens**:
 1. Agent infers a kebab-case feature name from your description
-2. Detects your application name (from `.platform-config` file or folder)
+2. Detects your tech stack and confirms this looks like an existing/ready repo
 3. Creates `sdd/wip/[YYYYMMDD-feature-name]/` directory structure
 4. Initializes `meta.md` with feature metadata
 
@@ -182,260 +182,69 @@ bash development-agents/framework/tools/shared/check-frontend-skill.sh "$(pwd)" 
 
 ---
 
-### Step 2.5:  Prerequisites Validation (Deterministic) ⭐ v2.8.0
+### Step 2.5: Repository Readiness Check
 
-> **SKIP if `IS_MOBILE=true`** — Mobile apps don't use  CLI, VPN, or Zero Trust.
+> **Assumption**: `/sdd.start` runs *inside* an already-existing git repository — cloned, scaffolded by your org's own tooling, or freshly `git init`'d. This command never creates/registers applications in an external system; that step (if your org has one) happens **before** `/sdd.start`.
 
 ```bash
-if [ "$IS_MOBILE" = false ]; then
-    # Run prerequisites check (FIRST - verify  CLI is ready)
-    prereq_result=$(bash development-agents/framework/tools/shared/platform-prereqs.sh --json)
-    platform_ready=$(echo "$prereq_result" | grep -o '"platform_ready":[^,}]*' | cut -d: -f2)
-    needs_login=$(echo "$prereq_result" | grep -o '"needs_login":[^,}]*' | cut -d: -f2)
-
-    if [ "$platform_ready" != "true" ]; then
-        echo "❌  prerequisites not met:"
-        echo "$prereq_result" | grep -o '"issues":\[[^]]*\]'
-
-        if [ "$needs_login" = "true" ]; then
-            echo "Running: "
-            
-        fi
-    fi
+freshly_scaffolded=false
+commit_count=$(git log --oneline 2>/dev/null | wc -l)
+if [ "$commit_count" -le 1 ] && ! [ -d "sdd/specs" ] && ! [ -d "sdd/features" ]; then
+    freshly_scaffolded=true
 fi
+echo "freshly_scaffolded=$freshly_scaffolded (commits=$commit_count)"
 ```
-
-**Prerequisites checked** (backend/web only):
--  CLI installed and accessible
-- Zero Trust token valid (not expired)
-- Git configured with user.name and user.email
-
-### Step 2.7:  App Verification
-
-**Check `.platform-config` file existence:**
 
 | Scenario | Action |
 |----------|--------|
-| `.platform-config` exists | Extract app name, continue |
-| `.platform-config` missing | Auto-detect from folder: `app_name=$(basename $(pwd))`, verify with  |
-| `.platform-config` missing + folder name not found | Ask user for app name (AskUserQuestion) |
+| No `.git` folder at all | Ask user (AskUserQuestion): initialize a repo here, or point to the correct existing one |
+| Fresh repo (0-1 commits), no `sdd/specs`/`sdd/features` | Likely brand-new project. If your org has its own app-creation/scaffolding tool, that should already have run — see `references/new-app-scaffolding.md` for a generic checklist if you need to improvise one |
+| Fresh repo but scaffold/sample files still present | Optional cleanup — Step 2.6 below |
+| Repo has real history / existing code / existing SDD specs | Standard case — skip straight to Step 3 (stack detection) |
 
-**Auto-detect flow** (when `.platform-config` is missing):
-1. `app_name=$(basename $(pwd))` — derive from current folder name
-2. Verify with  — if the app exists in , proceed silently
-3. Only fall through to AskUserQuestion if  doesn't find the app
+### Step 2.6: Cleanup Scaffolding Samples (CONDITIONAL)
 
-**If app not found** (use AskUserQuestion):
-1. Create new app
-2. Correct the name
-3. Continue in local validation mode (Not Recommended)
-
-**If user chooses "Create new app"** → ask app name with AskUserQuestion:
-- **Option 1 MUST be the folder name** (`basename $(pwd)`) — this is the most likely intended name
-- Options 2-3: alternative suggestions based on feature description (shorter/clearer variants)
-- Option 4: Type custom name
-
-**If app EXISTS in ** (but `.platform-config` missing locally):
-- Proceed to clone repository
-- `app_created_via_puma=false` (we didn't create it)
-- Technology will be detected from project files (see section 3.5)
-- Branch check determines if freshly scaffolded
-
-**If creating app**:
-- Ask project type first (Prototype/MVP/Production)
-- Get technologies and app types via `mcp____technologies()` and `mcp____application_types()`
-- Auto-discover project_code via TeamsMCP (see algorithm below)
-- Create via `mcp____create_application()`
-- **⚠️ CRITICAL: Set `app_created_via_puma=true` and remember selected `technology`**
-- These values are REQUIRED in Step 3 to use ``
-
-#### Auto-discover project_code via TeamsMCP
+> **WHEN TO RUN**: Only if `freshly_scaffolded=true`. Adjust the globs below to match your own template/starter conventions — these are just common examples.
 
 ```bash
-# 1. Get username from home folder (auto-detected, no confirmation needed)
-username=$(basename $HOME)
-
-# 2. Call TeamsMCP with auto-detected username
-result=$(mcp__TeamsMCP__get_user_collaborations(username="$username"))
-
-# 3. IF TeamsMCP returns error OR no teams found:
-#    - Ask user: "Could not find teams for '[username]'. Enter your  username:"
-#    - Retry with user-provided username
-if [ -z "$result" ] || [ "$(echo "$result" | jq '.total_teams')" = "0" ]; then
-    # Use AskUserQuestion to get correct username
-    # "Could not find teams for '$username'. Enter your  username:"
-    # Then retry: mcp__TeamsMCP__get_user_collaborations(username="<user-provided>")
-fi
-
-# 4. Extract and deduplicate project codes from response
-#    - Collect all unique project_code values across all teams
-#    - Sort alphabetically
-
-# 4.5 MANDATORY: Display projects table BEFORE asking
-#     Show ALL projects the user has access to
-echo ""
-echo "📋 Available Projects:"
-echo "┌─────────────────────┬──────────────────────────────────────────┐"
-echo "│ Project Code        │ Description                              │"
-echo "├─────────────────────┼──────────────────────────────────────────┤"
-for project in $projects; do
-    printf "│ %-19s │ %-40s │\n" "$project_code" "$project_name"
-done
-echo "└─────────────────────┴──────────────────────────────────────────┘"
-echo ""
-
-# 5. Present projects to user:
-#    ⚠️ CRITICAL: The projects table MUST be displayed BEFORE asking
-#    ⚠️ NOTE: The folder name is the APP name, NOT the project code.
-#            Do NOT offer folder name as a project option.
-
-#    AskUserQuestion options (in order):
-#    1. project-from-teams-1 (most common team's project)
-#    2. project-from-teams-2
-#    3. project-from-teams-3
-#    4. project-from-teams-4
-#    (Other: type custom project code)
-
-# 6. If no projects found, inform user:
-#    "No projects found. You may be new or removed from teams."
-#    Ask user to type their project code manually
-```
-
-#### System Selection (Required for web/fda/mcp apps)
-
-> **APPLIES TO**: Application types `web`, `fda`, `mcp`, `edge-proxy`
-> **SKIP FOR**: `library`, `mobile-application`, and other types
-
-**When creating an app that requires system**:
-
-1. **Call  to get systems**:
-   ```bash
-   systems=$(mcp____list_systems())
-   ```
-
-2. **MANDATORY: Display systems table BEFORE asking**:
-   ```
-   📋 Available Systems:
-   ┌─────┬──────────────────────────┬─────────────────────────────────────────────┐
-   │ ID  │ System Name              │ Responsibility                              │
-   ├─────┼──────────────────────────┼─────────────────────────────────────────────┤
-   │ 322 │  Library             │ Documentación de aplicaciones.              │
-   │ 331 │ Documentation            │ Documentation platform.                     │
-   │ 659 │ Tiendas Oficiales        │ Tiendas Oficiales                           │
-   │ ... │ ...                      │ ...                                         │
-   └─────┴──────────────────────────┴─────────────────────────────────────────────┘
-   ```
-
-3. **Then ask user with AskUserQuestion**:
-   - Question: "Which system should this application belong to?"
-   - Options: Top 3-4 systems from the list (sorted by relevance or alphabetically)
-   - Include: "(Other: type system name or ID)"
-
-4. **Pass system_id to create_application**:
-   ```bash
-   mcp____create_application(
-       name="...",
-       system_id=$selected_system_id,
-       ...
-   )
-   ```
-
-### Step 3: Clone/Scaffold Repository
-
-#### 3.1 Determine Template (for new apps)
-
-```bash
-case "$technology" in
-    java*)   template="web-maven-spring" ;;
-    go*)     template="web" ;;
-    node*|typescript*) template="web" ;;
-    python*) template="web" ;;
-    *)       template="web" ;;
-esac
-```
-
-#### 3.2 Run platform get (CRITICAL: Template Detection)
-
-> **⚠️ CRITICAL**: If app was just created via  in Step 2, you MUST use `--template`.
-> Without `--template`, the repo will be EMPTY (no Dockerfile, no code, nothing).
-
-**How to know if app was created via Puma:**
-- You called `mcp____create_application()` in Step 2
-- Set a flag: `app_created_via_puma=true`
-- The technology was selected during app creation
-
-```bash
-# ⚠️ CRITICAL DECISION POINT
-if [ "$app_created_via_puma" = true ]; then
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # NEW APP: MUST use --template (repo is EMPTY without it)
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    platform get <app-name> --template "$template" 2>&1
-
-    # This creates: Dockerfile, pom.xml/go.mod, PingController, etc.
+if [ "$freshly_scaffolded" = true ]; then
+    echo "🧹 Running scaffolding cleanup..."
+    case "$technology" in
+        java*)   rm -rf src/main/java/com/example/*/beans/ src/main/java/com/example/*/dtos/ src/test/java/com/example/*/unit/beans/ 2>/dev/null ;;
+        kotlin*) rm -rf src/main/kotlin/com/example/*/beans/ src/main/kotlin/com/example/*/dtos/ src/test/kotlin/com/example/*/unit/beans/ 2>/dev/null ;;
+        go*)     rm -f telemetry/example_test.go 2>/dev/null ;;
+        python*) rm -rf app/dummy/ 2>/dev/null ;;
+        node*|typescript*) rm -rf src/routes/example*.ts src/controllers/example*.ts 2>/dev/null ;;
+    esac
+    git add -A && git commit -m "chore: cleanup scaffolding samples" 2>/dev/null
+    echo "✅ Cleanup complete (sample/example files removed if present)"
 else
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # EXISTING APP: just clone (already has code)
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    platform get <app-name> 2>&1
+    echo "ℹ️  Skipping cleanup (existing app with code)"
 fi
 ```
 
-**NEVER do this for new apps:**
-```bash
-# ❌ WRONG - repo will be empty!
-platform get <new-app-name>
-
-# ✅ CORRECT - scaffolding applied
-platform get <new-app-name> --template web-maven-spring
-```
-
-**Handle auth error**: If "Zero Trust token expired" → run ``, retry.
-
-#### 3.3 Handle Race Condition (CRITICAL)
-
-> Repository creation takes 15-30 seconds after app creation.
-> **ALWAYS wait before the first attempt** to avoid a guaranteed failure.
+#### 2.6.1 Verify Essential Files (best-effort, adjust per stack)
 
 ```bash
-# MANDATORY: Wait 15 seconds before first platform get attempt
-echo "⏳ Waiting 15s for repository creation..."
-sleep 15
-
-max_retries=20      # 20 attempts
-retry_interval=30   # 30 seconds between retries
-# Total max wait: ~10 minutes
-
-for i in $(seq 1 $max_retries); do
-    output=$(platform get <app-name> --template "$template" 2>&1)
-
-    if [ -d "<app-name>" ]; then
-        echo "✅ Repository cloned successfully"
-        break
-    fi
-
-    if echo "$output" | grep -qi "not found\|does not exist"; then
-        echo "⏳ Repository not available yet. Retrying in ${retry_interval}s... (attempt $i/$max_retries)"
-        sleep $retry_interval
-    fi
+if [ "$IS_MOBILE" = true ]; then
+    case "$platform" in
+        android) required_files=("app/src/main/AndroidManifest.xml" "build.gradle.kts") ;;
+        ios)     ls -d *.xcodeproj *.xcworkspace 2>/dev/null | head -1 | grep -q . || echo "⚠️ Missing Xcode project/workspace" ;;
+    esac
+else
+    case "$technology" in
+        java*)   required_files=("pom.xml" "Dockerfile") ;;
+        go*)     required_files=("go.mod" "Dockerfile") ;;
+        python*) required_files=("pyproject.toml" "Dockerfile") ;;
+        node*)   required_files=("package.json" "Dockerfile") ;;
+    esac
+fi
+for file in "${required_files[@]}"; do
+    [ ! -e "$file" ] && echo "⚠️ Missing: $file"
 done
-
-# CRITICAL: Verify scaffolding succeeded
-if [ ! -d "<app-name>" ]; then
-    echo "❌ CRITICAL: Could not clone repository after 10 minutes."
-    exit 1
-fi
 ```
 
-#### 3.4 Move Contents to Current Directory
-
-```bash
-shopt -s dotglob  # Include hidden files
-mv ./<app-name>/* ./
-rmdir ./<app-name>
-```
-
-#### 3.5 Detect Scaffolding Status
+### Step 3: Detect Scaffolding Status
 
 > **PURPOSE**: Detect if app was created externally but is freshly scaffolded.
 > **IMPORTANT**: If `sdd/specs` already exists, it's brownfield - NEVER cleanup.
@@ -462,7 +271,7 @@ echo "🔍 Scaffolding Status: $project_mode (freshly_scaffolded=$freshly_scaffo
 echo "   Reason: $reason"
 ```
 
-#### 3.5.1 Detect Full Stack (Deterministic)
+#### 3.1 Detect Full Stack (Deterministic)
 
 Use script for comprehensive stack detection - Saves ~2,000-3,000 tokens vs LLM inference.
 
@@ -477,141 +286,28 @@ build_tool=$(echo "$stack_result" | grep -o '"buildTool":"[^"]*"' | cut -d'"' -f
 framework=$(echo "$stack_result" | grep -o '"framework":"[^"]*"' | cut -d'"' -f4)
 database=$(echo "$stack_result" | grep -o '"database":"[^"]*"' | cut -d'"' -f4)
 platform_services=$(echo "$stack_result" | grep -o '"platformServices":\[[^]]*\]')
-# platform already set in Step 2; fallback extraction if needed
 [ -z "$platform" ] && platform=$(echo "$stack_result" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
 
-echo "📊 Stack Detection:"
-echo "   Language: $language"
-echo "   Platform: ${platform:-backend}"
-echo "   Build Tool: $build_tool"
-echo "   Framework: ${framework:-none}"
-echo "   Database: ${database:-none}"
-echo "    Services: $platform_services"
+echo "📊 Stack Detection: language=$language platform=${platform:-backend} build=$build_tool framework=${framework:-none} db=${database:-none} services=$platform_services"
 ```
 
-**Use stack info in meta.md**:
-- Pre-populate `technology:` field
-- **Pre-populate `platform:` field** → `android | ios | backend | web` (from detect-stack.sh)
-- Set appropriate build/test commands
-- Identify project services to configure (skip for mobile)
-
-**Logic**:
-| Scenario | `sdd/specs` | Branch | `freshly_scaffolded` | Action |
-|----------|--------------|--------|----------------------|--------|
-| Created via MCP | No | `feature/initial-scaffolding` | `true` | Cleanup + greenfield |
-| Created externally (web UI) | No | `feature/initial-scaffolding` | `true` | Cleanup + greenfield |
-| Brownfield with SDD history | Yes | any | `false` | **No cleanup** + brownfield |
-| Existing app with commits | No | `main`/`master`/other | `false` | No cleanup + brownfield check |
-
-#### 3.6 Cleanup Scaffolding Examples (CONDITIONAL)
-
-> **WHEN TO RUN**: If `app_created_via_puma=true` OR `freshly_scaffolded=true`
-
-```bash
-if [ "$app_created_via_puma" = true ] || [ "$freshly_scaffolded" = true ]; then
-    echo "🧹 Running scaffolding cleanup..."
-
-    case "$technology" in
-        java*)
-            # Remove Java sample files
-            rm -rf src/main/java/com/example/*/beans/ 2>/dev/null
-            rm -rf src/main/java/com/example/*/dtos/ 2>/dev/null
-            rm -rf src/test/java/com/example/*/unit/beans/ 2>/dev/null
-            ;;
-        kotlin*)
-            # Remove Kotlin sample files
-            rm -rf src/main/kotlin/com/example/*/beans/ 2>/dev/null
-            rm -rf src/main/kotlin/com/example/*/dtos/ 2>/dev/null
-            rm -rf src/test/kotlin/com/example/*/unit/beans/ 2>/dev/null
-            ;;
-        go*)
-            rm -f telemetry/example_test.go 2>/dev/null
-            ;;
-        python*)
-            rm -rf app/dummy/ 2>/dev/null
-            ;;
-        node*|typescript*)
-            rm -rf src/routes/example*.ts src/controllers/example*.ts 2>/dev/null
-            ;;
-    esac
-
-    # Commit cleanup changes
-    git add -A
-    git commit -m "chore: cleanup scaffolding samples"
-
-    echo "✅ Cleanup complete"
-    echo "   Preserved: Dockerfile, pom.xml/go.mod, .platform-config, PingController"
-    echo "   Deleted: example/sample files"
-else
-    echo "ℹ️  Skipping cleanup (existing app with code)"
-fi
-```
-
-#### 3.7 Verify Essential Files
-
-```bash
-# Mobile projects don't have Dockerfile or .platform-config — skip  file checks
-if [ "$IS_MOBILE" = true ]; then
-    echo "📱 Mobile project — skipping  file checks"
-    case "$platform" in
-        android)
-            required_files=("app/src/main/AndroidManifest.xml" "build.gradle.kts")
-            for file in "${required_files[@]}"; do
-                [ ! -e "$file" ] && echo "⚠️ Missing: $file"
-            done
-            ;;
-        ios)
-            # xcodeproj/xcworkspace are directories with variable names — must use ls, not
-            # array glob literal ([ ! -e "*.xcodeproj" ] is never true as written)
-            ls -d *.xcodeproj 2>/dev/null | head -1 | grep -q . || echo "⚠️ Missing: *.xcodeproj (Xcode project directory)"
-            ls -d *.xcworkspace 2>/dev/null | head -1 | grep -q . || echo "⚠️ Missing: *.xcworkspace (Xcode workspace directory)"
-            ;;
-    esac
-else
-    case "$technology" in
-        java*)   required_files=("pom.xml" "Dockerfile" ".platform-config") ;;
-        go*)     required_files=("go.mod" "Dockerfile" ".platform-config") ;;
-        python*) required_files=("pyproject.toml" "Dockerfile" ".platform-config") ;;
-        node*)   required_files=("package.json" "Dockerfile" ".platform-config") ;;
-    esac
-    for file in "${required_files[@]}"; do
-        [ ! -e "$file" ] && echo "⚠️ Missing: $file"
-    done
-fi
-```
+**Use stack info in meta.md**: pre-populate `technology:`/`platform:` fields, set build/test commands, list project services to configure (skip for mobile).
 
 ### Step 4: Detect Project Mode
 
-| Origin | project_mode |
-|--------|--------------|
-|  create_application | `greenfield` |
-| platform get + branch `feature/initial-scaffolding` | `greenfield` |
-| platform get (existing repo with code) | Check content |
-
-**Detection logic**:
-
-> **NOTE**: `sdd/specs` was already verified in "Detect Scaffolding Status" (3.5).
-> If it existed → `freshly_scaffolded=false` and NO cleanup was performed.
-
 ```bash
-if [ "$app_created_via_puma" = true ]; then
+if [ "$freshly_scaffolded" = true ]; then
     project_mode="greenfield"
-    echo "🆕 App created via Puma → Greenfield mode"
-elif [ "$freshly_scaffolded" = true ]; then
-    project_mode="greenfield"
-    echo "🆕 Freshly scaffolded (external creation) → Greenfield mode"
+    echo "🆕 Freshly scaffolded → Greenfield mode"
 elif [ -d "sdd/specs" ] || [ -d "sdd/features" ]; then
-    # Este caso: freshly_scaffolded=false porque sdd/specs existía
     project_mode="brownfield"
     echo "🔍 Existing specs found → Brownfield mode"
+elif has_implementation_code; then
+    project_mode="brownfield"
+    echo "🔍 Existing code found → Brownfield mode"
 else
-    if has_implementation_code; then
-        project_mode="brownfield"
-        echo "🔍 Existing code found → Brownfield mode"
-    else
-        project_mode="greenfield"
-        echo "🆕 Empty project → Greenfield mode"
-    fi
+    project_mode="greenfield"
+    echo "🆕 Empty project → Greenfield mode"
 fi
 ```
 
@@ -720,7 +416,6 @@ fi
 
 ### Step 5: Project Type Selection (MOVED UP)
 
-> **SKIP IF**: Already selected during app creation (Step 2)
 > **WHY FIRST**: Prototypes skip PROJECT.md prompt, saving time for quick POCs
 
 **⚠️ MUST SHOW this comparison table before asking:**
@@ -729,14 +424,13 @@ fi
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                    📋 PROJECT TYPE COMPARISON                               │
 ├─────────────┬───────────────┬───────────────┬───────────────────────────────┤
-│   Aspecto   │   Prototype   │      MVP      │         Production            │
+│   Aspect    │   Prototype   │      MVP      │         Production            │
 ├─────────────┼───────────────┼───────────────┼───────────────────────────────┤
-│ app    │ demo=true     │ demo=false    │ demo=false                    │
 │ Unit Tests  │ ❌ Skip       │ ⚠️ Critical   │ ✅ Full coverage              │
 │ Coverage    │ 0%            │ Varies        │ 80%+                          │
-│ project CI test   │ Optional      │ Required      │ Required                      │
+│ CI Pipeline │ Optional      │ Required      │ Required                      │
 │ Code Review │ ❌ Skip       │ ✅ Yes        │ ✅ Yes                        │
-│ E2E/E2E     │ ❌ Skip       │ ❌ Skip       │ ✅ Opt-in                     │
+│ E2E Tests   │ ❌ Skip       │ ❌ Skip       │ ✅ Opt-in                     │
 │ Best for    │ Quick POC,    │ Internal      │ Customer-facing,              │
 │             │ experiments   │ tools, MVPs   │ compliance required           │
 └─────────────┴───────────────┴───────────────┴───────────────────────────────┘
@@ -1398,8 +1092,7 @@ AskUserQuestion(
 | Input is valid name (not prompt) | YES | Convert → suggest → confirm |
 | Valid name format (kebab-case) | YES | Ask for valid name |
 | Feature doesn't exist in `wip/` | YES | Ask for different name |
-| Logged in to  CLI | AUTO-RETRY | Run `` |
-| app exists | USER CHOICE | Create / Correct / Local mode |
+| Repo is git-initialized | AUTO-RETRY | Prompt to `git init` or point to correct folder |
 
 ### Post-execution
 
@@ -1440,12 +1133,9 @@ STEP 1: VALIDATE INPUT (BLOCKING)
 ├─ Is it valid kebab-case? → Continue
 └─ NEVER create files until validation passes
 
-STEP 2: PLATFORM VERIFICATION
-├─ .platform-config exists? → Extract app name
-└─ .platform-config missing?
-   ├─ Auto-detect from folder: basename $(pwd)
-   ├─ Verify with 
-   └─ Only ask user if auto-detect fails
+STEP 2: REPOSITORY READINESS CHECK
+├─ Existing repo with history/specs? → Continue (standard case)
+└─ Fresh/empty repo? → Optional scaffold cleanup, then continue
 
 STEP 3: CREATE STRUCTURE (only after Steps 0-2 pass)
 
@@ -1472,7 +1162,7 @@ AI: OK, creating payment service... [starts implementing without feature name]
 3. **Prompt ≠ Name** - If >5 words or punctuation, it's a description → auto-infer name
 4. **Auto-infer, don't ask** - Infer feature name from description and proceed automatically
 5. **Delegate heavy ops** - Use `sdd-project-wizard` for PROJECT.md
-6. **TRACK APP CREATION** - If you call `create_application()`, set `app_created_via_puma=true` and ALWAYS use `` in Step 3
+6. **No external app creation** - This command never registers/creates apps in an external system; it only works inside a repo that already exists (see `references/new-app-scaffolding.md` if you need a generic pre-`/sdd.start` checklist)
 
 ### --audio Flag Detection
 
@@ -1542,42 +1232,18 @@ User: [Selects "/sdd.spec (with saved context)"]
 AI: [Invokes Skill(skill="sdd.spec") - description auto-loaded from meta.md]
 ```
 
-### Example 3: New App Created via 
+### Example 3: Fresh/Empty Repository
 ```
 User: /sdd.start new-feature
-# (user is in folder ~/Dev/my-cool-api/)
+# (user is in a freshly git-init'd folder, no commits yet)
 
-AI: ⚠️ Application 'my-cool-api' not found.
-
-    What would you like to do?
-    1. 🆕 Create new app
-    2. ✏️  Correct the name
-    3. 💻 Continue without app (local mode)
-
-User: 1
-
-AI: What should the application be named?
-    1. my-cool-api          ← folder name (Option 1 always)
-    2. cool-api-service      ← alternative
-    3. my-cool-api-service   ← alternative
-
-User: 1
-
-AI: 📋 Project Type?
-    1. Prototype (no tests)
-    2. MVP (critical tests only)
-    3. Production (full coverage)
-
-User: 3
-
-AI: [Gets technologies via ]
-    [Gets user's projects via TeamsMCP]
-    [Creates app 'my-cool-api' with  web-maven-spring]
-    [Cleans scaffolding samples]
+AI: [Detects freshly_scaffolded=true — no history, no sdd/specs]
+    [Runs stack detection: language=java framework=spring]
+    [No known scaffold-sample patterns matched — nothing to clean up]
 
     ✅ Feature #001 'new-feature' initialized
        📁 Location: sdd/wip/001-new-feature/
-       🏭 Production mode: Full test coverage
+       🏭 Project mode: greenfield
 
     [AskUserQuestion: "Feature initialized. What would you like to do next?"]
     Options: /sdd.spec (Recommended), /sdd.spec --audio, /sdd.check

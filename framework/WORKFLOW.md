@@ -96,7 +96,7 @@ graph LR
 **Technical Spec** (HOW to build):
 - AI loads functional spec
 - Interviews about architecture
-- Queries  for project services (ML teams)
+- Queries your internal service directory/registry for project services, if one exists
 - Documents APIs, data model, testing
 - Asks: "Ready to approve technical spec?" [Y/n]
 

@@ -543,7 +543,7 @@ Accepts explicit path: `/sdd.plan --view sdd/wip/my-feature/3-tasks/tasks.json`
 | Layer | Name | Purpose | GATEs |
 |-------|------|---------|-------|
 | **1** | Local | Works locally | `build`, `test`, `curl localhost` |
-| **2** | Integration | project services | CI Pipeline (RP MCP), service configs |
+| **2** | Integration | project services | CI Pipeline, service configs |
 | **3** | Quality | Validation | `project-*-expert` skills |
 
 **Layer 3 MUST contain exactly 3 tasks**:
@@ -609,20 +609,19 @@ fi
 
 **Project Type → Layer Rules**:
 
-| Aspecto | Prototype | MVP | Production |
+| Aspect | Prototype | MVP | Production |
 |---------|-----------|-----|------------|
-| **app** | `demo=true` | `demo=false` | `demo=false` |
 | **Layer 1** | Implementation | Implementation | Implementation |
 | **Unit Tests** | ❌ Skip | ⚠️ Critical only | ✅ Full coverage |
 | **Coverage target** | 0% | Varies | 80%+ |
 | **Layer 2** | project services (if any) | project services (if any) | project services (if any) |
-| **CI Pipeline (RP MCP)** | Optional | Required | Required |
+| **CI Pipeline** | Optional | Required | Required |
 | **Layer 3 Quality** | ❌ Skip | ✅ Yes | ✅ Yes |
-| **E2E/E2E** | ❌ Skip | ❌ Skip | ✅ Opt-in |
+| **E2E Tests** | ❌ Skip | ❌ Skip | ✅ Opt-in |
 | **Dockerfile + /ping** | ✅ Always | ✅ Always | ✅ Always |
 
-> **Layer 2 Explanation**: Tasks that require  platform services (KeyValueStore, MessageQueue,
-> Object Storage, etc.). If your app doesn't use project services, Layer 2 will be empty.
+> **Layer 2 Explanation**: Tasks that require external platform services (key-value store, message queue,
+> object storage, etc.). If your app doesn't use project services, Layer 2 will be empty.
 
 ---
 

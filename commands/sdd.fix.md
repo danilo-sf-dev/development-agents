@@ -218,7 +218,7 @@ See [--batch Flag Detection](#--batch-flag-detection-v170) for the subagent impl
 
 ## Subagent Delegation
 
-> **💡 RECOMMENDED**: See [warning-hierarchy.md](../standards/warning-hierarchy.md#subagent-delegation) for the central principle.
+> **💡 RECOMMENDED**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
 > For complex bugs, delegate analysis to specialized subagents.
 
 > **Lazy-loaded**: During problem classification/delegation, Read `references/classification-guide.md` for decision trees and classification rules.

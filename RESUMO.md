@@ -333,6 +333,15 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
 | Playbook formal | Arquivo dedicado do "primeiro dia" |
 | Integração PR automática | Abertura de PR via `gh` — fora do escopo atual |
 
+### Redução de verbosidade — concluída nesta etapa
+
+- Fluxos condicionais de `/sdd.start` e `/sdd.spec` foram extraídos para
+  `commands/references/` e carregados sob demanda.
+- Resíduos vendor nas skills e docs do framework foram generalizados.
+- O fluxo canônico tests-first foi alinhado nos docs: `plan → test → build`.
+- Medição atual: 20 comandos com 15.658 linhas e 20 referências lazy-loaded com
+  1.088 linhas.
+
 ---
 
 ## 15. Como validar o pack
@@ -375,6 +384,7 @@ Objetivo: evitar testes escritos só para passar (teste "vira-lata" que nunca fa
 | Repo renomeado `development-agents` | ✅ Concluído |
 | Pastas legadas removidas | ✅ Concluído |
 | Gate tests-first (`/sdd.test`) | ✅ Concluído (branch `feat/tests-first-gate`) |
+| Redução de verbosidade e referências lazy-loaded | ✅ Concluído nesta etapa |
 | Profiles de stack | ⏳ Pendente |
 
 **Conclusão:** o núcleo do time agêntico SDD está **pronto para uso** em projetos reais, com pipeline tests-first entre plan e build.

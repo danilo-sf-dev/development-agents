@@ -579,8 +579,8 @@ Use AskUserQuestion with options:
 
 **Safe assumptions (don't need to ask):**
 - Standard REST patterns (JSON, HTTP methods)
-- (Dockerfile, /ping, scopes)
-- Standard auth patterns (Tiger-Token for user, scope for app)
+- Standard containerization/health-check conventions (Dockerfile, `/ping` or `/health` endpoint) if this is a network service
+- Standard auth patterns already established in the project (reuse the existing token/scope scheme rather than inventing a new one)
 - Standard retry with exponential backoff for 5xx errors
 
 **NEVER ask about these - they are industry standards:**
@@ -1133,11 +1133,11 @@ mode=$(grep "mode:" sdd/wip/[feature]/meta.md | cut -d: -f2 | tr -d ' ')
 | Dockerfile status/verification tables | ❌ EXCLUDE | App already has working Dockerfile |
 | Dockerfile.runtime mentions | ❌ EXCLUDE | Runtime config already exists |
 | /ping endpoint status | ❌ EXCLUDE | Health check already implemented |
-| " Platform compliance" section | ❌ SKIP | Handled by AUTO-TASK-PLATFORM-COMPLIANCE |
-| Basic auth patterns (Tiger-Token setup) | ❌ EXCLUDE | Auth already configured (reference only if feature needs new scopes) |
+| "Platform Compliance" section | ❌ SKIP | Handled by AUTO-TASK-PLATFORM-COMPLIANCE |
+| Basic auth patterns (existing token/scope setup) | ❌ EXCLUDE | Auth already configured (reference only if feature needs new scopes) |
 
-4. ** Services** -  query (ML teams)
-5. **Dependencies** ⭐ - **MUST check platform docs for ALL ML dependencies** (see Key Rules #11)
+4. **Project Services** - query via your internal service directory/registry, if your org has one
+5. **Dependencies** ⭐ - **MUST check platform docs for any dependency with known compliance/security requirements** (see Key Rules #11)
 6. **Design Decisions** - With rationale
 7. **Data Model** - Entities, schemas, migrations
 8. **REST API Contracts** - Endpoints, request/response
@@ -1881,143 +1881,18 @@ next_e2e=$(bash development-agents/framework/tools/generation/generate-ids.sh e2
 - **System design**: `sdd-system-designer` subagent
 - ** discovery**: `sdd-explorer` subagent
 - **Conflict resolution**: `genai-resolve-conflicts.sh` → `validate-spec-conflicts.sh`
+- **Optional modes**: `references/spec-iterate.md`, `spec-summary.md`, `spec-audio.md`
 
 ---
 
-## --iterate Flag Behavior
+## Optional modes
 
-> **PURPOSE**: Refine specs during build phase when requirements change or gaps are discovered.
+The detailed, conditional instructions for `--iterate`, `--summary`, and
+`--audio` are lazy-loaded only when those flags are present:
 
-### Usage
-
-```bash
-/sdd.spec --iterate "description of the change"
-/sdd.spec --iterate "add retry logic to payment endpoint"
-/sdd.spec --iterate "change user authentication from JWT to OAuth2"
-```
-
-### ⚠️ MANDATORY: Preview Before Apply
-
-> **CRITICAL**: NEVER apply changes directly. ALWAYS show a preview and ask for confirmation.
-
-```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                    🔄 --iterate FLOW (MANDATORY)                         ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  1. READ current spec(s)                                                 ┃
-┃  2. ANALYZE requested change                                             ┃
-┃  3. GENERATE diff/preview of proposed changes                            ┃
-┃  4. SHOW preview to user (see format below)                              ┃
-┃  5. ASK for confirmation using AskUserQuestion                           ┃
-┃  6. ONLY IF approved → Apply changes to spec files                       ┃
-┃                                                                          ┃
-┃  ❌ NEVER skip steps 3-5                                                 ┃
-┃  ❌ NEVER apply changes without explicit user approval                   ┃
-┃                                                                          ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-```
-
-### Preview Format
-
-```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔄 Spec Iteration Preview
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-**Requested Change**: "[user's description]"
-
-**Files Affected**:
-- `1-functional/spec.md` (if applicable)
-- `2-technical/spec.md` (if applicable)
-
-**Proposed Changes**:
-
-### 1. Functional Spec Changes (if any)
-
-**Section: [section name]**
-```diff
-- Current: [old text]
-+ Proposed: [new text]
-```
-
-### 2. Technical Spec Changes (if any)
-
-**Section: [section name]**
-```diff
-- Current: [old text]
-+ Proposed: [new text]
-```
-
-**Impact Assessment**:
-- Tasks affected: [list task IDs if in build phase]
-- Breaking changes: [yes/no]
-- Requires task regeneration: [yes/no]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[AskUserQuestion: "Apply these changes to the specs?"]
-Options:
-- "Yes, apply" (description: "Apply all proposed changes")
-- "Modify" (description: "I want to adjust before applying")
-- "Cancel" (description: "Discard changes, keep current specs")
-```
-
-### Example Flow
-
-```
-User: /sdd.spec --iterate "add rate limiting to all endpoints"
-
-AI: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    🔄 Spec Iteration Preview
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    **Requested Change**: "add rate limiting to all endpoints"
-
-    **Files Affected**:
-    - `2-technical/spec.md`
-
-    **Proposed Changes**:
-
-    ### Technical Spec Changes
-
-    **Section: Non-Functional Requirements**
-    ```diff
-    - (section not present)
-    + ## Non-Functional Requirements
-    +
-    + ### Rate Limiting
-    + - All endpoints: 100 requests/minute per user
-    + - Authentication endpoints: 10 requests/minute per IP
-    + - Implemented via  Rate Limit service
-    ```
-
-    **Section:  Services**
-    ```diff
-      ##  Services
-      - KeyValueStore: User session storage
-      - MessageQueue: Async notifications
-    + - Rate Limit: Request throttling (100 req/min default)
-    ```
-
-    **Impact Assessment**:
-    - Tasks affected: None (new requirement)
-    - Breaking changes: No
-    - Requires task regeneration: Yes (new tasks for rate limiting)
-
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    [AskUserQuestion: "Apply these changes to the specs?"]
-
-User: Yes, apply
-
-AI: ✅ Changes applied to 2-technical/spec.md
-
-    ⚠️ **IMPORTANT**: Changing specs may affect existing tasks.
-    - Your current task statuses will be PRESERVED
-    - Review tasks manually: some completed tasks may now be incomplete
-    - To regenerate tasks: `/sdd.plan --refine` (will reset statuses)
-```
+- `--iterate`: Read `references/spec-iterate.md` before changing any spec.
+- `--summary`: Read `references/spec-summary.md`; do not load full specs.
+- `--audio`: Read `references/spec-audio.md` before starting capture.
 
 ---
 
@@ -2064,23 +1939,10 @@ Q1: What specific payment methods need to be supported?
 - If description is vague, ask clarifying questions first
 - Store context in memory for both functional and technical phases
 
-### --iterate Flag Detection
+### `--iterate` Flag Detection
 
-**WHEN** the user runs `/sdd.spec --iterate "change description"`:
-1. Read current spec files (functional and/or technical)
-2. Analyze the requested change
-3. Generate a diff/preview of ALL proposed changes
-4. Display the preview using the format above
-5. Use AskUserQuestion to ask for confirmation
-6. **ONLY** apply changes if user selects "Yes, apply"
-7. If user selects "Modify", ask what they want to adjust
-8. If user selects "Cancel", discard all changes
-
-**PROHIBITED**:
-- ❌ Applying changes without showing preview first
-- ❌ Applying changes without explicit user confirmation
-- ❌ Showing partial preview (must show ALL changes)
-- ❌ Using vague descriptions ("some changes to the spec")
+When the user runs `/sdd.spec --iterate "change description"`, read
+`references/spec-iterate.md` and follow its preview/confirmation flow.
 
 ### --approve Flag Detection
 
@@ -2125,99 +1987,16 @@ Q1: What specific payment methods need to be supported?
 
 ---
 
-## --summary Flag Behavior
+## `--summary` Flag Behavior
 
-> **PURPOSE**: Quick spec overview (~100 tokens) without loading full content. Useful for context-aware decisions.
-
-### Usage
-
-```bash
-/sdd.spec --summary
-/sdd.spec --summary feature-name
-```
-
-### Output Format
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 📋 SPEC SUMMARY: [feature-name]                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ Functional Spec: [APPROVED/DRAFT/PENDING]                       │
-│   • User Stories: [N] stories                                   │
-│   • Acceptance Criteria: [M] criteria                           │
-│   • E2E Scenarios: [K] (if production + E2E enabled)            │
-│                                                                 │
-│ Technical Spec: [APPROVED/DRAFT/PENDING]                        │
-│   • Endpoints: [N] REST endpoints                               │
-│   •  Services: [list: KeyValueStore, MessageQueue, etc.]                  │
-│   • Data Entities: [N] entities                                 │
-│   • Key Decisions: [N] documented                               │
-│                                                                 │
-│ [Load full: /sdd.spec functional OR /sdd.spec technical]      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Example Output
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 📋 SPEC SUMMARY: payment-gateway                                │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ Functional Spec: APPROVED                                       │
-│   • User Stories: 5 stories                                     │
-│   • Acceptance Criteria: 12 criteria                            │
-│   • E2E Scenarios: 3 (E2E enabled)                              │
-│                                                                 │
-│ Technical Spec: APPROVED                                        │
-│   • Endpoints: 8 REST endpoints                                 │
-│   •  Services: KeyValueStore, MessageQueue, Cache                         │
-│   • Data Entities: 4 entities                                   │
-│   • Key Decisions: 6 documented                                 │
-│                                                                 │
-│ [Load full: /sdd.spec functional OR /sdd.spec technical]      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### When to Use
-
-| Scenario | Use --summary? |
-|----------|----------------|
-| Quick status check | ✅ Yes |
-| Context budget elevated (>40%) | ✅ Yes |
-| Need specific details | ❌ No, use full spec |
-| Planning next steps | ✅ Yes |
-| Code review preparation | ❌ No, use full spec |
-
-### Implementation
-
-1. Read ONLY `meta.md` and section headers from spec files
-2. Count items (stories, endpoints, services) from headers/lists
-3. Generate summary without loading full content
-4. Target: ~100 tokens output
-
-### AI Agent Instructions for --summary
-
-**WHEN** the user runs `/sdd.spec --summary`:
-1. Read `meta.md` for status and feature name
-2. Scan `1-functional/spec.md` headers only (count stories, criteria)
-3. Scan `2-technical/spec.md` headers only (count endpoints, services)
-4. Output summary in format above
-5. **DO NOT** load full file contents
-6. **DO NOT** execute spec creation logic
+When the user runs `/sdd.spec --summary [feature-name]`, read
+`references/spec-summary.md`. Read only metadata and section headers; do not
+execute spec creation logic or load complete spec files.
 
 ---
 
-## --audio Flag Behavior
+## `--audio` Flag Behavior
 
-> **PURPOSE**: Record voice description via microphone for hands-free feature specification.
-
-### Usage
-
-```bash
-/sdd.spec --audio
-```
-
-### AI Agent Instructions for --audio
+When the user runs `/sdd.spec --audio`, read `references/spec-audio.md` and
+follow that capture flow before continuing with the normal interview.
 

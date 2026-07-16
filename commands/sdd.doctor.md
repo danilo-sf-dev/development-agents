@@ -155,7 +155,7 @@ The scanner outputs structured JSON with:
 - `phrase_hits[]` — one per regex match from `phrases.json`
 - `issues[]` — pre-built findings (one per phrase hit or threshold breach)
 
-Each pre-built issue uses the shape: `{rule, file, line, evidence, severity, fixable}`. The skill resolves `rule → axis / kit_reference / recipe` by re-reading `phrases.json` and the rule catalog at `references/rules.md`.
+Each pre-built issue uses the shape: `{rule, file, line, evidence, severity, fixable}`. The skill resolves `rule → axis / kit_reference / recipe` by re-reading `phrases.json` and the rule catalog at `references/doctor-rules.md`.
 
 **D1/D2** findings come from `detect-duplication.sh.pairs[]` — for any pair above the threshold the skill creates a WARN issue tagged `D2` with both file:line ranges.
 
@@ -205,7 +205,7 @@ Use the template at `references/semantic-prompt.md`. Key invariants:
 2. Dedupe on tuple `(file, line, axis)` — keep heuristic if both report the same spot.
 3. Sort by severity (ERROR → WARN → INFO), then by file.
 4. Tag each issue with its source. Semantic issues are printed as `[ID] (semantic)`.
-5. Render using the layout in `references/output-examples.md`.
+5. Render using the layout in `references/doctor-output-examples.md`.
 
 Exit codes (when `--json`):
 - `0` — no issues OR only INFO
@@ -269,7 +269,7 @@ This makes every semantic finding falsifiable. If the user disagrees, they can i
 
 ## Output Format
 
-See `references/output-examples.md` for the canonical layouts. The default report has:
+See `references/doctor-output-examples.md` for additional layouts (clean run, `--explain`, `--apply` summary). The default report has:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

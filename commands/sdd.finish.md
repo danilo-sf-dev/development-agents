@@ -66,7 +66,7 @@ When this skill shows JSON for AskUserQuestion, you MUST:
 - ✅ Step A: Platform compliance —  (backend/web) or Mobile build validation (Android/iOS)
 - ✅ Step B: Layer 3 Quality Gates (performance, security, code review — all findings fixed)
 - ✅ Step C: Code Pattern Validation
-- ✅ Step D: Local CI Pipeline (Release Process MCP — backend/web only; mobile: `./gradlew test` or `xcodebuild test`)
+- ✅ Step D: Local CI Pipeline (project-configured CI command — backend/web only; mobile: `./gradlew test` or `xcodebuild test`)
 
 **⚠️ If ANY step did NOT pass**: Go back to `/sdd.build` first. The validation in `/sdd.finish` is just a DOUBLE-CHECK.
 
@@ -283,7 +283,7 @@ fi
 
 > **CRITICAL**: CI must pass first. All other validations are meaningless if pipeline fails.
 
-**If `IS_MOBILE = true`** — run mobile tests instead of RP MCP:
+**If `IS_MOBILE = true`** — run mobile tests instead of the CI pipeline:
 ```bash
 # Android
 ./gradlew test  # must pass; same as /sdd.build Step A for mobile
@@ -294,10 +294,10 @@ xcodebuild test -workspace *.xcworkspace -scheme <scheme> \
 ```
 If mobile tests already passed in `/sdd.build` this session → **Skip** (already validated).
 
-**If `IS_MOBILE = false`** — use project-release-process skill (same as build.md Step 6D):
+**If `IS_MOBILE = false`** — use the project's configured CI command (same as build.md Step 6D):
 - If build.md Step 6D already passed in this session → **Skip** (already validated)
-- If not yet run → invoke `project-release-process` skill for quick re-validation
-- If skill unavailable → **STOP** — user must install the plugin first
+- If not yet run → invoke the command configured in `PROJECT.md` or the repository's CI entry point
+- If no CI command is configured → report the missing configuration and continue with available build/test checks
 
 ---
 
@@ -353,7 +353,7 @@ Checks:
 - [ ] Version consistency between Dockerfiles
 - [ ] /ping endpoint implemented
 
-**If fails**: Feature CANNOT be completed. See [mandatory-standards.md](../standards/mandatory-standards.md) for requirements.
+**If fails**: Feature CANNOT be completed. See [mandatory-standards.md](../framework/standards/mandatory-standards.md) for requirements.
 
 #### 2.5. Security Validation (MANDATORY)
 
@@ -367,7 +367,7 @@ Run a full security assessment via the `/security-assessment` command — execut
 
 ##### Secrets Management Validation
 
-> **BLOCKER**: Hardcoded secrets will BLOCK deployment. See [mandatory-standards.md](../standards/mandatory-standards.md#6--platform-secrets---mandatory-blocker).
+> **BLOCKER**: Hardcoded secrets will BLOCK deployment. See [mandatory-standards.md](../framework/standards/mandatory-standards.md#6--platform-secrets---mandatory-blocker).
 
 **Scan for hardcoded secrets**:
 ```bash
@@ -884,13 +884,13 @@ From progress.md "Learnings per Task":
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  PREREQUISITES (from /sdd.build FINAL VALIDATION):                  │
-│    ✅ Step A: Platform compliance ( OR mobile build)             │
+│    ✅ Step A: Platform compliance (backend OR mobile build)          │
 │    ✅ Step B: Layer 3 Quality Gates (zero findings)                  │
 │    ✅ Step C: Code Pattern Validation passed                         │
-│    ✅ Step D: CI Pipeline (RP MCP for backend; gradlew/xcode mobile) │
+│    ✅ Step D: CI Pipeline (backend pipeline; gradlew/xcode mobile)   │
 │                                                                      │
 │  THIS COMMAND:                                                       │
-│    → Validates platform compliance ( or mobile)                  │
+│    → Validates platform compliance (backend or mobile)              │
 │    → Validates test coverage ≥80%                                   │
 │    → Re-scans for spec conflicts (v2.2.0)                           │
 │    → Validates spec references                                       │

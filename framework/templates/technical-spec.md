@@ -650,7 +650,7 @@ payment-integration-enabled:
   blacklist: []
 ```
 
-**Tool**:  Feature Flags (ML teams) or LaunchDarkly
+**Tool**: your org's feature-flag service, or an off-the-shelf option (LaunchDarkly, Unleash, etc.)
 
 ### Rollback Plan
 
@@ -692,7 +692,7 @@ payment-integration-enabled:
 }
 ```
 
-**Tool**:  DataDog (ML teams) or Winston/Pino
+**Tool**: your org's observability stack (DataDog, Grafana, etc.) or a logging library like Winston/Pino
 
 ### Metrics
 
