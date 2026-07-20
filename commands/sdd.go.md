@@ -52,6 +52,8 @@ argument-hint: "[feature-description]"
 
 **Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish`
 
+**Model advisory (start of express)**: Read `references/model-suggestion-advisory.md` — show **express compact map** once at Step 0/1. Before delegating to `/sdd.build`, show full box for `test→build`.
+
 **Express Rules**:
 - 3-5 critical questions only
 - Auto-advance between steps

@@ -15,6 +15,8 @@ After `/sdd.finish` completes successfully:
 > **MANDATORY (Standard mode only)**: Offer interactive selection after archiving.
 > **EXPRESS MODE**: Skip this - show brief completion message only.
 
+**Model advisory** (Standard mode): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `finish→pr` (user may pick `/sdd.start` → use `finish→start` row if they choose start).
+
 **⛔ INVOKE TOOL (do not print this, CALL the tool)** (only in Standard mode):
 
 ```
@@ -23,8 +25,8 @@ AskUserQuestion(
     "question": "Feature archived! What's next?",
     "header": "Next",
     "options": [
-      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish to chosen base branch"},
-      {"label": "/sdd.start", "description": "Start a new feature"},
+      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish — sugere modelo barato"},
+      {"label": "/sdd.start", "description": "Start a new feature — sugere modelo barato (forte de novo no spec)"},
       {"label": "/sdd.start --reopen", "description": "Reopen this feature later for iteration"},
       {"label": "Outros", "description": "Outro próximo passo (texto livre)"}
     ],

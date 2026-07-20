@@ -31,6 +31,8 @@ Infer kebab name → detect stack → create `sdd/wip/YYYYMMDD-name/` + meta.md 
 Modes: Standard (confirm) | Express (minimal). Templates: standard | `--lite` (combined short spec).
 App name ≠ feature name. See `/sdd.help start`.
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:start`.
+
 ## Workflow (Steps in Order)
 
 ### Step 0: User Profile Check (BLOCKING)

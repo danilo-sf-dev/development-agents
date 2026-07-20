@@ -46,6 +46,8 @@ hooks:
 
 **See also**: `/sdd.help build`. Prerequisites: tasks + tests approved (`stages.tests` approved|skipped).
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:build`.
+
 ---
 
 

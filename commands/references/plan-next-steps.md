@@ -6,6 +6,8 @@
 
 > **MANDATORY**: Always offer interactive selection after tasks are approved.
 
+**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `plan→test`.
+
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 
 ```
@@ -14,7 +16,7 @@ AskUserQuestion(
     "question": "Tasks ready. Write tests first?",
     "header": "Next",
     "options": [
-      {"label": "/clear + /sdd.test (Recommended)", "description": "Fresh context for tests-first gate"},
+      {"label": "/clear + /sdd.test (Recommended)", "description": "Fresh context for tests-first gate — sugere modelo forte"},
       {"label": "/sdd.test", "description": "Write failing tests before implementation"},
       {"label": "/sdd.test --refine", "description": "Skip if tests already exist — refine only"},
       {"label": "/sdd.check", "description": "Review task structure"}

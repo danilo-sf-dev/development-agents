@@ -43,6 +43,8 @@ argument-hint: "[feature-name]"
 
 **See also**: `/sdd.help fix` · flags lazy-loaded at bottom.
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:fix`.
+
 ---
 
 

@@ -140,6 +140,7 @@ Missing permissions / invalid YAML → show error, do not overwrite silently. Ba
 2. Never invent stack defaults; use detection + user answers.
 3. PROJECT.md = team conventions only; write overrides, not a novel.
 4. After create/update, confirm path `sdd/PROJECT.md` and next step (`/sdd.start` if starting a feature).
+5. **Model advisory**: Read `references/model-suggestion-advisory.md` — full box for brownfield → `project→reverse-eng`; greenfield/next feature → `project→start` (ask which path if unclear).
 
 ## Optional flags (lazy-loaded)
 

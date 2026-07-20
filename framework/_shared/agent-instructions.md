@@ -38,3 +38,13 @@ Blocks marked with ⛔ INVOKE TOOL are executable tool calls. Pass the JSON para
 ### Outros (mandatory on gates)
 
 Every **gate** AskUserQuestion (approve / process failure / anti-gaming / ambiguous next step) MUST include an option labeled **Outros** with free-text intent: the user describes what they will do or suggests another path. See `commands/references/ask-user-question-outros.md`.
+
+---
+
+## Model suggestion advisory (informative)
+
+At **phase-boundary** gates (interactive next-steps after approve/promote), show the model advisory **before** `AskUserQuestion`. At **command entry** for spec/plan/test/build/reverse-eng/fix, show the compact line once.
+
+> Read `commands/references/model-suggestion-advisory.md` for `phase_key`, templates, and AskUserQuestion description suffixes.
+
+Informative only — never block or require the user to confirm a model switch.

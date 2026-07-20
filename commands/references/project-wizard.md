@@ -288,6 +288,8 @@ Generate PROJECT.md?
 3. ❌ Cancel
 ```
 
+After user confirms generation, **model advisory**: Read `references/model-suggestion-advisory.md` — full box (`project→reverse-eng` if brownfield/existing code; else `project→start`).
+
 > **Note**: PROJECT.md will only contain properties the team decided to configure.
 > Others will use defaults from `coding-standards.md`. For frontend-web, `Skill(frontend-web-expert)` is the source of truth.
 

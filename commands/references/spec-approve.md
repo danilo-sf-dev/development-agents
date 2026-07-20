@@ -18,7 +18,10 @@
 6. **Show concise summary** (same as Step 3b/6b depending on phase)
 7. **Ask for approval** via AskUserQuestion (same as Step 3c/6c depending on phase)
 8. **On approval**: Update `meta.md` with `status: approved`, `approved_by: <git config user.name>`, `approved_at: <ISO-8601>`
-9. **Context advisory** (optional): Estimate context usage. If > 50%, show:
+9. **Model advisory**: Read `references/model-suggestion-advisory.md` and show the full box:
+   - `functional --approve` → `phase_key`: `functional→technical`
+   - `technical --approve` → `phase_key`: `technical→plan`
+10. **Context advisory** (optional): Estimate context usage. If > 50%, show:
    ```
    ╔═══════════════════════════════════════════════════════╗
    ║  CONTEXT ADVISORY (optional)                          ║

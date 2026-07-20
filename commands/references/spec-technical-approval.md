@@ -93,3 +93,35 @@ Update `meta.md` stages.technical:
 - `status: approved`
 - `approved_by: <user from git config>` ← NEVER "AI Agent"
 - `approved_at: <ISO-8601 timestamp>`
+
+#### After Technical Spec Approval - Interactive Next Steps
+
+> **MANDATORY**: Always offer interactive selection after approval.
+
+**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `technical→plan`.
+
+**⛔ INVOKE TOOL (do not print this, CALL the tool)**:
+
+```
+AskUserQuestion(
+  questions=[{
+    "question": "Technical spec approved. What's next?",
+    "header": "Next",
+    "options": [
+      {"label": "/sdd.plan (Recommended)", "description": "Generate implementation tasks — sugere modelo forte"},
+      {"label": "/sdd.spec --iterate", "description": "Refine specs before planning"},
+      {"label": "/sdd.check", "description": "View current status"}
+    ],
+    "multiSelect": false
+  }]
+)
+```
+
+**On user selection**:
+
+| Selection | Action |
+|-----------|--------|
+| /sdd.plan (Recommended) | `Skill(skill="sdd.plan")` |
+| /sdd.spec --iterate | `Skill(skill="sdd.spec", args="--iterate")` |
+| /sdd.check | `Skill(skill="sdd.check")` |
+| Other | User types custom input |

@@ -107,6 +107,8 @@ AskUserQuestion(
    - Start feature work with: /sdd.start
    ```
 
+**Model advisory** (before next-step AskUserQuestion if shown): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `reverse-eng→start`.
+
 #### Update Mode Behavior
 
 When `sdd/specs/` already exists (re-extraction):

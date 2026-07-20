@@ -40,6 +40,8 @@ argument-hint: "[--approve|--refine|--resume]"
 
 **See also**: `/sdd.help test` for detailed documentation
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:test`.
+
 ---
 
 ## Pre-Requisites (BLOCKING)
@@ -267,6 +269,8 @@ AskUserQuestion(
 
 ### Step 8: Interactive Next Steps
 
+**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `test→build` (troca crítica para modelo barato).
+
 **⛔ INVOKE TOOL**:
 
 ```
@@ -275,8 +279,8 @@ AskUserQuestion(
     "question": "Testes aprovados. Iniciar implementação?",
     "header": "Next",
     "options": [
-      {"label": "/clear + /sdd.build (Recommended)", "description": "Contexto limpo para implementar"},
-      {"label": "/sdd.build", "description": "Implementar no contexto atual"},
+      {"label": "/clear + /sdd.build (Recommended)", "description": "Contexto limpo para implementar — sugere modelo barato"},
+      {"label": "/sdd.build", "description": "Implementar no contexto atual — sugere modelo barato"},
       {"label": "/sdd.test --refine", "description": "Ajustar testes antes de codar"},
       {"label": "/sdd.check", "description": "Revisar estrutura da feature"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

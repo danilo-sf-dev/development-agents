@@ -33,6 +33,8 @@ argument-hint: "[functional|technical] [--approve]"
 
 Context before technical: >50% → `/clear`; >80% → `context-guardian`.
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:spec`.
+
 ---
 
 ## Profile-Aware Spec Creation (lazy-loaded)
@@ -209,7 +211,9 @@ After technical approval + conflicts: run `/sdd.check --compact` if context >40%
 
 ### Step 9: Next Steps (both specs approved)
 
-AskUserQuestion: `/sdd.plan` (recommended) | `/sdd.spec --iterate` | `/sdd.check`.
+**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `spec→plan`.
+
+AskUserQuestion: `/sdd.plan` (recommended — sugere modelo forte) | `/sdd.spec --iterate` | `/sdd.check`.
 
 ## Key Rules
 

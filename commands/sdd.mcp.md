@@ -93,14 +93,16 @@ Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolat
 
 ### 6. Next steps
 
+**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `mcp→next` (match recommended option: spec → forte; start → barato).
+
 ⛔ INVOKE TOOL (do not print this, CALL the tool):
 AskUserQuestion(questions=[{
   "question": "MCP setup concluído. Próximo passo?",
   "header": "Próximo",
   "options": [
-    {"label": "/sdd.spec --include (Recommended)", "description": "Usar URL Jira/Confluence na spec"},
+    {"label": "/sdd.spec --include (Recommended)", "description": "Usar URL Jira/Confluence na spec — sugere modelo forte"},
     {"label": "/sdd.mcp --test", "description": "Rodar outro smoke test"},
-    {"label": "/sdd.start", "description": "Iniciar / continuar feature"},
+    {"label": "/sdd.start", "description": "Iniciar / continuar feature — sugere modelo barato"},
     {"label": "Outros", "description": "Descreva o que você vai fazer"}
   ],
   "multiSelect": false

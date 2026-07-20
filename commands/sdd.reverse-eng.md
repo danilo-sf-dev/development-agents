@@ -44,6 +44,8 @@ Use cases:
 
 **See also**: `/sdd.help reverse-eng` · `--focus` / `--audio` lazy-loaded at bottom.
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:reverse-eng`.
+
 ---
 
 ## ⚡ First Step: Mode Selection (MANDATORY)

@@ -116,6 +116,8 @@ Update `meta.md` stages.functional:
 
 > **MANDATORY**: Always offer interactive selection after approval.
 
+**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `functional→technical`.
+
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 
 ```
@@ -124,7 +126,7 @@ AskUserQuestion(
     "question": "Functional spec approved. What's next?",
     "header": "Next",
     "options": [
-      {"label": "/sdd.spec technical (Recommended)", "description": "Create technical specification"},
+      {"label": "/sdd.spec technical (Recommended)", "description": "Create technical specification — sugere modelo forte"},
       {"label": "/sdd.spec --iterate", "description": "Refine functional spec first"},
       {"label": "/sdd.check", "description": "View current status"}
     ],

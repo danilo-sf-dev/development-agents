@@ -4,7 +4,7 @@
 
 ### Step 8: Post-Approval Context Check
 
-Before presenting next steps, estimate context usage. If > 50%, show advisory:
+Before presenting next steps, show **model advisory** (`references/model-suggestion-advisory.md`, `phase_key`: `plan→test`), then estimate context usage. If > 50%, show advisory:
 
 ```
 ╔═══════════════════════════════════════════════════════╗

@@ -36,7 +36,7 @@ argument-hint: "[--approve]"
 
 **See also**: `/sdd.help plan`. Next after approve: `/sdd.test` (not `/sdd.build`).
 
----
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:plan`.
 
 
 ## Pre-Requisites (BLOCKING)
