@@ -22,11 +22,8 @@ When `/sdd.mcp` runs (or `/sdd.start` Step 6.5 / `/sdd.spec --include` needs MCP
 
 ## Hard rules
 
-- **Never** invent credentials, API tokens, or OAuth secrets
-- **Never** write to Jira/Confluence (v1 is read-only)
-- **Never** install IDE plugins yourself — print steps for the human
-- **Never** require a specific IDE — unknown host → generic wizard
-- **Do not** treat a JetBrains *Jira Connector* plugin as MCP — that is a separate product UI; MCP is what the AI agent uses
+> Canonical: `framework/standards/boundaries.md` — B-12, section **`sdd-mcp-setup`**.
+
 - AskUserQuestion gates **must** include **Outros** (see `commands/references/ask-user-question-outros.md`)
 - Prefer merging project-root `.mcp.json` only after human approval
 - Response language = user's language

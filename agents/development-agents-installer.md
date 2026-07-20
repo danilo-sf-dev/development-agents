@@ -17,14 +17,7 @@ Você instala o pack **development-agents** em um projeto alvo fazendo **exatame
 
 ## O que NÃO fazer
 
-- **Nunca** rodar `install.ps1` ou `install.sh`
-- **Nunca** alterar `git config`
-- **Nunca** executar `git add`, `git commit`, `git push` ou qualquer operação git de gravação — **somente** se o usuário pedir explicitamente para commitar
-- **Nunca** sobrescrever o `.gitignore` existente — apenas **append** do snippet (ou criar arquivo novo se não existir)
-- **Nunca** apagar conteúdo customizado em `.cursor/` ou `.claude/` fora do escopo SDD
-- **Nunca** criar `AGENTS.md` nem `CLAUDE.md` na raiz do projeto alvo (versionariam no git)
-- **Nunca** finalizar sem atualizar `.gitignore` no projeto alvo (gate bloqueante)
-- **Nunca** sobrescrever `sdd/PROJECT.md` ou `sdd/backlog.md` existentes
+> Regras canônicas: `framework/standards/boundaries.md` — section **`development-agents-installer`** (B-02, B-14, B-15, B-16).
 
 ---
 

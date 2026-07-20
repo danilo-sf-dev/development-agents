@@ -2,14 +2,6 @@
 
 **Used by**: `/sdd.plan` when filtering bad tasks.
 
-## Forbidden Tasks
+> **Canonical rules**: `framework/standards/boundaries.md` — section **`/sdd.plan`**. Do not duplicate the list here.
 
-NEVER generate:
-- "Deploy to environment"
-- "platform deploy"
-- "Release version"
-- "Push to staging/production"
-
-Agent cannot execute deployments. Focus on code, tests, and configs.
-
----
+When generating tasks, load and apply that section before writing `tasks.json`.

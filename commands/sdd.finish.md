@@ -140,7 +140,7 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 - The full directory name (including date prefix) is preserved when moving from `wip/` to `features/`
 - Example: `sdd/wip/20260120-user-auth/` → `sdd/features/20260120-user-auth/`
 
-**CRITICAL**: `meta.md` must be moved INTACT from `sdd/wip/` to `sdd/features/`. It contains the complete history. NEVER delete it.
+**CRITICAL**: See `framework/standards/boundaries.md` — B-09, `/sdd.finish` section.
 
 > **Telemetry**: Data is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor).
 ---

@@ -127,7 +127,7 @@ Write meta from template: name, mode, project_type, profile, stack, `spec_langua
 ### Step 9: Git Branch Management
 
 If on default branch (master/main/develop per PROJECT.md): create/checkout `feature/<name>` (or project gitflow pattern).
-If already on feature branch: keep it. Never force-push.
+If already on feature branch: keep it. See `framework/standards/boundaries.md` — B-03, `/sdd.start`.
 > **ONLY IF** needing gitflow variants:
 > Read `references/start-git-branch.md`.
 

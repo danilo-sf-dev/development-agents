@@ -154,42 +154,7 @@ This document establishes the governance principles, development standards, and 
 
 **Principle**: Destructive operations ALWAYS require explicit human approval.
 
-> **See also**: `standards/boundaries.md` for the complete 3-tier boundary system (✅ Always Do / ⚠️ Ask First / 🚫 Never Do)
-
-**What this means**:
-- AI agents MUST NEVER execute dangerous commands without human confirmation
-- Destructive operations are BLOCKED until a human explicitly approves
-- Even in auto-approve mode, dangerous operations require manual approval
-
-**Dangerous commands include** (but are not limited to):
-
-| Category | Examples |
-|----------|----------|
-| File deletion | `rm -rf`, `rm -r`, `del /s` |
-| Elevated privileges | `sudo`, `su`, `runas` |
-| Git destructive | `git push --force`, `git reset --hard`, `git clean -fd` |
-| System modification | `chmod 777`, `chown -R`, format commands |
-| Database operations | `DROP TABLE`, `DELETE FROM` without WHERE, `TRUNCATE` |
-| Network exposure | Commands that expose ports publicly |
-| Credential handling | Commands that output or transmit secrets |
-
-**Enforcement**:
-- AI agents MUST pause and ask for explicit confirmation before executing
-- The confirmation must include a clear explanation of what will be affected
-- If the human declines, the agent must propose a safer alternative
-- All dangerous command requests must be logged
-
-**Example interaction**:
-```
-AI: I need to run `rm -rf ./old-migrations/` to clean up old files.
-    This will permanently delete 47 files in ./old-migrations/
-
-    Do you approve this action? (yes/no)
-
-Human: yes
-
-AI: [Executes command]
-```
+**Canonical rules**: [`standards/boundaries.md`](./boundaries.md) — 3-tier system (✅ Always Do / ⚠️ Ask First / 🚫 Never Do). All agents read it at command start; no duplicate lists elsewhere.
 
 **Why**: Irreversible operations can cause significant damage. Human oversight ensures intentionality and prevents accidents.
 

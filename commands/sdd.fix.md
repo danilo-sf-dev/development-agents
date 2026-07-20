@@ -159,10 +159,8 @@ Functional / technical / tasks / code — list what must change. No layer left i
 
 ### Step 3.5: Anti-Shortcut (CRITICAL — short)
 
-Forbidden: fix only code when spec is wrong; weaken tests to pass; skip a layer that impact listed; “temporary” without recording.
-Must: update every impacted layer in one fix cycle; keep acceptance criteria honest.
-> **ONLY IF** full protocol / examples:
-> Read `references/fix-anti-shortcut.md`.
+> Boundaries: `framework/standards/boundaries.md` — `/sdd.fix` section (B-07, B-08, horizontal fix).
+> Procedure: `references/fix-anti-shortcut.md`.
 
 ### Step 4: Propose Horizontal Fix (lazy-loaded)
 

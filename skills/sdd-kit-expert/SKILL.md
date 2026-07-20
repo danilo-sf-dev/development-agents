@@ -13,6 +13,8 @@ You are an expert on the SDD Kit framework for Spec-Driven Development (SDD).
 
 ## ⛔ CRITICAL: Structure Requirements (NEVER VIOLATE)
 
+> **Operational boundaries** (git, DB, secrets, tests): single source → `framework/standards/boundaries.md` (loaded via `agent-instructions.md`).
+
 > **These rules are MANDATORY for ALL commands. Violating them = broken workflow.**
 
 ### 1. Folder Structure (EXACT)

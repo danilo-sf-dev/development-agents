@@ -116,7 +116,7 @@ If Express Mode parent (`/sdd.go`): skip this AskUserQuestion; return summary on
 
 1. Do not assume Cursor-only or Claude-only paths
 2. JetBrains Jira UI plugins ≠ MCP for the agent — configure MCP for the AI host
-3. Keep v1 read-only; never transition issues or edit Confluence via this command
+3. Boundaries: `framework/standards/boundaries.md` — B-12, `/sdd.mcp` section
 4. Preserve existing unrelated MCP servers when merging `.mcp.json`
 5. Manual paste fallback in `spec-include-context.md` remains valid when MCP is off
 )

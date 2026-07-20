@@ -158,21 +158,9 @@ Nunca use mensagens vagas como `update`, `fix`, `WIP` ou `changes`.
 
 ## Segurança e escopo
 
-Nunca adicione ao stage ou commit:
+> Regras canônicas: `framework/standards/boundaries.md` — B-04, B-17, section **`commit-workflow`**.
 
-- arquivos de secrets, credenciais ou tokens;
-- arquivos `.env` locais;
-- diretórios temporários;
-- artefatos de build, salvo se o projeto exigir explicitamente;
-- alterações que o usuário não solicitou.
-
-Antes do commit, confirme:
-
-- branch atual;
-- arquivos staged;
-- diff staged;
-- ausência de secrets;
-- mensagem final.
+Antes do commit, confirme: branch atual, arquivos staged, diff staged, ausência de secrets, mensagem final.
 
 ## Graphify — integração opcional de contexto
 

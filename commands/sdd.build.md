@@ -70,21 +70,9 @@ Before adding a library: run project dependency-security scanner if configured i
 
 ## Approved Tests Are Immutable (Anti-Gaming Guard)
 
-> **BLOCKING RULE**: Tests approved in `/sdd.test` are the frozen behavior contract for this feature. `/sdd.build` writes code to make them pass — it never edits, weakens, deletes, disables, or skips them to force a green result. This applies in **every mode**, including Express.
+> **BLOCKING RULE**: See `framework/standards/boundaries.md` — B-07, B-08 and section **`/sdd.build`**.
 
-**Forbidden during `/sdd.build`**:
-- Editing assertions, expected values, or fixtures in any file listed in `tests-manifest.json`
-- Deleting or renaming an approved test file
-- Disabling tests (`.skip()`, `@Disabled`, `xit()`, commenting out, etc.)
-- Loosening mocks/setup in a way that changes what the test actually verifies
-
-**Allowed** (narrow exceptions, must be logged in the task report, not silent):
-- Fixing a broken import path caused by a file move/rename during implementation (mechanical fix only, no assertion change)
-- Adding brand-new tests is **not** this command's job either — that belongs to `/sdd.test`
-
-### Detection (per task)
-
-Agent diff check (no OS hard scripts): if any file listed in `tests-manifest.json` appears in the working-tree diff → STOP, AskUserQuestion (always include **Outros**). Never auto-approve in Express.
+**Detection (per task)**: if any file in `tests-manifest.json` appears in the working-tree diff → STOP, AskUserQuestion (always include **Outros**). Never auto-approve in Express.
 > Read `references/build-anti-gaming-detection.md` for detection steps + AskUserQuestion payload.
 > AskUserQuestion shape: `references/ask-user-question-outros.md`.
 

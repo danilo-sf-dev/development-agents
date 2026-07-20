@@ -2,6 +2,8 @@
 
 **Used by**: `/sdd.build` when approved tests appear in the diff.
 
+> **Rule**: `framework/standards/boundaries.md` — B-07, B-08. This file is **detection procedure only**.
+
 > No OS hard gate (`bash`/`jq`/pre-commit). Enforcement = agent check + `sdd-validator-runner` Process Compliance + human AskUserQuestion.
 > Always include **Outros** — see `ask-user-question-outros.md`.
 

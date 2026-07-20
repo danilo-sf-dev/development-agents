@@ -24,7 +24,7 @@
 2. **Block on failures** - Do not archive incomplete features
 3. **Promote learnings** - Check for patterns to add to PATTERNS.md (see below)
 4. **Generate documentation** - Always create README and summary
-5. **PRESERVE meta.md** - Move INTACT to sdd/features/, NEVER delete
+5. **PRESERVE meta.md** — `framework/standards/boundaries.md` B-09, `/sdd.finish` section
 6. **Clean up WIP** - Only remove sdd/wip/[feature]/ AFTER moving all files
 
 > **Telemetry**: Data is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor).

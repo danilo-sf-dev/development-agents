@@ -48,3 +48,15 @@ At **phase-boundary** gates (interactive next-steps after approve/promote), show
 > Read `commands/references/model-suggestion-advisory.md` for `phase_key`, templates, and AskUserQuestion description suffixes.
 
 Informative only — never block or require the user to confirm a model switch.
+
+---
+
+## Agent boundaries (mandatory)
+
+At the **start of every** `/sdd.*` command:
+
+1. Read `framework/standards/boundaries.md` — at minimum the **decision tree** and scan 🚫 Never Do IDs.
+2. Before any **Shell** command that deletes files, changes git remotes, touches database schema/data, deploys, or uses elevated privileges → re-read **⚠️ Ask First** and **🚫 Never Do** in that file.
+3. Before `/sdd.start`, `/sdd.spec`, or `/sdd.build` → also read `framework/standards/pre-execution-checks.md`.
+
+> **Single source of truth** — do not rely on duplicated boundary lists in command files; they point here.

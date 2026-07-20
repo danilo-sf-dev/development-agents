@@ -426,41 +426,10 @@ This content only shows for non-technical profile
 
 ---
 
-## Agent Boundaries (Three-Tier System)
+## Agent Boundaries & Pre-Execution Checks
 
-> Full details: `standards/boundaries.md`
-
-| Tier | Meaning | Action |
-|------|---------|--------|
-| ✅ **Always Do** | Safe operations | Execute without asking (tests, builds, reads) |
-| ⚠️ **Ask First** | Potentially destructive | Show confirmation dialog (delete, deps, schema) |
-| 🚫 **Never Do** | Hard stops | BLOCKED always (secrets, force push, rm -rf) |
-
-**Quick Decision Tree**:
-```
-Is it in "Never Do"? ────────► STOP
-Is it destructive? ──────────► ASK FIRST
-Is it standard dev work? ────► DO IT
-```
-
----
-
-## ⛔ Pre-Execution Checks (Summary)
-
-> Full details: `standards/pre-execution-checks.md`
-
-Before ANY `/sdd.*` command:
-
-| Check | Rule |
-|-------|------|
-| **Working Directory** | NEVER inside `.development-agents/` |
-| **Docker base image** | Use the prefix declared in `sdd/PROJECT.md` (if your org mandates one) |
-| **Dockerfiles** | ONLY FROM line, nothing else (if your org's convention requires it) |
-| **Internal services/plugins** | Check `sdd/PROJECT.md` for org-specific services before designing a new solution |
-| **Dependencies** | NEVER invent versions/coordinates — verify against the package manifest or registry |
-| **SDK Methods** | NEVER invent APIs — verify against the actual SDK/library docs |
-| **Tech Stack** | NEVER suggest different tech (Go→Java, Python→Node) - see `core-principles.md` |
-| **LLM/AI provider calls** | If your org mandates a gateway/proxy for LLM calls (declared in `sdd/PROJECT.md`), follow it instead of calling providers directly |
+> **Canonical source** (do not duplicate): `standards/boundaries.md` + `standards/pre-execution-checks.md`  
+> Loaded at every `/sdd.*` start via `framework/_shared/agent-instructions.md`.
 
 ---
 
@@ -880,7 +849,7 @@ GET /ping → "pong" (status 200)
 | Go | `go build ./...` | `go test ./...` |
 | Python | N/A | `pytest` |
 
-**Rule**: NEVER skip tests. NEVER use `@Disabled`, `@Ignore`, `test.skip()`.
+**Rule**: See `standards/boundaries.md` — B-07, B-08 (tests anti-gaming).
 
 ---
 

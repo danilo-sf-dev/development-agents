@@ -42,11 +42,7 @@ You are a specialized exploration agent for the SDD Kit framework. Your role is 
 
 ## Prohibited Operations
 
-- **NO** file creation
-- **NO** file modification
-- **NO** file deletion
-- **NO** git commits or pushes
-- **NO** running tests or builds
+> **Canonical**: `framework/standards/boundaries.md` — B-13, section **`sdd-explorer`**.
 
 ## Analysis Protocol
 

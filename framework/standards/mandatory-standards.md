@@ -27,13 +27,7 @@
 
 ### Anti-Skip Rule
 
-> **CRITICAL**: NEVER skip, disable, or delete tests to make the build pass.
-
-**PROHIBITED**:
-- `@Disabled`, `@Ignore` (Java)
-- `test.skip()`, `xit()` (JavaScript)
-- `@pytest.mark.skip` (Python)
-- `t.Skip()` (Go)
+> **CRITICAL**: See `standards/boundaries.md` — B-07, B-08.
 
 ---
 

@@ -321,18 +321,9 @@ Every feature MUST have:
 
 ## Agent Boundaries (Three-Tier System)
 
-> Quick reference for what agents can/cannot do. Full details: `standards/boundaries.md`
+> **Canonical source**: `framework/standards/boundaries.md` — read at every `/sdd.*` start (via `agent-instructions.md`).
 
-| Tier | Icon | Action | Examples |
-|------|------|--------|----------|
-| ✅ **Always Do** | Auto-approved | Run tests, read files, build, commit | No asking needed |
-| ⚠️ **Ask First** | Require approval | Add deps, delete files, schema changes | Shows confirmation dialog |
-| 🚫 **Never Do** | Hard stops | Commit secrets, `--force` push, `rm -rf /` | Blocked always |
-
-**Quick Decision**:
-- Destructive? → ⚠️ Ask First
-- Standard dev operation? → ✅ Just Do It
-- In "Never Do" list? → 🚫 Stop
+Quick index: ✅ safe dev ops · ⚠️ delete/DB/git write/deploy · 🚫 secrets, force-push main, test gaming, prod DB wipe
 
 ---
 

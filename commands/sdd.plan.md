@@ -161,7 +161,7 @@ Tasks must be executable, layered, AC-linked to specs; IDs via deterministic gen
 
 ## Forbidden Tasks (short)
 
-No “investigate only”, no unbounded refactors, no test tasks that contradict `project_type` (e.g. full suite on prototype).
+> `framework/standards/boundaries.md` — section **`/sdd.plan`**. Procedure: `references/plan-forbidden-tasks.md`.
 
 ## Command Flow
 
