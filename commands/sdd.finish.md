@@ -36,6 +36,8 @@ model: sonnet
 
 **See also**: `/sdd.help finish` for detailed documentation
 
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:finish`.
+
 ---
 
 

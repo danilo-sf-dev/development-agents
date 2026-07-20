@@ -11,7 +11,7 @@
 | Trigger | Action |
 |---------|--------|
 | Before every **Interactive Next Steps** `AskUserQuestion` at a phase boundary | Show **full box** (mandatory) |
-| On **command entry** for `/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.build`, `/sdd.reverse-eng`, `/sdd.fix` | Show **compact line** (recommended, once per invocation) |
+| On **command entry** for `/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.build`, `/sdd.finish`, `/sdd.reverse-eng`, `/sdd.fix` | Show **compact line** (recommended, once per invocation) |
 | **Express mode** (`/sdd.go`, `execution_mode: express`) between auto-advanced steps | Skip — **except** before `/sdd.build`: show full box for `test→build` (critical switch) |
 | `/sdd.help`, `/sdd.check`, `/sdd.install`, mid-task build layers | Skip unless transitioning to next phase |
 
@@ -31,8 +31,8 @@ Use the `phase_key` when invoking this reference from command files.
 | `spec→plan` | `/sdd.plan` | **FORTE** | Plano a partir de specs aprovadas |
 | `plan→test` | `/sdd.test` | **FORTE** | Contrato de testes e casos de borda |
 | `test→build` | `/sdd.build` | **BARATO** | Executar o que já foi aprovado |
-| `build→finish` | `/sdd.finish` | **BARATO** | Fechar e arquivar |
-| `finish→pr` | `/sdd.pr` | **BARATO** | Descrever PR do que existe |
+| `build→finish` | `/sdd.finish` | **FORTE** | Code review final + validação antes de arquivar |
+| `finish→pr` | `/sdd.pr` | **BARATO** | Descrever PR do que já existe |
 | `finish→start` | `/sdd.start` | **BARATO** | Só metadados; forte de novo no spec |
 | `reverse-eng→start` | `/sdd.start` | **BARATO** | Extração já concluída |
 | `reverse-eng→promote` | PROMOTE / `/sdd.start` | **BARATO** após promote | |
@@ -43,6 +43,7 @@ Use the `phase_key` when invoking this reference from command files.
 | `entry:plan` | (fase atual) | **FORTE** | Decompor sem inventar escopo |
 | `entry:test` | (fase atual) | **FORTE** | O que testar e por quê |
 | `entry:build` | (fase atual) | **BARATO** | Seguir tasks + testes aprovados |
+| `entry:finish` | (fase atual) | **FORTE** | Code review + security + validação final |
 | `entry:reverse-eng` | (fase atual) | **FORTE** | Síntese a partir do código |
 | `entry:fix` | (fase atual) | **FORTE** | Diagnóstico; barato só após caminho claro |
 | `entry:start` | (fase atual) | **BARATO** | Só metadados; FORTE no `/sdd.spec` (Step 12) |
@@ -73,6 +74,7 @@ Replace placeholders from the phase catalog row for the given `phase_key`:
 | `phase_key` | `EXTRA_LINE` |
 |-------------|--------------|
 | `test→build` | Se ambiguidade no build → pause e volte ao FORTE |
+| `build→finish` | Troque para FORTE — roda `sdd-code-reviewer` e validação final |
 | `start→spec` | Passe o Jira cedo: `/sdd.spec --include "<url>"` |
 | `project→reverse-eng` | Brownfield: 1× por microserviço, não por card |
 | `express:overview` | (use compact map instead of single next) |
@@ -92,7 +94,7 @@ or
 ### Express compact map (show once at `/sdd.go` start)
 
 ```
-💡 Modelo (sugestão): FORTE → spec, plan, test  |  BARATO → build, finish, pr
+💡 Modelo (sugestão): FORTE → spec, plan, test, finish  |  BARATO → build, pr
 ```
 
 ---

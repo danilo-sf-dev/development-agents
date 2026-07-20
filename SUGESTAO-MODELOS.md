@@ -37,15 +37,18 @@ Por isso a sugestão: investir no modelo forte no começo; economizar no meio/fi
 | `/sdd.plan` | **Forte** | Quebra em tasks e dependências sem inventar escopo |
 | `/sdd.test` | **Forte** | Define o que será testado e por quê (você revisa o contrato) |
 | `/sdd.build` | **Barato** | Implementa o que já foi muito bem definido |
-| `/sdd.finish` / `/sdd.pr` | Barato | Fecha e descreve o que já existe |
+| `/sdd.finish` | **Forte** | Code review final, security e validação antes de arquivar |
+| `/sdd.pr` | Barato | Descreve o PR do que já existe |
 | Debug difícil / `/sdd.fix` | **Forte** (só no diagnóstico) | Volte ao barato quando o caminho estiver claro |
 
 ### Momento típico de trocar
 
 ```text
-modelo forte  →  spec → plan → test  (e suas aprovações)
-modelo barato →  build → finish → pr
+modelo forte  →  spec → plan → test → finish  (e suas aprovações)
+modelo barato →  build → pr
 ```
+
+Antes do `/sdd.finish`, troque para o **forte** — é onde roda o code review final.
 
 Se no build o agente começar a reinventar produto ou mudar teste aprovado, pause e volte ao modelo forte (ou refine spec/test) em vez de insistir no barato.
 

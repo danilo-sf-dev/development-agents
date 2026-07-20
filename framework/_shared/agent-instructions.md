@@ -43,7 +43,7 @@ Every **gate** AskUserQuestion (approve / process failure / anti-gaming / ambigu
 
 ## Model suggestion advisory (informative)
 
-At **phase-boundary** gates (interactive next-steps after approve/promote), show the model advisory **before** `AskUserQuestion`. At **command entry** for spec/plan/test/build/reverse-eng/fix, show the compact line once.
+At **phase-boundary** gates (interactive next-steps after approve/promote), show the model advisory **before** `AskUserQuestion`. At **command entry** for spec/plan/test/build/finish/reverse-eng/fix, show the compact line once.
 
 > Read `commands/references/model-suggestion-advisory.md` for `phase_key`, templates, and AskUserQuestion description suffixes.
 

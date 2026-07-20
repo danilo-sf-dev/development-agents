@@ -17,7 +17,7 @@ AskUserQuestion(
     "question": "All tasks complete and validated. Ready to finish?",
     "header": "Next",
     "options": [
-      {"label": "/sdd.finish (Recommended)", "description": "Archive feature and complete — sugere modelo barato"},
+      {"label": "/sdd.finish (Recommended)", "description": "Archive feature and complete — sugere modelo forte (code review final)"},
       {"label": "/sdd.check --sync", "description": "Final consistency check"},
       {"label": "/sdd.build --layer 3", "description": "Re-run quality checks"}
     ],
