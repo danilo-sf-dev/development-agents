@@ -1,4 +1,4 @@
-﻿# development-agents
+# development-agents
 
 Hub do time de agents SDD — **language- and platform-agnostic**.  
 Não é um app: é o pack exportável de workflow Spec-Driven Development.
@@ -23,6 +23,8 @@ development-agents/          ← raiz do git (clone = pack pronto)
 ├── install.sh / install.ps1
 ├── AGENTS.md
 ├── MANIFEST.md
+├── FLUXOS-FEATURE-E-FIX.md  ← guia: fluxo Feature vs fluxo Fix (bug)
+├── SUGESTAO-MODELOS.md      ← dica informativa de modelo forte/barato
 ├── agents/
 ├── skills/
 ├── commands/
@@ -101,11 +103,13 @@ O agente/instalador **nunca** roda `git commit`. Só você commita se quiser —
 Depois:
 
 1. `/sdd.project` (se não houver `sdd/PROJECT.md`)
-2. checkout `main`/`master` + pull (manual)
-3. `/sdd.start "JIRA-1234 resumo"`
-4. `/sdd.spec functional --include "<card ou link>"`
-5. … pipeline completo — ver [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
-6. `/sdd.pr` — rascunho de PR → você aprova → publica no GitHub
+2. `/sdd.reverse-eng` (brownfield — uma vez por serviço)
+3. checkout `main`/`master` + pull (manual)
+4. Abrir o card com `/sdd.start "JIRA-1234 resumo"`
+5. Seguir o fluxo certo — ver [`FLUXOS-FEATURE-E-FIX.md`](./FLUXOS-FEATURE-E-FIX.md):
+   - **Feature** → `spec → plan → test → build → finish → pr`
+   - **Bug** → `fix → finish → pr`
+6. Playbook completo: [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
 
 ## Origem
 
