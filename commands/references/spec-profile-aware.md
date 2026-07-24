@@ -21,7 +21,7 @@ profile=$(grep "type:" sdd/wip/*/meta.md | grep -o 'technical\|non-technical')
 |--------|-----------|---------------|
 | **Data source questions** | Ask about MessageQueue, Streams, scheduled jobs | Ask "Where does this data come from? (user input, other system, automatic)" |
 | **Integration details** | Ask specific service names, API contracts | Ask "Does this need data from other systems?" |
-| **Technical constraints** | Ask about performance, SLAs | Skip (agent infers from project type) |
+| **Technical constraints** | Ask about performance, SLAs | Skip (agent infers from PROJECT.md / codebase) |
 
 ### Technical Spec: Profile Differences
 

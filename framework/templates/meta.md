@@ -3,7 +3,6 @@
 **Feature Name**: {{FEATURE_NAME}}
 **Feature ID**: feat-{{FEATURE_DATE}}-{{FEATURE_NAME}}
 **Mode**: greenfield | brownfield
-**Project Type**: {{PROJECT_TYPE}}
 **Platform**: {{PLATFORM}}
 **User Profile**: {{USER_PROFILE}}
 **Created**: {{DATE}}
@@ -28,24 +27,17 @@ framework:
 
 ---
 
-## Project Type Configuration
+## Testing Configuration
 
 ```yaml
-project_type:
-  type: null  # prototype | mvp | production
-  decision_date: null
-
-  # Testing configuration based on project type
-  testing:
-    unit_tests: null      # disabled | critical_only | full_coverage
-    e2e_enabled: null     # false | false | opt-in
-    coverage_target: null # 0% | varies | 80%
+testing:
+  e2e_enabled: null     # false | true — from PROJECT.md / feature interview; never skips unit/integration gate
+  coverage_target: null # from PROJECT.md (framework default applies when null)
 ```
 
-> **Note**: Project type is selected during `/sdd.start` and affects test generation in `/sdd.build`:
-> - **prototype**: No unit tests, no E2E (focus on speed)
-> - **mvp**: Unit tests for critical paths only, no E2E by default
-> - **production**: Full test coverage (80%+), E2E opt-in
+> **Note**: Every feature follows the same full pipeline (`spec → plan → test → build → finish`).
+> There is no prototype/MVP/production mode and no phase-skip by feature “type”.
+> Unit/integration tests-first is always mandatory. E2E is optional only via `testing.e2e.enabled`.
 
 ---
 
@@ -283,11 +275,10 @@ stages:
   tests:
     started: null
     completed: null
-    status: pending | in-progress | approved | skipped
+    status: pending | in-progress | approved
     approved_by: null        # Username/email of person who approved tests (Gate 2.5)
     approved_at: null        # ISO-8601 timestamp of approval
     red_verified: false      # true after /sdd.test confirms new tests fail
-    skipped_reason: null     # e.g. "prototype" when tests-first gate is bypassed
     test_files_count: 0
 
   implementation:

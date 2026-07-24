@@ -94,7 +94,7 @@ Write entire spec in that language; headers/identifiers/tech terms in English.
 
 > Consolidated interview (tech: 4–6 Q; non-tech: 3–5 Q). Anti-redundancy: never ask twice.
 > Gap-driven + architect-first for async/storage/concurrent — ask in product terms only.
-> E2E: auto-skip prototype/mvp; ask on production.
+> E2E: ask only when tooling/PROJECT enables it; unit/integration tests-first is always mandatory.
 > **ONLY IF** you need the full question tables / gap protocol matrix: Read `references/spec-interview.md`.
 
 ### Step 2.5: Completeness Check
@@ -194,7 +194,7 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 ### Step 6: Technical Approval Gate
 
 > **BLOCKING**: (1) Architect self-check (`sdd-system-designer` before DD/Services; `sdd-implementer` per service).
-> (2) `validate-technical.sh` then `validate-security.sh` (skip security if prototype).
+> (2) `validate-technical.sh` then `validate-security.sh` (security always mandatory).
 > (3) Short summary + ASCII diagram (shapes: `references/spec-architecture-diagram.md`).
 > (4) AskUserQuestion Approve / View full / Request changes.
 > (5) On approve: `meta.md` stages.technical with human `approved_by`.

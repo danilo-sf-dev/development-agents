@@ -4,7 +4,7 @@
 
 ### Step 6.5: Configure Local MCPs (if needed)
 
-> **SKIP IF**: `project_type == "prototype"` (already skipped PROJECT.md)
+> Run after PROJECT.md load when MCP settings are relevant.
 
 After loading PROJECT.md, check for optional MCP configurations:
 

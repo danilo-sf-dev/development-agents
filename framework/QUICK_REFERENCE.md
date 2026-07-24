@@ -90,7 +90,7 @@ $ sdd-kit help              # Show help
 ### Core Workflow
 | Command | Description |
 |---------|-------------|
-| `/sdd.start "name"` | Initialize feature (selects project type) |
+| `/sdd.start "name"` | Initialize feature (full pipeline) |
 | `/sdd.spec` | Create specifications |
 | `/sdd.plan` | Generate tasks |
 | `/sdd.test` | Write and approve failing tests before implementation |
@@ -296,26 +296,14 @@ Telemetry is captured **automatically by hooks** - no manual logging required.
 
 ---
 
-## Project Types
-
-| Type | Tests | CI Pipeline | Coverage |
-|------|-------|-------------|----------|
-| **Prototype** | ❌ Disabled | Skip | 0% |
-| **MVP** | ⚠️ Critical only | Run | varies |
-| **Production** | ✅ Full | Required | 80%+ |
-
-> Specs are ALWAYS 100% required regardless of project type.
-
----
-
 ## Mandatory Requirements
 
 Every feature MUST have:
 - ✅ Functional spec with user stories + acceptance criteria
 - ✅ Technical spec with API contracts + data model
-- ✅ Tests (coverage varies by project type)
-- ✅ CI Pipeline passing before `/sdd.finish` (MVP/Production)
-- ✅ Container/runtime compliance (Dockerfile, Dockerfile.runtime, /ping)
+- ✅ Tests-first gate (`/sdd.test`) with red verified + human approval
+- ✅ CI / project test entrypoint passing before `/sdd.finish`
+- ✅ Container/runtime compliance (Dockerfile, Dockerfile.runtime, /ping) when applicable
 
 ---
 

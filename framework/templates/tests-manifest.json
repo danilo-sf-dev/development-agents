@@ -1,0 +1,37 @@
+{
+  "feature": "[feature-name]",
+  "status": "pending",
+  "tests": [
+    {
+      "id": "TEST-001",
+      "file": "tests/unit/Example.test.ts",
+      "covers": ["AC-1", "TASK-001"],
+      "cases": [
+        {
+          "id": "EC-HP",
+          "title": "happy path",
+          "expect": "observable success outcome (not 'should work')",
+          "assert_kind": "state",
+          "qa_surrogate": true,
+          "risk_if_missed": "QA sees wrong happy-path behavior in E2E"
+        },
+        {
+          "id": "EC-001",
+          "title": "empty input",
+          "expect": "rejects with validation error CODE",
+          "assert_kind": "exception",
+          "qa_surrogate": true,
+          "risk_if_missed": "QA accepts empty value"
+        }
+      ],
+      "expected_initial_result": "fail"
+    }
+  ],
+  "red_verified": false,
+  "red_run_at": null,
+  "red_summary": null,
+  "approved_by": null,
+  "approved_at": null,
+  "revision": 0,
+  "revised_reason": null
+}

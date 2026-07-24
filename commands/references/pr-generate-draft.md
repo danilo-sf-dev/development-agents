@@ -75,7 +75,7 @@ Title rules from `sdd/PROJECT.md` if present; else Conventional Commits in Portu
 
 1. Replace every placeholder when data exists — no empty "TODO" if artifact has content.
 2. Keep evidence section optional but mention CI link if `gh run list` available.
-3. If tests gate was `skipped` (prototype) → state explicitly in Testes section (or equivalent project section).
+3. If tests gate was incomplete → do not open PR; send back to `/sdd.test`.
 4. Do not invent Jira keys — use `meta.md` or AskUserQuestion once if missing.
 5. Log which template was chosen (`template-source` comment) so user can verify project vs pack.
 

@@ -218,7 +218,6 @@ Sequence of phases and commands in SDD development.
 | KeyValueStore | Key-Value Store | KeyValueStore *(nombre interno )* |
 | E2E | Large Testing Platform | Plataforma de pruebas E2E de  |
 | MCP | Model Context Protocol | MCP *(mismo en ambos idiomas)* |
-| MVP | Minimum Viable Product | - |
 | PR | Pull Request | Solicitud de cambios |
 | REST | Representational State Transfer | REST *(mismo en ambos idiomas)* |
 | SDD | Specification-Driven Development | Desarrollo guiado por especificaciones |

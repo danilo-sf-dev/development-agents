@@ -19,11 +19,18 @@ Only after human re-approval does the contract lock again for `/sdd.build`.
 
 ## Allowed actions
 
-- Add edge case test
-- Fix test that passes incorrectly (false green)
-- Split/combine test files
-- Update AC mapping in `test-plan.md`
-- Done refining → re-run Step 5 (red verify)
+- Add/remove/edit `cases[]` entries (keep contract fields complete)
+- Add edge case test files mapped to new case IDs
+- Fix test that passes incorrectly (false green) — tighten `expect` / assertion
+- Split/combine test files (update `file` + `cases` in manifest)
+- Update AC mapping + QA risk bridge in `test-plan.md`
+- Migrate any legacy `edge_cases` labels → structured `cases[]`
+- Done refining → re-run red verify (Step 5) unless escalated mid-build (see below)
+
+## Contract reminder
+
+Every case still requires: `id`, `title`, `expect`, `assert_kind`, `qa_surrogate`, `risk_if_missed`.  
+See `references/test-manifest-contract.md`.
 
 ## When escalated from `/sdd.build`
 

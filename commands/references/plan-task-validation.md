@@ -9,8 +9,8 @@ Before approval, validate:
 - [ ] Each task has ≥2 acceptance criteria
 - [ ] Dependencies reference valid task IDs
 - [ ] No circular dependencies
-- [ ] Dockerfile + /ping tasks present (ALWAYS, all project types)
-- [ ] Layer 3 quality tasks present (production/mvp only)
+- [ ] Dockerfile + /ping tasks present (ALWAYS)
+- [ ] Layer 3 quality tasks present (ALWAYS)
 - [ ] No deploy tasks (FORBIDDEN)
 - [ ] Custom error pages present if team opted for them (frontend only, optional)
 
@@ -41,18 +41,18 @@ fi
 - Complexity values valid (Low/Medium/High)
 - No forbidden tasks (deploy, release)
 
-**Project Type → Layer Rules**:
+**Layer rules (single path)**:
 
-| Aspect | Prototype | MVP | Production |
-|---------|-----------|-----|------------|
-| **Layer 1** | Implementation | Implementation | Implementation |
-| **Unit Tests** | ❌ Skip | ⚠️ Critical only | ✅ Full coverage |
-| **Coverage target** | 0% | Varies | 80%+ |
-| **Layer 2** | project services (if any) | project services (if any) | project services (if any) |
-| **CI Pipeline** | Optional | Required | Required |
-| **Layer 3 Quality** | ❌ Skip | ✅ Yes | ✅ Yes |
-| **E2E Tests** | ❌ Skip | ❌ Skip | ✅ Opt-in |
-| **Dockerfile + /ping** | ✅ Always | ✅ Always | ✅ Always |
+| Aspect | Behavior |
+|---------|----------|
+| **Layer 1** | Implementation tasks |
+| **Unit / integration tests** | ✅ Always — full coverage from AC + edge cases via `/sdd.test` |
+| **Coverage target** | PROJECT.md / framework default (typically 80%+) |
+| **Layer 2** | Project services (if any) |
+| **CI Pipeline** | Required |
+| **Layer 3 Quality** | ✅ Always |
+| **E2E Tests** | Only if `testing.e2e.enabled` |
+| **Dockerfile + /ping** | ✅ Always (backend/web) |
 
 > **Layer 2 Explanation**: Tasks that require external platform services (key-value store, message queue,
 > object storage, etc.). If your app doesn't use project services, Layer 2 will be empty.

@@ -216,9 +216,6 @@ fi
 3. **Coding Standards Compliance vs coding-standards.md**
    - Mandatory requirements cannot be overridden
 
-4. **Project Type**
-   - Must be: `prototype`, `mvp`, or `production`
-
 > **Lazy-loaded**: When `--project` flag is used, Read `references/check-output-examples.md` section "## --project examples" for output format reference.
 
 ---
@@ -338,7 +335,6 @@ sdd/
 | Field | Required Since | Check |
 |-------|---------------|-------|
 | `framework.version_created` | v1.2.1 | Should exist |
-| `project_type` | v1.1.4 | Must be prototype/mvp/production |
 | `testing.e2e.enabled` | v1.1.0 | Must be true/false |
 
 #### tasks.json Validation (per feature)
@@ -391,7 +387,7 @@ The scan also detects deprecated patterns from previous versions:
 | MySQL endpoint in Secrets table | v1.2.1 | Environment Variables table | Yes |
 | `sdd/backlog/` directory | v1.1.10 | `sdd/backlog.md` file | Manual |
 | Local `development-agents/framework/` folder | v1.1.15 | Global `development-agents/framework/` | Manual |
-| Missing `project_type` in meta | v1.1.4 | Required field | Yes |
+| Legacy `project_type` / prototype\|mvp modes in meta | — | Remove field; single full pipeline | Yes |
 
 ### Integration with Default Check
 

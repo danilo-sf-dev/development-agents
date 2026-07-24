@@ -91,7 +91,7 @@ The template is **empty by default** (all sections commented out):
 | `preferences` | Tech preferences | `orm: mybatis` instead of jpa |
 | `coverage` | Test thresholds | `min_coverage: 60` for legacy |
 | `reviews` | Review requirements | `code_review: optional` |
-| `defaults` | Feature defaults | `project_type: prototype` |
+| `defaults` | Feature defaults | `e2e_enabled: false` |
 | `forbidden` | Banned libraries | `- lombok` |
 
 ### Registering Overrides
@@ -191,18 +191,18 @@ Override project settings for a specific feature only.
 ```yaml
 # Feature that needs different settings than project default
 
-project_type: prototype  # This feature is experimental
 testing:
-  coverage_target: 0     # Skip tests for this prototype
-e2e:
-  enabled: false
+  e2e_enabled: true
+coverage:
+  min_coverage: 85
 ```
 
 ### When to Use
 
-- Experimental features that don't need full testing
-- Quick prototypes within a production project
-- Features with special requirements
+- A single feature needs a different E2E or coverage override than PROJECT.md
+- Document intentional deviations via `overrides` when they conflict with standards
+
+> Do **not** invent prototype/MVP modes or set coverage to 0 to skip `/sdd.test`.
 
 ---
 
@@ -229,15 +229,16 @@ overrides:
     reason: "Legacy codebase with 45% current coverage"
 ```
 
-### Example 3: Prototype Feature in Production Project
+### Example 3: Feature-level E2E override
 
 ```yaml
 # sdd/PROJECT.md
 defaults:
-  project_type: production  # Project default
+  e2e_enabled: false
 
-# sdd/wip/experimental-ai/meta.md
-project_type: prototype     # This feature only
+# sdd/wip/payment-flow/meta.md
+testing:
+  e2e_enabled: true     # This feature only
 ```
 
 ---
@@ -247,7 +248,7 @@ project_type: prototype     # This feature only
 | I want to... | Where to configure |
 |--------------|-------------------|
 | Change project-wide coverage | `sdd/PROJECT.md` → `coverage.min_coverage` |
-| Skip tests for one feature | `meta.md` → `project_type: prototype` |
+| Enable E2E for one feature | `meta.md` → `testing.e2e_enabled: true` |
 | Ban a library project-wide | `sdd/PROJECT.md` → `forbidden` |
 | Use Spanish for specs | `sdd/PROJECT.md` → `language.specs: es` |
 | See current defaults | `~/.development-agents/standards/` |

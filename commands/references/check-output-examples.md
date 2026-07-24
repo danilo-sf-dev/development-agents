@@ -67,7 +67,6 @@ Action required: Fix failing tests before continuing.
 ```
 🔍 PROJECT.md Validation
 
-✅ Project type: production (valid)
 ✅ Coverage target: 85% (meets 80% minimum, no override needed)
 ⚠️ ORM: raw SQL (no override registered — recommend documenting why
    an ORM wasn't used, or register an override in PROJECT.md)

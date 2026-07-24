@@ -84,25 +84,18 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 `freshly_scaffolded` or empty → greenfield; else if `sdd/specs|features` or real code → brownfield.
 > Brownfield path: Read `references/start-brownfield.md` (ONLY IF brownfield).
 
-### Step 5: Project Type Selection
-
-> Ask once (prototype | mvp | production). Prototypes skip heavy PROJECT.md prompts.
-> **ONLY IF** showing comparison table / AskUserQuestion payload:
-> Read `references/start-project-type.md`.
-> Store choice in `meta.md` → `project_type`.
-
-### Step 5.5: User Profile Selection
+### Step 5: User Profile Selection
 
 > Resolve profile: global `user-profile.yaml` → PROJECT.md defaults → AskUserQuestion.
 > Persist technical vs non-technical (+ plan-mode prefs for technical).
 > **ONLY IF** writing/updating profile files or AskUserQuestion payloads:
 > Read `references/start-user-profile.md`.
 
-### Step 6: Load PROJECT.md (CONDITIONAL)
+### Step 6: Load PROJECT.md
 
-> **ONLY IF** `project_type != prototype` and `sdd/PROJECT.md` exists (or needs creation):
+> Always load/validate PROJECT.md when present (or offer creation). Never skip this step for a lighter “mode”.
 > Read `references/start-project-md.md` (load, GenAI validate, doctor tip).
-> Prototype: skip or minimal defaults. Missing PROJECT.md → recommend `/sdd.project` then continue.
+> Missing PROJECT.md → recommend `/sdd.project` then continue with framework defaults if user opts in.
 
 ### Step 6.5: Configure Local MCPs (lazy-loaded)
 
@@ -120,7 +113,7 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 
 ### Step 8: Create meta.md
 
-Write meta from template: name, mode, project_type, profile, stack, `spec_language` from PROJECT.md (default `en`), stages pending.
+Write meta from template: name, mode, profile, stack, testing flags from PROJECT.md, `spec_language` from PROJECT.md (default `en`), stages pending.
 > **ONLY IF** needing field checklist:
 > Read `references/start-meta.md`.
 
@@ -193,7 +186,6 @@ Read the matching reference **ONLY IF** the flag/condition is present. Never loa
 | Git branch variants | `references/start-git-branch.md` |
 | `freshly_scaffolded=true` | `references/start-scaffolding-cleanup.md` |
 | `project_mode == brownfield` | `references/start-brownfield.md` |
-| Project type AskUserQuestion | `references/start-project-type.md` |
 | Profile AskUserQuestion / yaml | `references/start-user-profile.md` |
 | Load/validate PROJECT.md | `references/start-project-md.md` |
 | Local MCP setup needed | `references/start-local-mcps.md` |

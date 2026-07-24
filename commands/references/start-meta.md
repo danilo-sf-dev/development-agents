@@ -9,7 +9,7 @@ Use template from `development-agents/framework/templates/meta.md` with:
 - Project mode (greenfield/brownfield)
 - Execution mode (express/standard)
 - Framework version
-- Project type and testing config
+- Testing config (`testing.e2e_enabled`, coverage from PROJECT.md)
 - **Spec language**: Read `language.specs` from `sdd/PROJECT.md` and set `spec_language` field in meta.md
 
 ```bash

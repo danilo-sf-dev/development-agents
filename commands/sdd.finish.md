@@ -86,7 +86,7 @@ Final step in feature workflow. Runs comprehensive validation, generates summary
 3. All tasks completed (`validate-complete.sh`)
 4. Platform compliance — backend/web via `validate-code.sh`; mobile → `references/finish-mobile-validation.md`
 5. Security assessment APPROVED + no hardcoded secrets
-6. Coverage / quality gates per PROJECT.md `project_type`
+6. Coverage / quality gates per PROJECT.md (`coverage`, reviews) — always enforced
 
 > **ONLY IF** needing bash snippets, checklists, or security scan commands:
 > Read `references/finish-validation-checks.md`.

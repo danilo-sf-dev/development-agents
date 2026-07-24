@@ -110,7 +110,8 @@ Quick index — full rules are in the tables above.
 ### `/sdd.plan`
 
 - 🚫 Generate deploy/release tasks: "Deploy to environment", "platform deploy", "Release version", "Push to staging/production"
-- 🚫 "Investigate only" with no deliverable, unbounded refactors, test tasks that contradict `project_type`
+- 🚫 "Investigate only" with no deliverable, unbounded refactors, test tasks that invent a lighter/skip path
+- 🚫 Inventing prototype/MVP/production “modes” or skipping `/sdd.test`, security, or quality gates because a feature “feels experimental”
 
 ### `/sdd.finish`
 

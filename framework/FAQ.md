@@ -102,19 +102,18 @@ This focuses on a specific module instead of the entire codebase.
 
 | Mode | Command | Best For |
 |------|---------|----------|
-| **Express** | `/sdd.go` | Quick prototypes, familiar patterns |
+| **Express** | `/sdd.go` | Simple features, familiar patterns (full pipeline, fewer pauses) |
 | **Standard** | `/sdd.start "feature"` | Most features, balanced control (DEFAULT) |
 
 ### When should I use Express mode (`/sdd.go`)?
 
 Use Express when:
-- Building a quick prototype or POC
 - The feature is straightforward and well-understood
-- You trust the Platform AI docs to make reasonable decisions
-- Speed is more important than control
+- You trust the agent to make reasonable decisions with fewer pauses
+- Speed of interaction matters more than stepping through every gate manually
 - You're experienced with SDD and the codebase
 
-Express mode runs autonomously with minimal interaction.
+Express mode still runs **spec → plan → test → build → finish**. It does **not** skip tests or security.
 
 ### Can I switch modes mid-feature?
 
@@ -122,27 +121,9 @@ No. Mode is set at `/sdd.start` and is immutable. If you need to switch:
 1. `/sdd.cancel` the current feature
 2. Restart with the desired mode
 
-### What about project types (Prototype/MVP/Production)?
+### Is there a prototype / MVP feature type?
 
-Project type affects **testing**, not workflow mode:
-
-| Type | Tests | E2E E2E | Code Review |
-|------|-------|---------|-------------|
-| Prototype | None | No | Optional |
-| MVP | Critical path only | No | Yes |
-| Production | Full (80%+) | Opt-in | Mandatory |
-
-You can use any project type with any mode.
-
-### Which combination should I use?
-
-| Scenario | Mode | Project Type |
-|----------|------|--------------|
-| Quick demo for stakeholders | Express | Prototype |
-| Feature for beta users | Standard | MVP |
-| Production release | Standard | Production |
-| Exploring an idea | Express | Prototype |
-| Complex integration | Standard | Production |
+No. The kit has a **single delivery path**. Every feature goes through the same gates (including `/sdd.test`). Do not invent or select prototype/MVP/production types.
 
 ---
 
@@ -195,7 +176,7 @@ None of these MCP servers are required by the framework itself — they're optio
 | `/sdd.start` | Standard | Balanced control, phase-by-phase |
 | `/sdd.go` | Express | Autonomous, minimal interaction |
 
-Use `/sdd.start` when you want to review each phase. Use `/sdd.go` for quick prototypes.
+Use `/sdd.start` when you want to review each phase. Use `/sdd.go` when you want fewer pauses — both still run the full pipeline including `/sdd.test`.
 
 ### What's the difference between `/sdd.project` and `/sdd.check --project`?
 
@@ -266,7 +247,7 @@ This moves it to `sdd/cancelled/` with a cancellation report.
 
 ### What knowledge sources does the framework use for specs
 
-This is one of the most common questions. The framework uses **different sources depending on the phase and project type** (greenfield vs brownfield).
+This is one of the most common questions. The framework uses **different sources depending on the phase and mode** (greenfield vs brownfield).
 
 #### Functional spec — primarily user-driven
 
@@ -364,18 +345,13 @@ The agent validates specs before coding. If stuck:
 2. Run `/sdd.check` to diagnose
 3. Ensure dependencies are clear
 
-### How do I skip tests during prototype?
+### Build failed before tests — how do I recover?
 
-When starting, select "Prototype" mode:
-```
-/sdd.start feature-name
-> Select project type: [1] Prototype
-```
+Do **not** skip `/sdd.test`. Fix the environment or refine tests, then re-approve:
 
-Or add to `meta.md`:
-```yaml
-mode: prototype
-testing: false
+```
+/sdd.test --refine
+/sdd.test --approve
 ```
 
 ### Build failed, how do I recover?
@@ -479,10 +455,7 @@ This validates and reports issues. Fix them or use:
 
 ### How detailed should specs be?
 
-Rule of thumb:
-- **Prototype**: Minimal, just user stories
-- **MVP**: Moderate, key acceptance criteria
-- **Production**: Detailed, full technical specs
+Rule of thumb: enough to capture intent, constraints, acceptance criteria, and edge cases — not step-by-step implementation. Follow elegance-principle.md. Every feature still needs functional + technical specs and the tests-first gate.
 
 ### Should I commit `sdd/` folder?
 
