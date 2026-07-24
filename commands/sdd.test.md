@@ -97,11 +97,14 @@ All under `sdd/wip/[feature]/4-tests/`:
 
 | File | Purpose |
 |------|---------|
-| `test-plan.md` | AC → test mapping, edge cases, coverage intent |
-| `tests-manifest.json` | Machine-readable list of test files + status |
+| `test-plan.md` | AC → test mapping, QA risk bridge, coverage intent |
+| `tests-manifest.json` | Machine-readable test files + **mandatory** `cases[]` contract |
 | `*.test.*` / `*_test.*` | Actual test files in project test dirs (per stack) |
 
-**tests-manifest.json** (minimal schema):
+Copy schema from `framework/templates/tests-manifest.json`.  
+**Canonical field rules**: Read `references/test-manifest-contract.md` before writing the manifest.
+
+**tests-manifest.json** (required shape):
 
 ```json
 {
@@ -114,9 +117,17 @@ All under `sdd/wip/[feature]/4-tests/`:
       "covers": ["TASK-002", "AC-1", "US-1"],
       "cases": [
         {
+          "id": "EC-HP",
+          "title": "happy path",
+          "expect": "creates resource and returns 201",
+          "assert_kind": "status",
+          "qa_surrogate": true,
+          "risk_if_missed": "QA cannot complete happy path"
+        },
+        {
           "id": "EC-001",
           "title": "empty input",
-          "expect": "rejects with validation error",
+          "expect": "rejects with validation error TITLE_REQUIRED",
           "assert_kind": "exception",
           "qa_surrogate": true,
           "risk_if_missed": "QA accepts empty value in E2E"
@@ -133,7 +144,11 @@ All under `sdd/wip/[feature]/4-tests/`:
 }
 ```
 
-> Prefer structured `cases[]` (expect + qa_surrogate) over free-text edge labels.
+**Rules**:
+- `cases[]` is **mandatory** (never free-text `edge_cases` labels)
+- Each case requires: `id`, `title`, `expect`, `assert_kind`, `qa_surrogate`, `risk_if_missed`
+- `assert_kind`: only `exception` | `status` | `state`
+- Prefer `qa_surrogate: true` (unit/integration case that protects what QA would catch in E2E)
 
 ---
 
@@ -157,14 +172,18 @@ Update `meta.md`:
 
 ### Step 3: Generate Test Plan
 
-Create `4-tests/test-plan.md`:
+Create `4-tests/test-plan.md` from `framework/templates/test-plan.md`:
 
 | Section | Content |
 |---------|---------|
-| Coverage map | Each AC → planned test(s) |
-| Edge cases | Boundaries, nulls, auth, concurrency, errors |
-| Task mapping | Which TASK-XXX each test validates |
-| Out of scope | What will NOT be tested in this gate (E2E → `/sdd.build` if enabled) |
+| Coverage map | Each AC → TEST-ID + Case IDs |
+| Cases contract | Mandatory fields reminder (`expect`, `assert_kind`, `qa_surrogate`, …) |
+| QA risk bridge | QA/E2E risk → Case ID (`qa_surrogate: true`) |
+| Out of scope | What will NOT be tested in this gate |
+| Red phase | Command + expected fail-for-right-reason |
+
+Also create `4-tests/tests-manifest.json` from `framework/templates/tests-manifest.json` with real `cases[]` (no `edge_cases` labels).
+> Contract details: Read `references/test-manifest-contract.md`.
 
 ### Step 4: Write Tests (Delegate)
 
@@ -178,6 +197,7 @@ Spawn test writers — **never implement production feature code**:
 **Prompt must include**:
 - Mode: `tests-first` — write tests only, no production implementation
 - Reference: functional spec AC, technical spec contracts, task acceptance criteria
+- Manifest path + **mandatory `cases[]` contract** (each assertion must match a case `expect` / `assert_kind`)
 - Requirement: tests must compile/run and **fail** for the right reason (missing behavior)
 
 ### Step 5: Verify Red Phase
@@ -207,7 +227,18 @@ pytest
 | Tests don't compile | Fix test code only, re-run |
 | Cannot run tests | AskUserQuestion: fix env / abort — do **not** skip the tests-first gate |
 
-### Step 6: Display for Approval
+### Step 6: Contract check + Display for Approval
+
+**BLOCKING — validate `tests-manifest.json` before asking approval** (see `references/test-manifest-contract.md`):
+
+1. Every `tests[]` entry has non-empty `cases[]`
+2. Every case has `id`, `title`, `expect`, `assert_kind`, `qa_surrogate`, `risk_if_missed`
+3. `assert_kind` ∈ {`exception`,`status`,`state`}
+4. No legacy `edge_cases` free-text arrays
+5. Prefer ≥1 `qa_surrogate: true` for the feature
+6. `red_verified: true`
+
+If any check fails → STOP, refine (`--refine`), do **not** approve.
 
 ```bash
 # Show test plan summary
@@ -216,9 +247,9 @@ cat sdd/wip/[feature]/4-tests/test-plan.md
 
 Show table:
 
-| TEST-ID | File | Covers | Edge cases | Red? |
-|---------|------|--------|------------|------|
-| TEST-001 | ... | TASK-002, AC-1 | empty input | ✓ fail |
+| TEST-ID | File | Covers | Cases (id → expect) | qa_surrogate | Red? |
+|---------|------|--------|---------------------|--------------|------|
+| TEST-001 | ... | TASK-002, AC-1 | EC-001 → rejects TITLE_REQUIRED | true | ✓ fail |
 
 **⛔ INVOKE TOOL** (Standard mode):
 
@@ -240,7 +271,7 @@ AskUserQuestion(
 
 > Gate AskUserQuestion **always** includes **Outros** — see `references/ask-user-question-outros.md`.
 
-**Express mode** (`execution_mode: express` in meta.md): auto-approve if `red_verified: true`.
+**Express mode** (`execution_mode: express` in meta.md): auto-approve **only if** `red_verified: true` **and** the contract checks above pass. Never auto-approve a hollow manifest.
 
 ### Step 7: On Approval (`--approve` or user confirms)
 
@@ -316,6 +347,8 @@ AskUserQuestion(
 ## References
 
 - **Test Writer**: `sdd-small-test-writer`, `sdd-large-test-writer` agents
+- **Manifest contract**: `references/test-manifest-contract.md`
+- **Templates**: `framework/templates/test-plan.md`, `framework/templates/tests-manifest.json`
 - **Stack detection**: `detect-language.sh`, `detect-stack.sh`, `sdd/PROJECT.md`
 - **Context**: `context-guardian` skill
 - **Next step**: `sdd.build.md` (implementation only — no new tests)
@@ -327,8 +360,9 @@ AskUserQuestion(
 | Flag | Reference |
 |------|-----------|
 | `--refine` | `references/test-refine.md` |
-| `--approve` | Standard path — Step 7 (On Approval) |
+| `--approve` | Standard path — Step 7 (On Approval); contract gate in Step 6 |
 | `--resume` | Resume from last saved test-writing state in `meta.md` |
+| Manifest/`cases[]` rules | `references/test-manifest-contract.md` |
 
 ---
 

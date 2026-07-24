@@ -140,6 +140,7 @@ Check for common issues:
 | PROC-NO-IMPL-IN-TEST | During tests stage (`Current Stage: tests` or manifest not approved): production feature paths must not gain real implementation (stubs/mocks only) | critical |
 | PROC-NO-NEW-TESTS-IN-BUILD | During implementation: no **new** unit/integration test files beyond those already listed in `tests-manifest.json` (E2E only if deferred/enabled) | major |
 | PROC-MANIFEST-CONSISTENCY | Every `tests[].file` in manifest exists on disk when status is approved/in-progress; `meta.md` stages.tests aligns with manifest `status` | major |
+| PROC-MANIFEST-CASES | Every `tests[]` entry has non-empty `cases[]`; each case has `id`, `title`, `expect`, `assert_kind` (`exception`\|`status`\|`state`), `qa_surrogate`, `risk_if_missed`; no legacy `edge_cases` arrays | major |
 
 **Process vs quality**: Code review asks “is this code good?”. Process Compliance asks “may this diff exist in this phase?”. Do not merge the two into one vague opinion.
 
