@@ -51,10 +51,10 @@ graph LR
 
 | Mode | Commands | Best for |
 |------|----------|----------|
-| **Express** | `/sdd.go "description"` (1 command) | Simple features, prototypes |
+| **Express** | `/sdd.go "description"` (1 command) | Simple features with clear requirements |
 | **Standard** | `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish` | Most features (default) |
 
-> `/sdd.test` is auto-skipped for `project_type: prototype` (see `meta.md` → `stages.tests.status: skipped`).
+> `/sdd.test` is **never** skipped. Every feature must pass Gate 2.5 (tests approved, red verified) before `/sdd.build`.
 
 ## Reopen
 

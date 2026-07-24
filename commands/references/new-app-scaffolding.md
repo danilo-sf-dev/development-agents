@@ -42,4 +42,4 @@ Once these are in place, `/sdd.start "your feature description"` will detect `fr
 ## Notes
 
 - `/sdd.start` never calls any external app-registration API. If you want that automation, wire it into your own pre-`/sdd.start` tooling and simply make sure the repo looks "ready" (git history + recognizable stack files) by the time you invoke the command.
-- If you skip this checklist entirely and just run `/sdd.start` in an empty folder, it still works — you'll just be asked more questions along the way (project type, stack, etc.) instead of having them pre-filled.
+- If you skip this checklist entirely and just run `/sdd.start` in an empty folder, it still works — you'll just be asked more questions along the way (stack, profile, etc.) instead of having them pre-filled.

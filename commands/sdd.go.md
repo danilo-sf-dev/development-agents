@@ -66,7 +66,7 @@ argument-hint: "[feature-description]"
 
 One-command feature development for simple, well-understood features.
 
-**Good for**: Simple features, quick prototypes, clear requirements
+**Good for**: Simple features with clear requirements (still full pipeline: spec → plan → test → build → finish)
 **Not for**: Complex integrations, extensive design decisions, unclear requirements
 
 ---
@@ -176,7 +176,7 @@ Execute `/sdd.plan` (reads mode from meta.md)
 Execute `/sdd.test` (reads mode from meta.md)
 → Reference: `test.md` → "Express Mode" section
 
-**Override**: Auto-approve if red phase verified; skip entirely for prototype.
+**Override**: Auto-approve if red phase verified. Never skip writing/running the tests-first gate.
 
 ### Step 5: Implementation
 

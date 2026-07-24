@@ -23,17 +23,12 @@ bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip
 
 **Step 6a.1: Validate security (OWASP Top 10)**
 
-> **MANDATORY for production projects**: Security validation catches OWASP Top 10 vulnerabilities.
+> **MANDATORY**: Security validation catches OWASP Top 10 vulnerabilities. Never skip.
 
 ```bash
-# Check project type - skip security for prototype
-project_type=$(grep "type:" sdd/wip/[feature]/meta.md | head -1 | cut -d: -f2 | tr -d ' ')
-
-if [ "$project_type" != "prototype" ]; then
-    bash development-agents/framework/tools/validation/validate-security.sh sdd/wip/[feature] --spec
-    # If exit code != 0: Show security issues, DO NOT proceed to approval
-    # If exit code == 0: Continue to summary
-fi
+bash development-agents/framework/tools/validation/validate-security.sh sdd/wip/[feature] --spec
+# If exit code != 0: Show security issues, DO NOT proceed to approval
+# If exit code == 0: Continue to summary
 ```
 
 **Step 6b: Show concise summary** (if validation passed):

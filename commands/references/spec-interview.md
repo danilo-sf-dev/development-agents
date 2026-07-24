@@ -15,7 +15,7 @@
 | Q3b: Data input example? | Data Model, Business Rules, Validations | **IF data processing detected** |
 | Q4: External dependencies/risks + edge cases | Dependencies, Risks, Edge Cases | Skip if internal feature |
 | Q4b: Business rules example? | Business Rules, Acceptance Criteria | **IF calculations detected** |
-| Q5: E2E E2E? | E2E Scenarios | Auto-skip for prototype/mvp |
+| Q5: E2E scenarios? | E2E Scenarios | Only if user/PROJECT enables E2E |
 
 **Gap-Driven Questions** (from `genai-detect-gaps.sh` or inline fallback):
 
@@ -51,7 +51,8 @@ Q3b/Q4b are conditional — only when relevant.
 
 #### E2E Decision (Q5)
 
-| Project Type | E2E Question? | Default |
-|--------------|---------------|---------|
-| prototype / mvp | Auto-skip | `e2e_enabled: false` |
-| production | Ask user | user choice |
+| Condition | E2E Question? | Default |
+|-----------|---------------|---------|
+| `testing.e2e.enabled` already true in PROJECT.md | Confirm / refine scenarios | keep enabled |
+| E2E tooling not configured | Skip question | `e2e_enabled: false` |
+| User asks for E2E / tooling present | Ask user | user choice |

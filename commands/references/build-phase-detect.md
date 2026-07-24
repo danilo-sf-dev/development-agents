@@ -10,7 +10,7 @@
 # Verify tasks AND tests are approved (must be in phase 5 = implementation)
 tests_status=$(grep -A5 "tests:" sdd/wip/[feature]/meta.md 2>/dev/null | grep "status:" | head -1 | sed 's/.*: *//' | tr -d ' ')
 
-if [ "$tests_status" != "approved" ] && [ "$tests_status" != "skipped" ]; then
+if [ "$tests_status" != "approved" ]; then
     echo "❌ Tests not approved. Run /sdd.test --approve first."
     exit 1
 fi

@@ -2,13 +2,7 @@
 
 **Used by**: `/sdd.start` Step 6.
 
-### Step 6: Load PROJECT.md (CONDITIONAL)
-
-**If `project_type == "prototype"`**:
-  → Skip PROJECT.md prompt entirely
-  → Use framework defaults for all settings
-  → Show: "⏭️ PROJECT.md skipped (prototype mode)"
-  → Continue to Step 7
+### Step 6: Load PROJECT.md
 
 **If `sdd/PROJECT.md` exists**:
   → Load defaults (e2e_enabled, atlassian_mcp_enabled, etc.)
@@ -37,7 +31,7 @@ fi
 # Continue regardless - not blocking for start
 ```
 
-**If missing AND `project_type != "prototype"`**:
+**If missing**:
   → Use AskUserQuestion:
     1. Create PROJECT.md now (delegate to `sdd-project-wizard` subagent)
     2. Continue with framework defaults

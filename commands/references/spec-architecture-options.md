@@ -15,7 +15,6 @@
 **Skip when** (auto-select recommended, no user interaction):
 - `non-technical` profile — agent selects best option silently (same as current behavior)
 - Express mode — auto-select recommended
-- Prototype project type — auto-select simplest
 - User pre-selected approach in functional spec
 - `platform = android` or `platform = ios` — always skip, use mobile skill instead
 

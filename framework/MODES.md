@@ -12,15 +12,17 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 
 | Mode | Flag | Interaction | Control | Best For |
 |------|------|-------------|---------|----------|
-| **Express** | `--express` or `/sdd.go` | Minimal | Low | Quick MVPs, solo dev |
+| **Express** | `--express` or `/sdd.go` | Minimal | Low | Simple features, fewer pauses |
 | **Standard** | (default) | Balanced | Medium | Most features |
 
 ### Template Modes
 
 | Template | Flag | Size | Best For |
 |----------|------|------|---------|
-| **Full** | (default) | ~1,100 lines | Production, compliance, multi-team |
-| **Lite** | `--lite` | ~80 lines | MVPs, prototypes, internal tools |
+| **Full** | (default) | ~1,100 lines | Complete specs, compliance sections, multi-team |
+| **Lite** | `--lite` | ~80 lines | Smaller features when a shorter combined spec is enough |
+
+> Template size does **not** skip `/sdd.test`, security, or quality gates.
 
 ---
 
@@ -48,12 +50,11 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 **Best for**:
 - ✅ Solo developers
 - ✅ Simple features (< 10 tasks)
-- ✅ Quick prototypes
 - ✅ Internal tools
-- ✅ When you trust Platform AI docs decisions
+- ✅ When you trust agent decisions with fewer pauses
 
 **NOT recommended for**:
-- ❌ Production features requiring review
+- ❌ Features that need frequent human review at each gate
 - ❌ Compliance-heavy features (payments, PII)
 - ❌ Multi-team coordination
 - ❌ Complex architecture decisions
@@ -164,17 +165,17 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 - Open questions
 
 **Best for**:
-- ✅ MVPs and prototypes
-- ✅ Internal tools (not customer-facing)
+- ✅ Smaller features where a short combined spec is enough
+- ✅ Internal tools
 - ✅ Solo developer projects
-- ✅ Quick iterations (< 1 week)
-- ✅ Learning/experimentation
+- ✅ Quick iterations
 
 **NOT recommended for**:
-- ❌ Production customer-facing features
-- ❌ Compliance requirements
+- ❌ Features that need full compliance sections
 - ❌ Multi-team coordination
 - ❌ Complex integrations
+
+> `--lite` changes **spec template size only**. It does not skip tests, security, or `/sdd.test`.
 
 **Behavior in /sdd.spec**:
 - `/sdd.spec` → Works on single combined spec
@@ -225,13 +226,12 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 | I'm working on... | Execution Mode | Template Mode |
 |-------------------|----------------|---------------|
 | Quick internal tool | Express | Lite |
-| MVP to validate idea | Standard | Lite |
-| Production API | Standard | Full |
+| Small well-scoped feature | Standard | Lite |
+| API / service feature | Standard | Full |
 | Payment/PII feature | Standard | Full |
 | Solo dev, simple feature | Express | Lite |
 | Team feature, moderate complexity | Standard | Full |
 | Complex integration, many teams | Standard | Full |
-| Prototype for demo | Express | Lite |
 | Brownfield refactoring | Standard | Full |
 
 ---
@@ -287,7 +287,7 @@ No. Mode is set at `/sdd.start` and persists in `meta.md`.
 | Internal admin tool | Standard | Lite |
 | Customer-facing feature | Standard | Full |
 | Data migration | Standard | Full |
-| Prototype/POC | Express | Lite |
+| Spike / throwaway experiment | Prefer outside this pack, or Standard + Full if it ships | Full |
 | Compliance feature (SOX, PCI) | Standard | Full |
 | Refactoring | Standard | Full |
 
@@ -295,8 +295,8 @@ No. Mode is set at `/sdd.start` and persists in `meta.md`.
 
 ## FAQ
 
-**Q: Can I use --lite with production features?**
-A: Not recommended. Lite template lacks compliance sections required for production.
+**Q: Can I use --lite to skip tests or gates?**
+A: No. `--lite` only shortens the spec template. `/sdd.test`, security, and quality gates still apply.
 
 **Q: What's the difference between Express mode and /sdd.go?**
 A: `/sdd.go` is Express mode in a single command. `/sdd.start --express` is Express mode step-by-step.

@@ -1,8 +1,7 @@
 # Test Plan — [feature-name]
 
 **Status**: pending | in-progress | approved  
-**Project type**: prototype | mvp | production  
-**Gate**: tests-first (antes de `/sdd.build`)
+**Gate**: tests-first (antes de `/sdd.build`) — obrigatório para toda feature
 
 ---
 
@@ -14,7 +13,11 @@
 
 ---
 
-## Edge Cases (mandatory for mvp/production)
+## Edge Cases (mandatory)
+
+Every acceptance criterion / domain rule needs a happy path plus relevant edge cases
+(with observable `expect` in `tests-manifest.json`). Prefer cases that protect QA/E2E risk
+(`qa_surrogate: true`) over combinatorial noise.
 
 - [ ] Empty / null inputs
 - [ ] Invalid identifiers / malformed payloads
@@ -28,7 +31,7 @@
 
 | Item | Handled in |
 |------|------------|
-| E2E browser flows | `/sdd.build` (if E2E enabled) |
+| E2E browser flows | Only if `testing.e2e.enabled` (PROJECT.md / meta) |
 | Performance load tests | Layer 3 quality tasks |
 
 ---
@@ -37,7 +40,7 @@
 
 | Run at | Command | Expected | Actual |
 |--------|---------|----------|--------|
-| | | New tests FAIL | |
+| | | New tests FAIL for the right reason (missing behavior) | |
 
 ---
 

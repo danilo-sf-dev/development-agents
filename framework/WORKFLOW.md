@@ -13,7 +13,7 @@ SDD Kit follows a **four-phase workflow** with flexible execution modes. This do
 
 | Mode | Commands | Best For |
 |------|----------|----------|
-| **Express** | `/sdd.go` (1 command) | Simple features, quick prototypes |
+| **Express** | `/sdd.go` (1 command) | Simple features with clear requirements |
 | **Standard** | 4-5 commands | Most features, balanced control **(DEFAULT)** |
 
 > **Default**: `/sdd.start "feature"` without flags uses Standard mode.
@@ -45,7 +45,7 @@ For simple features with clear requirements:
 
 **Token Budget**: ~80K-100K tokens
 
-**Best for**: Simple features, prototypes, OpenSpec migration
+**Best for**: Simple features with clear requirements, OpenSpec migration
 
 ---
 
@@ -137,7 +137,7 @@ For most features, balanced control and quality:
 - Writes unit/integration tests from acceptance criteria and edge cases
 - Verifies **red phase** — new tests fail before any feature implementation
 - Human approves test plan and test files
-- Skipped automatically for `prototype` project type
+- **Never skipped** — every feature must complete this gate
 
 **Token Budget**: ~40K-60K tokens
 

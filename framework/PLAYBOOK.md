@@ -124,8 +124,7 @@ Gera `tasks.json`. Aprovar antes de testes.
 - Testes devem **falhar** (red) antes da implementação
 - Humano aprova o conjunto de testes
 - **Não** implementar feature nesta fase
-
-> **Prototype**: gate pode ser `skipped` automaticamente.
+- Este gate é **obrigatório** — nunca pular
 
 ---
 

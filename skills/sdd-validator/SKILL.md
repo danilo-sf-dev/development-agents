@@ -151,7 +151,7 @@ Do not hard-require a corporate Nexus/BOM version unless PROJECT.md says so.
 2. **Be Clear**: Report pass/fail unambiguously
 3. **Be Specific**: Show exact errors and locations
 4. **No False Positives**: Verify findings before reporting
-5. **CI Pipeline is MANDATORY**: Cannot skip for `/sdd.finish` when required by PROJECT.md/project type
+5. **CI Pipeline is MANDATORY**: Cannot skip for `/sdd.finish` when required by PROJECT.md
 6. **Iterate until passing**: Pipeline failures must be fixed
 
 ---

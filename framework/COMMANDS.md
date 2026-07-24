@@ -88,7 +88,7 @@ All 17 command files follow a standard structure for consistency:
 
 **Token Budget**: ~80K-100K tokens (depending on feature complexity)
 
-**Best for**: Simple features, quick prototypes, OpenSpec migration
+**Best for**: Simple features with clear requirements, OpenSpec migration
 
 **Documentation**: [skills/sdd.go/SKILL.md](./skills/sdd.go/SKILL.md)
 
@@ -630,7 +630,7 @@ During `/sdd.build`, when improvement patterns are detected (TODO comments, code
 |------------|-------------|
 | Complete feature automatically | `/sdd.go "description"` |
 | Start new feature (standard) | `/sdd.start "name"` |
-| Start MVP/prototype (lite) | `/sdd.start "name" --lite` |
+| Start with shorter lite template | `/sdd.start "name" --lite` |
 | Create specifications | `/sdd.spec` |
 | Generate tasks | `/sdd.plan` |
 | Implement feature (all layers) | `/sdd.build` |

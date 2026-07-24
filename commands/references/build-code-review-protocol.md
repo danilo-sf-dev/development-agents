@@ -12,7 +12,7 @@ TASK COMPLETION CYCLE (per task):
 ┌─────────────────────────────────────────────────────────────────┐
 │  1. IMPLEMENT → Write production code                           │
 │         ↓                                                       │
-│  2. TEST → Run unit/integration tests (skip for prototype)      │
+│  2. TEST → Run approved unit/integration tests                  │
 │         ↓                                                       │
 │  3. QUALITY → Invoke sdd-code-reviewer, performance, security  │
 │         ↓                                                       │

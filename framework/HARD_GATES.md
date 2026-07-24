@@ -23,7 +23,7 @@ This pack does **not** install pre-commit hooks or require `jq`/`bash` for gate 
 See `agents/sdd-validator-runner.md` → **Check 6: Process Compliance**:
 
 1. Approved artifact immutability (tests / specs / tasks while `status: approved`)
-2. Phase order (e.g. build only after tests approved or skipped)
+2. Phase order (e.g. build only after tests approved)
 3. Anti-shortcut (no production feature code during `/sdd.test`; no new unit tests during `/sdd.build`)
 4. Manifest consistency (`tests-manifest.json` ↔ files ↔ `meta.md`)
 

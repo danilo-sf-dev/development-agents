@@ -116,7 +116,7 @@ Steps: detect stack → architecture (backend) → testing standards → team co
 
 ## Integration with /sdd.start (short)
 
-`/sdd.start` loads PROJECT.md when present. Missing file → recommend `/sdd.project` (non-blocking for prototype).
+`/sdd.start` loads PROJECT.md when present. Missing file → recommend `/sdd.project` (then continue with defaults if user opts in).
 
 ## Validation (short)
 

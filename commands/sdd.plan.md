@@ -101,7 +101,7 @@ Read both specs:
 Map Design Decisions (DD-N) onto each task (`design_decisions` field).
 Mandatory (backend/web): Dockerfile(s) if missing, `/ping`, validation task.
 Migrations: use project migration tool from PROJECT.md — never invent Flyway/Liquibase/manual SQL paths.
-Project type: prototype skips tests; mvp critical only; production full (+ E2E if enabled).
+Tests: always full unit/integration from AC + edges via `/sdd.test`; E2E only if `testing.e2e.enabled`.
 Lazy: mobile → `plan-mobile-tasks.md`; `(NEW)` infra → `infra-tasks.md`; frontend-web → `frontend-tasks.md`.
 > **ONLY IF** needing E2E script/flow, migration examples, full generation rules:
 > Read `references/plan-generate-tasks.md`.
@@ -148,7 +148,7 @@ If context high → recommend `/clear` before `/sdd.test`.
 
 ## Task Layers (short)
 
-Layer 0 infra → 1 domain → 2 application → 3 quality/tests (per validator skill + project_type).
+Layer 0 infra → 1 domain → 2 application → 3 quality/tests (per validator skill; quality layer always required).
 
 ## Validation Checks (lazy-loaded)
 

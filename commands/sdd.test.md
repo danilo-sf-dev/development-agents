@@ -85,27 +85,9 @@ Spec + Tasks (approved)
 - Tests are written **from acceptance criteria** — not from imagined implementation
 - Tests **must fail** before `/sdd.build` (red phase) — no production code for the feature yet
 - Stubs/mocks/fakes are allowed; **no feature implementation** in production paths
-- Edge cases and error paths are mandatory for `mvp` and `production`
+- Edge cases and error paths are **always mandatory** (happy path + relevant edges per AC/rule)
 - `/sdd.build` **does not write new tests** — only runs approved tests and implements code
-
----
-
-## Skip by Project Type
-
-Read `meta.md → project_type.type`:
-
-| Type | Behavior |
-|------|----------|
-| **prototype** | Skip test generation — auto-mark `stages.tests.status: approved` with note `skipped: prototype` |
-| **mvp** | Critical-path tests only (happy path + main errors) |
-| **production** | Full coverage from AC + edge cases |
-
-For **prototype**, show message and offer `/sdd.build` directly:
-
-```
-✓ Prototype: gate tests-first ignorado (sem testes obrigatórios).
-  Próximo: /sdd.build
-```
+- **Never skip** the tests-first gate. There is no lighter feature mode that bypasses `/sdd.test`.
 
 ---
 
@@ -125,13 +107,21 @@ All under `sdd/wip/[feature]/4-tests/`:
 {
   "feature": "feature-name",
   "status": "pending | in-progress | approved",
-  "project_type": "prototype | mvp | production",
   "tests": [
     {
       "id": "TEST-001",
       "file": "tests/unit/UserService.test.ts",
       "covers": ["TASK-002", "AC-1", "US-1"],
-      "edge_cases": ["empty input", "invalid id"],
+      "cases": [
+        {
+          "id": "EC-001",
+          "title": "empty input",
+          "expect": "rejects with validation error",
+          "assert_kind": "exception",
+          "qa_surrogate": true,
+          "risk_if_missed": "QA accepts empty value in E2E"
+        }
+      ],
       "expected_initial_result": "fail"
     }
   ],
@@ -142,6 +132,8 @@ All under `sdd/wip/[feature]/4-tests/`:
   "revised_reason": null
 }
 ```
+
+> Prefer structured `cases[]` (expect + qa_surrogate) over free-text edge labels.
 
 ---
 
@@ -213,7 +205,7 @@ pytest
 | New tests fail | Proceed to approval |
 | New tests pass | **BLOCK** — tests are not testing missing behavior; refine |
 | Tests don't compile | Fix test code only, re-run |
-| Cannot run tests | AskUserQuestion: fix env / skip gate (prototype only) / abort |
+| Cannot run tests | AskUserQuestion: fix env / abort — do **not** skip the tests-first gate |
 
 ### Step 6: Display for Approval
 

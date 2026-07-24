@@ -90,7 +90,7 @@ echo "📊 Features scanned: $total_count total ($wip_count WIP, $completed_coun
 - Current stage (functional/technical/tasks/implementation)
 - Task progress (completed/total)
 - Creation and completion dates
-- Project type (prototype/mvp/production)
+- Testing flags (`testing.e2e_enabled`)
 
 ```bash
 # Scan specs for status overview

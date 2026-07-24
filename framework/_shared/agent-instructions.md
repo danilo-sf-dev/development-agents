@@ -60,3 +60,13 @@ At the **start of every** `/sdd.*` command:
 3. Before `/sdd.start`, `/sdd.spec`, or `/sdd.build` → also read `framework/standards/pre-execution-checks.md`.
 
 > **Single source of truth** — do not rely on duplicated boundary lists in command files; they point here.
+
+---
+
+## Single delivery path (mandatory)
+
+There is **one** feature pipeline: `start → spec → plan → test → build → finish → pr`.
+
+- Do **not** invent, ask for, or honor prototype / MVP / production “project types”.
+- Do **not** skip `/sdd.test`, security validation, or quality gates because work “feels experimental”.
+- If legacy `project_type` appears in an old `meta.md`, ignore it for routing and follow the full pipeline; prefer removing the field on touch.

@@ -44,7 +44,7 @@ hooks:
 | `--resume` | Resume interrupted session |
 | `--next` | Auto-continue with next pending task |
 
-**See also**: `/sdd.help build`. Prerequisites: tasks + tests approved (`stages.tests` approved|skipped).
+**See also**: `/sdd.help build`. Prerequisites: tasks + tests approved (`stages.tests` approved).
 
 **Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:build`.
 
@@ -61,7 +61,7 @@ hooks:
 
 > **BLOCKING**: Quality checks after EACH task, not just at the end.
 
-**Per-Task Cycle**: Implement → Test (skip prototype) → `Task(sdd-validator-runner)` Layer-3 gates → Fix **all** findings → Re-check → Complete/commit.
+**Per-Task Cycle**: Implement → Test → `Task(sdd-validator-runner)` Layer-3 gates → Fix **all** findings → Re-check → Complete/commit.
 Verdicts under `sdd/wip/<feature>/verdicts/` (do not commit).
 
 ### Dependency Scanning (short)
@@ -78,7 +78,7 @@ Before adding a library: run project dependency-security scanner if configured i
 
 ## Mandatory Code Review Protocol (short)
 
-Per task: Implement → run approved tests (skip prototype) → `sdd-validator-runner` with **Process Compliance +** perf/security/quality → Fix **all** findings → Re-check → Complete/commit.
+Per task: Implement → run approved tests → `sdd-validator-runner` with **Process Compliance +** perf/security/quality → Fix **all** findings → Re-check → Complete/commit.
 Process Compliance failures are BLOCKING — AskUserQuestion (incl. Outros) before continuing. Minor quality findings are NOT optional.
 
 ## Behavior by Mode
@@ -103,7 +103,7 @@ Process Compliance failures are BLOCKING — AskUserQuestion (incl. Outros) befo
 
 ### Step 1: Phase Detection (BLOCKING)
 
-`stages.tests` must be `approved` or `skipped`; `detect-phase.sh` stage must be `implementation`. Else stop → `/sdd.test --approve`.
+`stages.tests` must be `approved`; `detect-phase.sh` stage must be `implementation`. Else stop → `/sdd.test --approve`.
 Detect platform; mobile → optional skills from PROJECT.md. Context >50% → consider `/clear`; >80% → `context-guardian`.
 > **ONLY IF** needing bash:
 > Read `references/build-phase-detect.md`.
@@ -214,7 +214,7 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 
 ## AI Agent Instructions
 
-1. Block if tests not approved/skipped. Never edit approved tests (anti-gaming above).
+1. Block if tests not approved. Never edit approved tests (anti-gaming above).
 2. Per task: implement production code only; quality via `sdd-validator-runner`; fix all findings.
 3. Flag-first rare paths: infra / migration / mobile → matching refs.
 4. After all tasks + final validation → recommend `/sdd.finish` (or `/sdd.check` if used).

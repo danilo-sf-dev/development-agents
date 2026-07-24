@@ -13,10 +13,10 @@ Generate tasks following these rules:
 
 | Rule | Reference |
 |------|-----------|
-| **| **Test tasks by project type** | Read `meta.md → project_type.type` |
+| **Unit/integration tests** | Always full coverage from AC + edge cases via `/sdd.test` (never skip) |
 | **Layer assignment** | `sdd-validator` skill |
-| **Quality gates (Layer 3)** | `sdd-validator` skill |
-| **E2E detection** | **Deterministic script first** (see below) |
+| **Quality gates (Layer 3)** | `sdd-validator` skill — always include |
+| **E2E detection** | **Deterministic script first** (see below); only if `testing.e2e.enabled` |
 
 **Mandatory Tasks (Brownfield-aware)**:
 
@@ -61,13 +61,13 @@ Generate tasks following these rules:
 
 > **Lazy-loaded**: When `(NEW)` infrastructure markers are present in spec, Read `references/infra-tasks.md` for infrastructure task templates. Skip entirely if no infrastructure tasks needed.
 
-**Task Generation by Project Type**:
+**Task Generation — Tests (single path)**:
 
-| Type | Unit Tests | E2E Tests |
-|------|------------|-----------|
-| **prototype** | Skip | Skip |
-| **mvp** | Critical only | Skip |
-| **production** | Full (80%+) | If `testing.e2e.enabled` |
+| Scope | Behavior |
+|------|----------|
+| **Unit / integration** | Always — full coverage from AC + edge cases (`/sdd.test`) |
+| **E2E** | Only if `testing.e2e.enabled` in PROJECT.md / meta |
+| **Layer 3 quality** | Always include quality/validation tasks |
 
 #### Frontend Task Generation (Frontend framework/design system Projects)
 
