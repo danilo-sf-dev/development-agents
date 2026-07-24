@@ -121,6 +121,7 @@ Gera `tasks.json`. Aprovar antes de testes.
 ```
 
 - Agentes escrevem testes a partir de specs/tasks
+- Cada caso no `tests-manifest.json` usa o contrato `cases[]` (`expect`, `assert_kind`, `qa_surrogate`, `risk_if_missed`)
 - Testes devem **falhar** (red) antes da implementação
 - Humano aprova o conjunto de testes
 - **Não** implementar feature nesta fase

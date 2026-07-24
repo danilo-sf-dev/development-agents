@@ -26,6 +26,7 @@ See `agents/sdd-validator-runner.md` → **Check 6: Process Compliance**:
 2. Phase order (e.g. build only after tests approved)
 3. Anti-shortcut (no production feature code during `/sdd.test`; no new unit tests during `/sdd.build`)
 4. Manifest consistency (`tests-manifest.json` ↔ files ↔ `meta.md`)
+5. Manifest case contract (`tests[].cases[]` with `expect` / `assert_kind` / `qa_surrogate` / … — no hollow labels)
 
 Quality/security/build/test execution remain separate checks (same agent).
 
