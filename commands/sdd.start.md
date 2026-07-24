@@ -186,7 +186,6 @@ Read the matching reference **ONLY IF** the flag/condition is present. Never loa
 | Git branch variants | `references/start-git-branch.md` |
 | `freshly_scaffolded=true` | `references/start-scaffolding-cleanup.md` |
 | `project_mode == brownfield` | `references/start-brownfield.md` |
-| Project type AskUserQuestion | `references/start-project-type.md` |
 | Profile AskUserQuestion / yaml | `references/start-user-profile.md` |
 | Load/validate PROJECT.md | `references/start-project-md.md` |
 | Local MCP setup needed | `references/start-local-mcps.md` |
