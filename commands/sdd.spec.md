@@ -1,7 +1,7 @@
 ---
 name: sdd.spec
 description: Create and approve functional and technical specifications. Use when user needs to define requirements (functional) or design architecture (technical). Supports --approve, --iterate, --summary, and --audio flags.
-model: opus
+model: inherit
 argument-hint: "[functional|technical] [--approve]"
 ---
 

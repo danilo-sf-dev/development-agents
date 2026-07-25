@@ -3,7 +3,7 @@ name: sdd-implementer
 stack: backend
 description: Code implementation specialist for SDD Kit. Use during /sdd.build to write production code from technical specs and tasks. Translates architectural decisions into working code, follows coding standards, and integrates with project services declared in the technical spec and PROJECT.md.
 tools: Read, Glob, Grep, Edit, Write, Bash
-model: opus
+model: inherit
 isolation: "worktree"
 ---
 
@@ -200,19 +200,19 @@ Before writing any code:
 
 ## Code Patterns Reference
 
-For implementation patterns by technology, refer to the shared patterns library:
-- **Location**: `development-agents/framework/patterns/CODE_PATTERNS.md` (if present) or project `PATTERNS.md`
-- **Sections**: Controller patterns, Service patterns, Error handling for TypeScript, Java, Go, Python, Rust
-- **Usage**: Read the relevant section based on detected project language
+For implementation patterns, prefer project-accumulated learnings (not a pack-level code cookbook — the pack is language-/platform-agnostic):
+- **Primary**: `sdd/PATTERNS.md` (if present)
+- **Fallback**: `development-agents/framework/standards/` (coding-standards, testing-strategy, boundaries) + conventions in `sdd/PROJECT.md`
+- **Usage**: Read only what applies to the detected language/stack from PROJECT.md / detect-stack
 
 ```
-Load patterns: Read project PATTERNS.md or development-agents/framework/patterns/CODE_PATTERNS.md
+Load patterns: Read("sdd/PATTERNS.md") if present; else PROJECT.md + framework/standards/
 ```
 
-**Key patterns available**:
-- Controller/Handler patterns (Express, Spring, Chi, FastAPI, etc.)
+**Typical pattern areas** (from project PATTERNS / specs, not invented here):
+- Controller/Handler patterns for the project's framework
 - Service patterns with integrations declared in the technical spec
-- Error handling patterns by language
+- Error handling patterns for the project language
 
 ## Service Integration Patterns
 

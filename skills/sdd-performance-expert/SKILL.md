@@ -293,4 +293,5 @@ sdd/wip/<feature>/verdicts/performance.json
    - `APPROVED` → Task can be marked complete
    - `CANNOT_PROCEED` → Must fix issues and re-run this skill
 
-> **CRITICAL**: The enforcement hook checks this file before allowing task completion.
+> **CRITICAL**: Enforcement is **agent-based**, not an OS/git hook (see `framework/HARD_GATES.md`).
+> The orchestrating command and `sdd-validator-runner` **must** read this verdict and stop (AskUserQuestion, always including **Outros**) when the result is `CANNOT_PROCEED`.

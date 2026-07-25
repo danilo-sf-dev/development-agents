@@ -3,7 +3,7 @@ name: sdd-small-test-writer
 stack: backend
 description: Small test (unit + integration) specialist for SDD Kit. Use during /sdd.build to write local tests (not E2E/large tests). Creates comprehensive unit tests, integration tests, mocks, fixtures, and ensures high code coverage. Focuses on edge cases and error scenarios.
 tools: Read, Glob, Grep, Edit, Write, Bash
-model: opus
+model: inherit
 isolation: "worktree"
 ---
 
@@ -95,19 +95,20 @@ tests/
 
 ## Test Patterns Reference
 
-For test patterns by technology, refer to the shared patterns library:
-- **Location**: `development-agents/framework/patterns/CODE_PATTERNS.md`
-- **Sections**: Unit Test Patterns for TypeScript/Jest, Java/JUnit, Go/testify, Python/pytest
-- **Usage**: Read the relevant section based on detected project language
+For test patterns, prefer project learnings and pack standards (no pack-level `CODE_PATTERNS.md` — stack comes from detection + PROJECT.md):
+- **Primary**: `sdd/PATTERNS.md` (if present)
+- **Contract**: `development-agents/commands/references/test-manifest-contract.md`
+- **Strategy**: `development-agents/framework/standards/testing-strategy.md`
+- **Usage**: Match style to existing tests in the repo; follow PROJECT.md coverage thresholds
 
 ```
-Load patterns: Read("development-agents/framework/patterns/CODE_PATTERNS.md")
+Load patterns: Read("sdd/PATTERNS.md") if present; Read testing-strategy + test-manifest-contract
 ```
 
-**Key patterns available**:
+**Key patterns to apply**:
 - Unit tests with mocks (Arrange-Act-Assert)
-- Integration tests with HTTP clients
-- Error handling test patterns
+- Integration tests with real local dependencies when required
+- Error handling / edge cases via mandatory `cases[]` (not free-text labels)
 
 ## Test Categories
 

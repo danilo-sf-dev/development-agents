@@ -1,7 +1,7 @@
 ---
 name: sdd.start
 description: Initialize new feature in SDD Kit framework. Use when user wants to begin a new feature, set up the sdd/wip/ directory structure, and configure project metadata. Supports --reopen for archived features.
-model: sonnet
+model: inherit
 argument-hint: "[feature-description] [--express|--lite|--audio|--from-backlog|--reopen]"
 ---
 

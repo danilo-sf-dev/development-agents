@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.plan
 description: Generate implementation tasks from approved specifications. Use when both functional and technical specs are approved and user is ready to break down work into executable tasks with effort estimates.
-model: opus
+model: inherit
 argument-hint: "[--approve]"
 ---
 

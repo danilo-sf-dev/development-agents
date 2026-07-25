@@ -1,7 +1,7 @@
 ---
 name: sdd.go
 description: Express mode - orchestrates start, spec, plan, build, and finish in one command. Use for rapid feature development when you want the full workflow automated end-to-end with minimal interaction.
-model: opus
+model: inherit
 argument-hint: "[feature-description]"
 ---
 

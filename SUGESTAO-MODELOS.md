@@ -61,6 +61,8 @@ Na pausa entre comandos `/sdd.*`, ajuste com `/model` e `/effort` (quando o mode
 
 > **Informativo** — não é gate. Nomes/versões e preços mudam; confira a doc Anthropic se algo parecer desatualizado.
 
+**Por que `/model` na pausa funciona:** no Claude Code, `model` no frontmatter de command/skill **sobrescreve** o modelo da sessão naquele turno; o mesmo vale para subagents. Os passos do fluxo Standard que esta guia ensina a trocar (`start`, `spec`, `plan`, `test`, `build`, `check`, `pr`, e o express `/sdd.go`) usam `model: inherit` (ou omitido) para **respeitar** o `/model` que você acabou de setar. Subagents de execução (`sdd-implementer`, `sdd-small-test-writer`) também usam `inherit`. Agents de raciocínio profundo (`sdd-debugger`, `sdd-explorer`, `sdd-system-designer`) e `/sdd.fix` / `/sdd.reverse-eng` podem manter `opus` de propósito — aí o frontmatter vence o `/model` da sessão.
+
 ### Faixas recomendadas
 
 | Faixa | Modelo | Papel |

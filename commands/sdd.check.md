@@ -1,7 +1,7 @@
 ---
 name: sdd.check
 description: View feature status, progress, and validation results. Use when user wants to check feature health or run validations.
-model: sonnet
+model: inherit
 argument-hint: "[feature-name] [--sync]"
 ---
 

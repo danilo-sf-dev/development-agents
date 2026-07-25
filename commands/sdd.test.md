@@ -1,7 +1,7 @@
 ---
 name: sdd.test
 description: Write and approve tests before implementation (tests-first gate). Use after tasks are approved and before /sdd.build. Tests must fail first — production code comes later.
-model: opus
+model: inherit
 argument-hint: "[--approve|--refine|--resume]"
 ---
 
