@@ -71,11 +71,11 @@ AskUserQuestion(
 )
 ```
 
-**If user selects "View full spec"**:
+**If user selects "Ver spec completa"**:
 - Read and display the entire file: `sdd/wip/[feature]/2-technical/spec.md`
 - After displaying, loop back to the approval question (ask again)
 
-**If user selects "Request changes"**:
+**If user selects "Pedir mudanças"**:
 - Ask what changes they want to make
 - Apply changes using `--iterate` flow
 
