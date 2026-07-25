@@ -15,10 +15,10 @@ After displaying success message, use **AskUserQuestion** to offer next actions:
 ```pseudocode
 if saved_description exists in meta.md:
     option_1_label = "/sdd.spec (with saved context)"
-    option_1_description = "Uses your description to seed the spec — sugere modelo forte"
+    option_1_description = "Usa a descrição salva para iniciar a spec — comando em sonnet"
 else:
-    option_1_label = "/sdd.spec (Recommended)"
-    option_1_description = "Start spec creation interactively — sugere modelo forte"
+    option_1_label = "/sdd.spec (Recomendado)"
+    option_1_description = "Criar a spec de forma interativa — comando em sonnet"
 ```
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)** - options vary by context:
@@ -26,29 +26,29 @@ else:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Feature initialized. What would you like to do next?",
-    "header": "Next",
+    "question": "Feature inicializada. O que deseja fazer agora?",
+    "header": "Próximo",
     "options": [
-      {"label": "/sdd.spec (Recommended)", "description": "Start spec creation interactively — sugere modelo forte"},
-      {"label": "/sdd.spec --audio", "description": "Describe your feature by voice"},
-      {"label": "/sdd.check", "description": "View feature status"}
+      {"label": "/sdd.spec (Recomendado)", "description": "Criar a spec de forma interativa — comando em sonnet"},
+      {"label": "/sdd.spec --audio", "description": "Descrever a feature por voz"},
+      {"label": "/sdd.check", "description": "Ver status da feature"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
 )
 ```
 
-> **Note**: If saved description exists in meta.md, first option label should be "/sdd.spec (with saved context)" with description "Uses your description to seed the spec — sugere modelo forte".
-
+> **Note**: If saved description exists in meta.md, first option label should be "/sdd.spec (com contexto salvo)" with description "Usa a descrição salva para iniciar a spec — comando em sonnet".
 **On user selection**:
 
 | Selection | Action |
 |-----------|--------|
-| /sdd.spec (with saved context) | `Skill(skill="sdd.spec")` - description auto-loaded from meta.md |
-| /sdd.spec (Recommended) | `Skill(skill="sdd.spec")` |
+| /sdd.spec (com contexto salvo) | `Skill(skill="sdd.spec")` - description auto-loaded from meta.md |
+| /sdd.spec (Recomendado) | `Skill(skill="sdd.spec")` |
 | /sdd.spec --audio | `Skill(skill="sdd.spec", args="--audio")` |
 | /sdd.check | `Skill(skill="sdd.check")` |
-| Other | User types custom input (e.g., `/sdd.spec "nueva descripción"`, questions, etc.) |
+| Outros | User types custom input (e.g., `/sdd.spec "nova descrição"`, questions, etc.) |
 
 > **NOTE**: AskUserQuestion ALWAYS includes "Other" option automatically.
 > Users can write ANY text: another command, a question, feedback, etc.

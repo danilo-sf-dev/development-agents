@@ -57,9 +57,25 @@ Se no build o agente começar a reinventar produto ou mudar teste aprovado, paus
 ## Se você estiver no Claude Code
 
 No Claude Code (CLI ou extensão VS Code) o custo tem **dois eixos**: modelo **e** effort.  
-Na pausa entre comandos `/sdd.*`, ajuste com `/model` e `/effort` (quando o modelo aceitar effort).
+Na pausa entre comandos `/sdd.*`, o kit **já aplica** o modelo certo via frontmatter do command (você não precisa lembrar de `/model` para não pagar caro).
 
-> **Informativo** — não é gate. Nomes/versões e preços mudam; confira a doc Anthropic se algo parecer desatualizado.
+> **Informativo** — não é gate de processo SDD. Nomes/versões e preços mudam; confira a doc Anthropic se algo parecer desatualizado.
+
+### Política fechada (custo × qualidade)
+
+| Tier | Alias | Onde |
+|------|-------|------|
+| Barato | **haiku** | `/sdd.start`, `/sdd.build`, `/sdd.check`, `/sdd.pr`, `/sdd.mcp` |
+| Forte | **sonnet** | `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.finish`, `/sdd.reverse-eng` |
+| Extremo | **opus** | **Só** `/sdd.fix` + agent `sdd-debugger` |
+
+Subagents de execução/descoberta (`sdd-implementer`, `sdd-small-test-writer`, `sdd-explorer`, `sdd-system-designer`) usam `model: inherit` → seguem o modelo do comando pai.
+
+**Garantia de não pagar Opus sem querer:** no Claude Code, o `model:` do frontmatter do `/sdd.*` sobrescreve o modelo da sessão **naquele turno**. Esquecer `/model` **não** faz o build rodar em Opus — o comando já está pinado em Haiku.
+
+**Garantia de pausa:** no fluxo **Standard** (comando a comando), cada fase termina com `AskUserQuestion`; nas trocas críticas `test→build` e `build→finish` há confirmação explícita de modelo. No **Express** (`/sdd.go`) há menos pausas — o custo continua limitado pelo frontmatter de cada skill delegada, mas o ritmo educativo some. Prefira Standard se quiser as pausas.
+
+**Extremo de verdade:** arquitetura/legado monstruoso → use `/sdd.fix` (Opus) ou descreva em **Outros** no gate; não deixe Opus no caminho feliz do spec/build.
 
 ### Faixas recomendadas
 
@@ -67,7 +83,7 @@ Na pausa entre comandos `/sdd.*`, ajuste com `/model` e `/effort` (quando o mode
 |-------|--------|-------|
 | Barato / executor | **Haiku 4.5** | Rodar o que já está aprovado (start, build, pr, ops) |
 | Pensar / intermediário | **Sonnet 5** | Spec, plan, test, finish — default de qualidade |
-| Extremo | **Opus 5** | Só quando Sonnet/Haiku falharem (mesmo $/token que Opus 4.8) |
+| Extremo | **Opus 5** | **Só** `/sdd.fix` + `sdd-debugger` (não usar no caminho feliz) |
 
 ### Effort e custo
 
@@ -105,50 +121,52 @@ No build com Haiku, sessão/repo muito grande enche a janela mais rápido → `/
 
 ### Fluxo Standard — planilha por pausa
 
-| # | Pausou em… | Próximo comando | Modelo | Versão | Effort |
-|---|------------|-----------------|--------|--------|--------|
-| 1 | Início | `/sdd.start` | Haiku | 4.5 | N/A |
-| 2 | Pós-start | `/sdd.spec` functional | Sonnet | 5 | `high` |
-| 3 | Approve functional | `/sdd.spec` technical | Sonnet | 5 | `medium` *( `high` se arch nova)* |
-| 4 | Approve technical | `/sdd.plan` | Sonnet | 5 | `medium` |
-| 5 | Approve plan | `/sdd.test` | Sonnet | 5 | `medium` *( `high` se regra ambígua)* |
-| 6 | Approve testes | `/sdd.build` | Haiku | 4.5 | N/A |
-| 7 | Build ok | `/sdd.check` (opcional) | Haiku | 4.5 | N/A |
-| 8 | Pré-arquivar | `/sdd.finish` | Sonnet | 5 | `high` |
-| 9 | Feature arquivada | `/sdd.pr` | Haiku | 4.5 | N/A |
+| # | Pausou em… | Próximo comando | Modelo (frontmatter) | Effort |
+|---|------------|-----------------|----------------------|--------|
+| 1 | Início | `/sdd.start` | Haiku 4.5 | N/A |
+| 2 | Pós-start | `/sdd.spec` functional | Sonnet 5 | `high` |
+| 3 | Approve functional | `/sdd.spec` technical | Sonnet 5 | `medium` *( `high` se arch nova)* |
+| 4 | Approve technical | `/sdd.plan` | Sonnet 5 | `medium` |
+| 5 | Approve plan | `/sdd.test` | Sonnet 5 | `medium` *( `high` se regra ambígua)* |
+| 6 | Approve testes | `/sdd.build` | Haiku 4.5 | N/A |
+| 7 | Build ok | `/sdd.check` (opcional) | Haiku 4.5 | N/A |
+| 8 | Pré-arquivar | `/sdd.finish` | Sonnet 5 | `high` |
+| 9 | Feature arquivada | `/sdd.pr` | Haiku 4.5 | N/A |
+
+> As pausas 6 e 8 pedem confirmação explícita de modelo (`AskUserQuestion`). O frontmatter já aplica Haiku/Sonnet mesmo se você só clicar “Seguir”.
 
 ### Em uma linha
 
 ```text
 Haiku 4.5              → start, build, check, pr, mcp
-Sonnet 5 + medium      → technical*, plan, test*
-Sonnet 5 + high        → spec functional, finish
-Opus 5 + high/xhigh    → só extremo
+Sonnet 5 + medium/high → spec, plan, test, finish, reverse-eng
+Opus                   → só /sdd.fix (+ sdd-debugger)
 ```
 
 ### Na pausa (Claude Code)
 
+Você **não precisa** trocar `/model` para o caminho feliz — o command já pina Haiku/Sonnet.
+
+Opcional (hosts sem frontmatter, ou effort):
+
 ```text
-/model sonnet    # ou haiku / opus
-/effort medium   # ou high / xhigh
+/effort medium   # ou high / xhigh — só onde o modelo aceitar
 ```
 
 ### Caso extremo
 
-| Situação | Modelo | Versão | Effort |
-|----------|--------|--------|--------|
-| Spec / arquitetura muito difícil | Opus | 5 | `high` → `xhigh` se ainda fraco |
-| Bug / repo profundo | Opus | 5 | `xhigh` |
-| Security crítico no finish | Opus | 5 | `high` |
-| Evitar | Opus 5 + `max` / `ultracode` | — | Estoura custo sem necessidade |
+| Situação | O que fazer |
+|----------|-------------|
+| Spec / arquitetura muito difícil | Sonnet + `effort high` no `/sdd.spec`; se ainda fraco → `/sdd.fix` (Opus) ou Outros no gate |
+| Bug / repo profundo | `/sdd.fix` → `sdd-debugger` (Opus) |
+| Security crítico no finish | Sonnet no `/sdd.finish`; se crítico demais → `/sdd.fix` |
+| Evitar | Opus no caminho feliz (spec/plan/test/build) ou Opus 5 + `max` |
 
-Prefira **Opus 5** (não 4.8): mesmo preço por token, benches mais fortes no lançamento.
+Se no **build** o Haiku reinventar produto ou alterar teste aprovado → pause, `/sdd.test --refine` ou `/sdd.fix`.
 
-Se no **build** o Haiku reinventar produto ou alterar teste aprovado → pause, `/model sonnet` + `/effort high` (ou `/sdd.test --refine`).
+### Evite `/sdd.go` se pausas importam
 
-### Evite `/sdd.go` se custo importa
-
-Express auto-avança com poucas pausas → menos janelas para trocar modelo/effort. Prefira o fluxo Standard comando a comando.
+Express auto-avança com poucas pausas → menos confirmações de modelo (o custo ainda é limitado pelo frontmatter de cada skill). Prefira o fluxo Standard comando a comando para o ritmo com AskUserQuestion.
 
 ---
 
@@ -169,9 +187,8 @@ O Jira (ou texto colado) alimenta o contexto; a conversa cobre só os gaps. Deta
 
 ## O que este doc não é
 
-- Não configura o IDE
-- Não escolhe modelo por você
-- Não altera commands, agents ou gates
+- Não configura o IDE fora do que os commands já pinam em `model:`
 - Não substitui o playbook nem o `PIPELINE.md`
+- Detalhe operacional do advisory/gates: `commands/references/model-suggestion-advisory.md`
 
-É só leitura opcional para quem quer gastar menos sem perder qualidade onde importa.
+É leitura para quem quer gastar menos sem perder qualidade onde importa — e no Claude Code o pack **já aplica** Haiku/Sonnet/Opus via frontmatter.

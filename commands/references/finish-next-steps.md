@@ -22,13 +22,13 @@ After `/sdd.finish` completes successfully:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Feature archived! What's next?",
-    "header": "Next",
+    "question": "Feature arquivada! Qual o próximo passo?",
+    "header": "Próximo",
     "options": [
-      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish — sugere modelo barato"},
-      {"label": "/sdd.start", "description": "Start a new feature — sugere modelo barato (forte de novo no spec)"},
-      {"label": "/sdd.start --reopen", "description": "Reopen this feature later for iteration"},
-      {"label": "Outros", "description": "Outro próximo passo (texto livre)"}
+      {"label": "/sdd.pr (Recomendado)", "description": "Rascunhar o PR a partir dos artefatos SDD → você aprova → publicar — comando em haiku"},
+      {"label": "/sdd.start", "description": "Começar uma nova feature — comando em haiku (sonnet de novo no spec)"},
+      {"label": "/sdd.start --reopen", "description": "Reabrir esta feature depois para iterar"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
@@ -41,10 +41,10 @@ Shape: `ask-user-question-outros.md` — **Outros** is mandatory on gates.
 
 | Selection | Action |
 |-----------|--------|
-| /sdd.pr (Recommended) | Run `/sdd.pr` for archived or last feature |
+| /sdd.pr (Recomendado) | Run `/sdd.pr` for archived or last feature |
 | /sdd.start | `Skill(skill="sdd.start")` |
-| /sdd.start --reopen | Show: "To reopen later: `/sdd.start --reopen [feature-name]`" |
-| Outros | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, manual PR |
+| /sdd.start --reopen | Show: "Para reabrir depois: `/sdd.start --reopen [feature-name]`" |
+| Outros | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, PR manual |
 
 > **MODE BEHAVIOR**: In Express mode, just show completion message without prompting.
 

@@ -149,7 +149,7 @@ OUTPUT:
 
 NEXT: /sdd.plan
 
-Full docs: development-agents/framework/skills/sdd.spec/SKILL.md
+Full docs: development-agents/commands/sdd.spec.md
 ```
 
 ---
@@ -255,7 +255,7 @@ Execution Modes:
 ### Key Behaviors
 
 1. **No arguments**: Show full command list
-2. **With command name**: Show detailed help for that command (read from `development-agents/framework/skills/sdd.[command]/SKILL.md`)
+2. **With command name**: Show detailed help for that command (read from `development-agents/commands/sdd.[command].md`)
 3. **With "workflow"**: Show workflow diagram
 4. **Unknown command**: Suggest similar commands
 

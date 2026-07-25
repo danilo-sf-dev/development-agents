@@ -3,7 +3,7 @@ name: sdd-explorer
 stack: core
 description: Read-only codebase exploration specialist for SDD Kit. Use for reverse engineering analysis, architecture discovery, pattern detection, code scanning, and understanding existing implementations. NEVER modifies files. Use when running /sdd.reverse-eng or exploring codebase for /sdd.spec technical.
 tools: Read, Glob, Grep, Bash
-model: opus
+model: inherit
 memory: project
 ---
 

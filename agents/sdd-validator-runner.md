@@ -286,9 +286,9 @@ Found 2 warnings:
 
 ### Security Anti-Patterns
 
-> **When `sdd-code-reviewer` skill is available**, delegate security validation to it. It will:
-> - Check compliance against **Security Rules** (`skills/sdd-code-reviewer/rules/{technology}.md`)
-> - Detect vulnerabilities via **security scanner** tools
+> **When `sdd-code-reviewer` skill is available**, delegate security validation to it
+> (`skills/sdd-code-reviewer/SKILL.md`). It covers the security checklist and scanner guidance
+> in that skill — there is no per-technology `rules/` subtree.
 >
 > **Fallback** (if skill not available), check for these common patterns:
 
@@ -441,10 +441,9 @@ sdd-validator (SKILL) = Coordinator/Documentation
 This agent can read the skill files for pattern definitions:
 
 ```bash
-# Read patterns from skills when needed
-cat development-agents/framework/skills/sdd-performance-expert/SKILL.md
-cat development-agents/framework/skills/sdd-code-reviewer/SKILL.md
-cat development-agents/framework/skills/sdd-code-reviewer/SKILL.md
+# Read patterns from skills when needed (pack root: skills/, not framework/skills/)
+cat development-agents/skills/sdd-performance-expert/SKILL.md
+cat development-agents/skills/sdd-code-reviewer/SKILL.md
 ```
 
 The patterns documented in those skill files define what this agent checks for when running in Layer 3 quality gate mode.

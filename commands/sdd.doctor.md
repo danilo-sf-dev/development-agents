@@ -160,7 +160,7 @@ Read these once and keep in context for ALL semantic prompts:
 - `development-agents/framework/standards/testing-strategy.md`
 - `development-agents/framework/standards/coding-standards.md` (skip if missing)
 - `development-agents/framework/standards/security*.md` (glob; whichever exist)
-- Skill frontmatter from `development-agents/framework/skills/sdd.*/SKILL.md` (purpose lines only)
+- Skill frontmatter from `development-agents/skills/*/SKILL.md` (purpose lines only)
 - `development-agents/framework/templates/functional-spec.md`, `technical-spec.md`, `project.md`, `PATTERNS.md`
 
 ### Prompt template

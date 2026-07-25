@@ -1,7 +1,7 @@
 ---
 name: sdd.check
 description: View feature status, progress, and validation results. Use when user wants to check feature health or run validations.
-model: sonnet
+model: haiku
 argument-hint: "[feature-name] [--sync]"
 ---
 
@@ -278,12 +278,13 @@ Read the matching reference **only** when the flag is present:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "What would you like to do next?",
-    "header": "Next",
+    "question": "O que deseja fazer agora?",
+    "header": "Próximo",
     "options": [
-      {"label": "/sdd.build", "description": "Continue implementation"},
-      {"label": "/sdd.build --next", "description": "Start next task"},
-      {"label": "/sdd.finish", "description": "Complete feature"}
+      {"label": "/sdd.build", "description": "Continuar a implementação — comando em haiku"},
+      {"label": "/sdd.build --next", "description": "Iniciar a próxima task — comando em haiku"},
+      {"label": "/sdd.finish", "description": "Concluir a feature — comando em sonnet"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]

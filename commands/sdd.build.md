@@ -1,19 +1,11 @@
 ﻿---
 name: sdd.build
 description: Implement feature tasks following approved strategy. Use when tasks are approved and user is ready to code. Handles layer-by-layer execution, infrastructure creation, database migrations, frontend builds, and CI validation.
-model: opus
+model: haiku
 argument-hint: "[task-id|--next|--all]"
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
-
----
-hooks:
-  TaskCompleted:
-    - hooks:
-        - type: command
-          command: "development-agents/framework/tools/shared/check-quality-task.sh"
----
 
 # Command: /sdd.build
 
