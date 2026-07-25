@@ -24,7 +24,7 @@ development-agents/          ← raiz do git (clone = pack pronto)
 ├── AGENTS.md
 ├── MANIFEST.md
 ├── FLUXOS-FEATURE-E-FIX.md  ← guia: fluxo Feature vs fluxo Fix (bug)
-├── SUGESTAO-MODELOS.md      ← dica informativa de modelo forte/barato
+├── SUGESTAO-MODELOS.md      ← dica de modelo forte/barato (+ planilha Claude Code)
 ├── agents/
 ├── skills/
 ├── commands/
