@@ -15,10 +15,10 @@ After displaying success message, use **AskUserQuestion** to offer next actions:
 ```pseudocode
 if saved_description exists in meta.md:
     option_1_label = "/sdd.spec (with saved context)"
-    option_1_description = "Uses your description to seed the spec — sugere modelo forte"
+    option_1_description = "Uses your description to seed the spec — comando em sonnet"
 else:
     option_1_label = "/sdd.spec (Recommended)"
-    option_1_description = "Start spec creation interactively — sugere modelo forte"
+    option_1_description = "Start spec creation interactively — comando em sonnet"
 ```
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)** - options vary by context:
@@ -29,17 +29,17 @@ AskUserQuestion(
     "question": "Feature initialized. What would you like to do next?",
     "header": "Next",
     "options": [
-      {"label": "/sdd.spec (Recommended)", "description": "Start spec creation interactively — sugere modelo forte"},
+      {"label": "/sdd.spec (Recommended)", "description": "Start spec creation interactively — comando em sonnet"},
       {"label": "/sdd.spec --audio", "description": "Describe your feature by voice"},
-      {"label": "/sdd.check", "description": "View feature status"}
+      {"label": "/sdd.check", "description": "View feature status"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
 )
 ```
 
-> **Note**: If saved description exists in meta.md, first option label should be "/sdd.spec (with saved context)" with description "Uses your description to seed the spec — sugere modelo forte".
-
+> **Note**: If saved description exists in meta.md, first option label should be "/sdd.spec (with saved context)" with description "Uses your description to seed the spec — comando em sonnet".
 **On user selection**:
 
 | Selection | Action |

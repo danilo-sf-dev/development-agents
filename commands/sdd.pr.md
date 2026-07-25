@@ -1,7 +1,7 @@
 ---
 name: sdd.pr
 description: Draft a pull request from SDD artifacts, get human approval, then open it on GitHub via gh. Use after implementation (typically after /sdd.finish or when ready to merge).
-model: inherit
+model: haiku
 argument-hint: "[feature-name]"
 ---
 

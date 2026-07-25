@@ -25,8 +25,8 @@ AskUserQuestion(
     "question": "Feature archived! What's next?",
     "header": "Next",
     "options": [
-      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish — sugere modelo barato"},
-      {"label": "/sdd.start", "description": "Start a new feature — sugere modelo barato (forte de novo no spec)"},
+      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish — comando em haiku"},
+      {"label": "/sdd.start", "description": "Start a new feature — comando em haiku (sonnet de novo no spec)"},
       {"label": "/sdd.start --reopen", "description": "Reopen this feature later for iteration"},
       {"label": "Outros", "description": "Outro próximo passo (texto livre)"}
     ],

@@ -1,7 +1,7 @@
 ---
 name: sdd.test
 description: Write and approve tests before implementation (tests-first gate). Use after tasks are approved and before /sdd.build. Tests must fail first — production code comes later.
-model: inherit
+model: sonnet
 argument-hint: "[--approve|--refine|--resume]"
 ---
 
@@ -302,8 +302,8 @@ AskUserQuestion(
     "question": "Testes aprovados. Iniciar implementação?",
     "header": "Next",
     "options": [
-      {"label": "/clear + /sdd.build (Recommended)", "description": "Contexto limpo para implementar — sugere modelo barato"},
-      {"label": "/sdd.build", "description": "Implementar no contexto atual — sugere modelo barato"},
+      {"label": "/clear + /sdd.build (Recommended)", "description": "Contexto limpo para implementar — comando em haiku"},
+      {"label": "/sdd.build", "description": "Implementar no contexto atual — comando em haiku"},
       {"label": "/sdd.test --refine", "description": "Ajustar testes antes de codar"},
       {"label": "/sdd.check", "description": "Revisar estrutura da feature"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
@@ -313,6 +313,7 @@ AskUserQuestion(
 )
 ```
 
+> **Critical switch**: Before this next-steps question, run the **model-confirm** AskUserQuestion from `references/model-suggestion-advisory.md` (`phase_key`: `test→build`). BLOCKING in Standard and before build inside `/sdd.go`.
 ---
 
 ## Behavior by Mode

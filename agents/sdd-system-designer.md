@@ -3,7 +3,7 @@ name: sdd-system-designer
 stack: backend
 description: Software architecture specialist for SDD Kit. Use for critical architectural decisions during /sdd.spec technical including system design, technology selection, pattern choices, trade-off analysis, and project service architecture. Provides deep reasoning for complex design decisions.
 tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
-model: opus
+model: inherit
 memory: project
 ---
 

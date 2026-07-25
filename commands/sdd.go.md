@@ -52,7 +52,7 @@ argument-hint: "[feature-description]"
 
 **Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish`
 
-**Model advisory (start of express)**: Read `references/model-suggestion-advisory.md` — show **express compact map** once at Step 0/1. Before delegating to `/sdd.build`, show full box for `test→build`. Before `/sdd.finish`, show full box for `build→finish` (troca para forte).
+**Model advisory (start of express)**: Read `references/model-suggestion-advisory.md` — show **express compact map** once at Step 0/1. Before delegating to `/sdd.build`, show full box + **model-confirm** for `test→build` (BLOCKING). Before `/sdd.finish`, show full box + **model-confirm** for `build→finish` (BLOCKING). Other intermediate pauses may be skipped in Express.
 
 **Express Rules**:
 - 3-5 critical questions only

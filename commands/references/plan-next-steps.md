@@ -16,16 +16,16 @@ AskUserQuestion(
     "question": "Tasks ready. Write tests first?",
     "header": "Next",
     "options": [
-      {"label": "/clear + /sdd.test (Recommended)", "description": "Fresh context for tests-first gate — sugere modelo forte"},
-      {"label": "/sdd.test", "description": "Write failing tests before implementation"},
+      {"label": "/clear + /sdd.test (Recommended)", "description": "Fresh context for tests-first gate — comando em sonnet"},
+      {"label": "/sdd.test", "description": "Write failing tests before implementation — comando em sonnet"},
       {"label": "/sdd.test --refine", "description": "Skip if tests already exist — refine only"},
-      {"label": "/sdd.check", "description": "Review task structure"}
+      {"label": "/sdd.check", "description": "Review task structure"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
 )
 ```
-
 **On user selection**:
 
 | Selection | Action |
