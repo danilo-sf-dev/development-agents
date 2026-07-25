@@ -213,7 +213,7 @@ After technical approval + conflicts: run `/sdd.check --compact` if context >40%
 
 **Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `spec→plan`.
 
-AskUserQuestion: `/sdd.plan` (recommended — sugere modelo forte) | `/sdd.spec --iterate` | `/sdd.check`.
+AskUserQuestion: `/sdd.plan` (recomendado — comando em sonnet) | `/sdd.spec --iterate` | `/sdd.check`.
 
 ## Key Rules
 

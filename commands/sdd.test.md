@@ -257,7 +257,7 @@ Show table:
 AskUserQuestion(
   questions=[{
     "question": "Aprovar estes testes antes da implementação?",
-    "header": "Tests",
+    "header": "Testes",
     "options": [
       {"label": "Sim, aprovar", "description": "Desbloqueia /sdd.build"},
       {"label": "Ajustar testes", "description": "Refinar plano ou arquivos"},
