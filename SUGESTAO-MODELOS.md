@@ -83,7 +83,7 @@ Subagents de execução/descoberta (`sdd-implementer`, `sdd-small-test-writer`, 
 |-------|--------|-------|
 | Barato / executor | **Haiku 4.5** | Rodar o que já está aprovado (start, build, pr, ops) |
 | Pensar / intermediário | **Sonnet 5** | Spec, plan, test, finish — default de qualidade |
-| Extremo | **Opus 5** | Só quando Sonnet/Haiku falharem (mesmo $/token que Opus 4.8) |
+| Extremo | **Opus 5** | **Só** `/sdd.fix` + `sdd-debugger` (não usar no caminho feliz) |
 
 ### Effort e custo
 

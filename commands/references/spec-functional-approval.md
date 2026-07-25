@@ -79,12 +79,13 @@ Before presenting the approval question, estimate context usage. If > 50%, prepe
 ```
 AskUserQuestion(
   questions=[{
-    "question": "The functional spec is ready. What would you like to do?",
-    "header": "Approval",
+    "question": "A spec funcional está pronta. O que deseja fazer?",
+    "header": "Aprovação",
     "options": [
-      {"label": "Approve", "description": "Approve and continue to technical spec"},
-      {"label": "View full spec", "description": "Display the complete functional spec"},
-      {"label": "Request changes", "description": "Iterate on the spec with /sdd.spec --iterate"}
+      {"label": "Aprovar", "description": "Aprovar e seguir para a spec técnica"},
+      {"label": "Ver spec completa", "description": "Exibir a spec funcional inteira"},
+      {"label": "Pedir mudanças", "description": "Iterar na spec com /sdd.spec --iterate"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
@@ -123,12 +124,13 @@ Update `meta.md` stages.functional:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Functional spec approved. What's next?",
-    "header": "Next",
+    "question": "Spec funcional aprovada. Qual o próximo passo?",
+    "header": "Próximo",
     "options": [
-      {"label": "/sdd.spec technical (Recommended)", "description": "Create technical specification — sugere modelo forte"},
-      {"label": "/sdd.spec --iterate", "description": "Refine functional spec first"},
-      {"label": "/sdd.check", "description": "View current status"}
+      {"label": "/sdd.spec technical (Recomendado)", "description": "Criar a especificação técnica — comando em sonnet"},
+      {"label": "/sdd.spec --iterate", "description": "Refinar a spec funcional antes"},
+      {"label": "/sdd.check", "description": "Ver status atual"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
@@ -139,7 +141,7 @@ AskUserQuestion(
 
 | Selection | Action |
 |-----------|--------|
-| /sdd.spec technical (Recommended) | `Skill(skill="sdd.spec", args="technical")` |
+| /sdd.spec technical (Recomendado) | `Skill(skill="sdd.spec", args="technical")` |
 | /sdd.spec --iterate | `Skill(skill="sdd.spec", args="--iterate")` |
 | /sdd.check | `Skill(skill="sdd.check")` |
-| Other | User types custom input |
+| Outros | User types custom input |

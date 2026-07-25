@@ -58,12 +58,13 @@ If context >50% before approval, warn: after approve, consider `/clear` before `
 ```
 AskUserQuestion(
   questions=[{
-    "question": "The technical spec is ready. What would you like to do?",
-    "header": "Approval",
+    "question": "A spec técnica está pronta. O que deseja fazer?",
+    "header": "Aprovação",
     "options": [
-      {"label": "Approve", "description": "Approve and continue to /sdd.plan"},
-      {"label": "View full spec", "description": "Display the complete technical spec"},
-      {"label": "Request changes", "description": "Iterate on the spec with /sdd.spec --iterate"}
+      {"label": "Aprovar", "description": "Aprovar e seguir para /sdd.plan"},
+      {"label": "Ver spec completa", "description": "Exibir a spec técnica inteira"},
+      {"label": "Pedir mudanças", "description": "Iterar na spec com /sdd.spec --iterate"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
@@ -100,12 +101,13 @@ Update `meta.md` stages.technical:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Technical spec approved. What's next?",
-    "header": "Next",
+    "question": "Spec técnica aprovada. Qual o próximo passo?",
+    "header": "Próximo",
     "options": [
-      {"label": "/sdd.plan (Recommended)", "description": "Generate implementation tasks — sugere modelo forte"},
-      {"label": "/sdd.spec --iterate", "description": "Refine specs before planning"},
-      {"label": "/sdd.check", "description": "View current status"}
+      {"label": "/sdd.plan (Recomendado)", "description": "Gerar as tasks de implementação — comando em sonnet"},
+      {"label": "/sdd.spec --iterate", "description": "Refinar as specs antes de planejar"},
+      {"label": "/sdd.check", "description": "Ver status atual"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]
@@ -116,7 +118,7 @@ AskUserQuestion(
 
 | Selection | Action |
 |-----------|--------|
-| /sdd.plan (Recommended) | `Skill(skill="sdd.plan")` |
+| /sdd.plan (Recomendado) | `Skill(skill="sdd.plan")` |
 | /sdd.spec --iterate | `Skill(skill="sdd.spec", args="--iterate")` |
 | /sdd.check | `Skill(skill="sdd.check")` |
-| Other | User types custom input |
+| Outros | User types custom input |

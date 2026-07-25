@@ -139,10 +139,10 @@ For `phase_key` **`test→build`** and **`build→finish`** (and the same points
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Confirmar modelo do próximo passo? (frontmatter já aplica o recomendado — isto é só o gate de pausa)",
+    "question": "Confirmar modelo do próximo passo? (o frontmatter já aplica o recomendado — isto é só o gate de pausa)",
     "header": "Modelo",
     "options": [
-      {"label": "Seguir com o modelo do comando (Recommended)", "description": "Usa o model: do próximo /sdd.* — sem surpresa de custo"},
+      {"label": "Seguir com o modelo do comando (Recomendado)", "description": "Usa o model: do próximo /sdd.* — sem surpresa de custo"},
       {"label": "Preciso de modelo mais forte neste passo", "description": "Pare; use /sdd.fix ou descreva em Outros o extremo"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
@@ -172,7 +172,7 @@ For the **Recommended** option in next-steps gates, append to `description`:
 Example:
 
 ```json
-{"label": "/sdd.build (Recommended)", "description": "Contexto limpo para implementar — comando em haiku"}
+{"label": "/sdd.build (Recomendado)", "description": "Contexto limpo para implementar — comando em haiku"}
 ```
 
 ---

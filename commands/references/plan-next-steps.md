@@ -13,13 +13,13 @@
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Tasks ready. Write tests first?",
-    "header": "Next",
+    "question": "Tasks prontas. Escrever os testes primeiro?",
+    "header": "Próximo",
     "options": [
-      {"label": "/clear + /sdd.test (Recommended)", "description": "Fresh context for tests-first gate — comando em sonnet"},
-      {"label": "/sdd.test", "description": "Write failing tests before implementation — comando em sonnet"},
-      {"label": "/sdd.test --refine", "description": "Skip if tests already exist — refine only"},
-      {"label": "/sdd.check", "description": "Review task structure"},
+      {"label": "/clear + /sdd.test (Recomendado)", "description": "Contexto limpo para o gate tests-first — comando em sonnet"},
+      {"label": "/sdd.test", "description": "Escrever testes que falham antes da implementação — comando em sonnet"},
+      {"label": "/sdd.test --refine", "description": "Só refinar se os testes já existirem"},
+      {"label": "/sdd.check", "description": "Revisar a estrutura das tasks"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
@@ -30,11 +30,11 @@ AskUserQuestion(
 
 | Selection | Action |
 |-----------|--------|
-| /clear + /sdd.test (Recommended) | Inform user to run `/clear`, then `/sdd.test` |
+| /clear + /sdd.test (Recomendado) | Inform user to run `/clear`, then `/sdd.test` |
 | /sdd.test | `Skill(skill="sdd.test")` |
 | /sdd.test --refine | `Skill(skill="sdd.test", args="--refine")` |
 | /sdd.check | `Skill(skill="sdd.check")` |
-| Other | User types custom input |
+| Outros | User types custom input |
 
 ---
 

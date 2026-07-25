@@ -22,13 +22,13 @@ After `/sdd.finish` completes successfully:
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Feature archived! What's next?",
-    "header": "Next",
+    "question": "Feature arquivada! Qual o próximo passo?",
+    "header": "Próximo",
     "options": [
-      {"label": "/sdd.pr (Recommended)", "description": "Draft PR from SDD artifacts → you approve → publish — comando em haiku"},
-      {"label": "/sdd.start", "description": "Start a new feature — comando em haiku (sonnet de novo no spec)"},
-      {"label": "/sdd.start --reopen", "description": "Reopen this feature later for iteration"},
-      {"label": "Outros", "description": "Outro próximo passo (texto livre)"}
+      {"label": "/sdd.pr (Recomendado)", "description": "Rascunhar o PR a partir dos artefatos SDD → você aprova → publicar — comando em haiku"},
+      {"label": "/sdd.start", "description": "Começar uma nova feature — comando em haiku (sonnet de novo no spec)"},
+      {"label": "/sdd.start --reopen", "description": "Reabrir esta feature depois para iterar"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
   }]

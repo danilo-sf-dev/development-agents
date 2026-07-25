@@ -300,9 +300,9 @@ AskUserQuestion(
 AskUserQuestion(
   questions=[{
     "question": "Testes aprovados. Iniciar implementação?",
-    "header": "Next",
+    "header": "Próximo",
     "options": [
-      {"label": "/clear + /sdd.build (Recommended)", "description": "Contexto limpo para implementar — comando em haiku"},
+      {"label": "/clear + /sdd.build (Recomendado)", "description": "Contexto limpo para implementar — comando em haiku"},
       {"label": "/sdd.build", "description": "Implementar no contexto atual — comando em haiku"},
       {"label": "/sdd.test --refine", "description": "Ajustar testes antes de codar"},
       {"label": "/sdd.check", "description": "Revisar estrutura da feature"},
