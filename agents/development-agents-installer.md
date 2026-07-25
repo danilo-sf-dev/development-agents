@@ -271,6 +271,7 @@ Responder em português com:
 ```
 ✓ development-agents instalado (via agente)
 
+  Host     : {nome declarado ou cursor+claude / cursor / claude}
   Pack     : {TARGET_DIR}/development-agents/
   Cursor   : sim/não
   Claude   : sim/não
