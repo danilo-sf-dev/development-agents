@@ -54,15 +54,59 @@ Se faltar algo → parar e reportar pack inválido.
 
 ## Passo 1 — Perguntar adapters (se não veio flag)
 
-Use AskUserQuestion:
+Se o usuário **já** disse o host no chat (ex.: “só Claude Code”, “Kiro”, “Codex”) → mapear sem perguntar de novo.
 
-| Opção | Efeito |
-|-------|--------|
+Senão → AskUserQuestion (**sempre** com **Outros** — ver `commands/references/ask-user-question-outros.md`):
+
+```
+AskUserQuestion(questions=[{
+  "question": "Qual harness / IDE AI você vai usar neste projeto?",
+  "header": "Host",
+  "options": [
+    {"label": "Cursor + Claude (Recommended)", "description": "Instala .cursor/ e .claude/"},
+    {"label": "Só Cursor", "description": "Apenas adapter .cursor/"},
+    {"label": "Só Claude Code", "description": "Apenas adapter .claude/"},
+    {"label": "Outros", "description": "Escreva o harness (Kiro, Codex, Windsurf, VS Code, JetBrains, outro)"}
+  ],
+  "multiSelect": false
+}])
+```
+
+| Opção fechada | Efeito |
+|---------------|--------|
 | Cursor + Claude (padrão) | Instala `.cursor/` e `.claude/` |
 | Só Cursor | `--cursor-only` |
 | Só Claude Code | `--claude-only` |
+| **Outros** (texto livre) | Ver mapeamento abaixo |
+
+### Mapeamento de Outros / texto livre
+
+Normalize o texto (case-insensitive) e aplique:
+
+| Usuário escreveu (exemplos) | Adapters |
+|-----------------------------|----------|
+| `claude`, `claude code`, `cc` | Só `.claude/` |
+| `cursor` | Só `.cursor/` |
+| `ambos`, `cursor e claude`, `os dois` | `.cursor/` + `.claude/` |
+| `codex`, `kiro`, `windsurf`, `vscode`, `vs code`, `jetbrains`, `antigravity`, outro desconhecido | **Host genérico** — ver abaixo |
+
+**Host genérico** (pack continua agnóstico; adapters IDE são só Cursor/Claude hoje):
+
+1. Sempre instalar pack `development-agents/` + `sdd/` + `.gitignore` (passos 2, 5, 6).
+2. Segunda AskUserQuestion (+ **Outros**):
+
+| Opção | Efeito |
+|-------|--------|
+| Layout tipo Claude (`.claude/`) | Instalar adapter Claude — muitos hosts leem skills/commands em formato parecido |
+| Layout tipo Cursor (`.cursor/`) | Instalar adapter Cursor |
+| Ambos (máxima compatibilidade) | `.cursor/` + `.claude/` |
+| Só pack (sem adapter IDE) | Não criar `.cursor/` nem `.claude/` — usuário pluga o host manualmente |
+| Outros | Texto livre → esclarecer uma vez; se ainda ambíguo → **Ambos** |
+
+3. No resumo final, anunciar: `Host declarado: <nome>` + quais adapters foram criados.
 
 ---
+
 
 ## Passo 2 — Sincronizar pack canônico
 

@@ -19,11 +19,13 @@ This is a TOOL CALL you must execute, not content to display.
 **Description**: Instala o pack `development-agents` no projeto **sem rodar scripts** — cria pastas, copia arquivos e **atualiza `.gitignore`** para que `development-agents/`, `.cursor/`, `.claude/` e `sdd/` **nunca subam no commit** (mesmo resultado de `install.ps1` / `install.sh`).
 
 **Uso**:
-- `/sdd.install` → Cursor + Claude (pergunta se ambíguo)
+- `/sdd.install` → pergunta o harness (Cursor+Claude / só Cursor / só Claude / **Outros** texto livre)
 - `/sdd.install --cursor-only` → só adapter Cursor
 - `/sdd.install --claude-only` → só adapter Claude Code
 - `/sdd.install --target E:\Projects\meu-app` → instalar em outro diretório
 - `/sdd.install --from E:\packs\development-agents` → pack em caminho customizado
+
+Se o chat já disser o host (“só Claude”, “Kiro”, “Codex”), o agente mapeia sem reperguntar.
 
 ---
 
@@ -31,7 +33,7 @@ This is a TOOL CALL you must execute, not content to display.
 
 | Flag | Descrição |
 |------|-----------|
-| (nenhuma) | Instala Cursor + Claude |
+| (nenhuma) | Pergunta o host (+ **Outros** para Kiro, Codex, etc.) |
 | `--cursor-only` | Só `.cursor/` + rule SDD |
 | `--claude-only` | Só `.claude/commands|agents|skills` |
 | `--target <path>` | Raiz do projeto alvo (default: workspace atual) |
@@ -87,6 +89,8 @@ Siga commands/sdd.install.md e instale o pack neste projeto.
 | `--claude-only` | Pular passo Cursor (`.cursor/`) |
 | `--target` | `TARGET_DIR` do agente |
 | `--from` | `PACK_DIR` do agente |
+
+**Sem flag:** Passo 1 do agente `development-agents-installer` — AskUserQuestion com **Outros** (Kiro, Codex, Windsurf, VS Code, JetBrains, …). Host genérico → segunda pergunta de layout de adapter (Claude-like / Cursor-like / ambos / só pack).
 
 ### 4. Gate obrigatório — `.gitignore` (projeto da empresa)
 
