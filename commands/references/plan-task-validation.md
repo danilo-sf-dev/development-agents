@@ -5,6 +5,7 @@
 ## Validation Checks
 
 Before approval, validate:
+- [ ] Task language matches `meta.md` `spec_language` / `PROJECT.md` `language.specs` (titles, descriptions, AC prose)
 - [ ] Each task has complexity (Low/Medium/High)
 - [ ] Each task has ≥2 acceptance criteria
 - [ ] Dependencies reference valid task IDs

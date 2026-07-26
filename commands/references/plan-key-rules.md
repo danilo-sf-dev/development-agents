@@ -7,12 +7,30 @@
 | Rule | Details |
 |------|---------|
 | **JSON only** | Generate `tasks.json`, never `tasks.md` |
+| **Task language** | `title`, `description`, and `acceptance_criteria` prose MUST use the resolved **spec language** (same as `/sdd.spec`) — see below |
 | **Layer assignment** | Layer 1=local, 2=platform, 3=quality |
 | **Quality gates** | `GATE:` prefix in acceptance criteria |
 | **Story sizing** | Max 2-3 sentences per description |
 | **No deploys** | NEVER generate deploy tasks |
 | **Approver identity** | Capture via `git config user.name` |
 | **Deterministic IDs** | Use `generate-ids.sh` for task IDs (see below) |
+
+### Task language (MANDATORY)
+
+Resolve language **before** writing any task text:
+
+1. `meta.md` → `spec_language`
+2. `PROJECT.md` → `language.specs`
+3. Fallback → `en`
+
+| Field | Language |
+|-------|----------|
+| `title`, `description`, human-readable `acceptance_criteria` | Resolved language (`pt` → Português, `es` → Español, `en` → English) |
+| `id`, `files`, path strings, `GATE:` command snippets (`mvn test`, etc.) | Keep as-is (paths/commands stay technical) |
+| Tech terms (Jakarta, Spring Boot, MongoDB, CRUD, REST) | English identifiers allowed inside PT/ES prose |
+
+**NEVER** generate `tasks.json` prose in English when `spec_language` / `language.specs` is `pt` or `es`.  
+On `--refine`, rewrite language if the existing file violates this rule.
 
 ### Deterministic Task ID Generation
 

@@ -4,6 +4,15 @@
 
 ### Step 5: Generate Tasks
 
+**Language (BLOCKING — do this first)**:
+
+```text
+Resolve: meta.md spec_language → PROJECT.md language.specs → en
+```
+
+Write every `title`, `description`, and prose `acceptance_criteria` in that language.  
+If `pt` / `es`, do **not** default to English task text. See `references/plan-key-rules.md` → **Task language**.
+
 **Design Decision Mapping**: For each task, identify which Design Decisions (DD-N) from the technical spec
 directly affect its implementation. Add their IDs to the `design_decisions` field. This enables fresh agents
 to load only the relevant decisions when implementing each task, preventing re-proposal of already-rejected

@@ -31,6 +31,8 @@ Executor / discovery subagents (`sdd-implementer`, `sdd-small-test-writer`, `sdd
 | Before every **Interactive Next Steps** `AskUserQuestion` at a phase boundary | Show **full box** (mandatory) |
 | On **command entry** for `/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.build`, `/sdd.finish`, `/sdd.reverse-eng`, `/sdd.fix` | Show **compact line** (recommended, once per invocation) |
 | **Critical switches** `test→build` and `build→finish` (Standard mode) | Full box **+** dedicated model-confirm `AskUserQuestion` (see below) — **BLOCKING** |
+| **`/sdd.start` entry** (`entry:start`) | Full box **+** entry model-confirm **before Step 1** — **BLOCKING** (do not trust session default Sonnet) |
+| **`/sdd.start` exit** (`start→spec`) | Full box **+** model-confirm before next-steps — **BLOCKING** |
 | **Express mode** (`/sdd.go`) between auto-advanced steps | Skip most pauses — **except** before `/sdd.build` and before `/sdd.finish`: full box + model-confirm |
 | `/sdd.help`, `/sdd.check`, `/sdd.install`, mid-task build layers | Skip unless transitioning to next phase |
 
@@ -38,7 +40,7 @@ Show the box **before** any optional CONTEXT ADVISORY (prefer **model advisory f
 
 ### Pause guarantee
 
-- **Standard** (`/sdd.start` → … → `/sdd.finish` comando a comando): phase-boundary `AskUserQuestion` always runs → you get a pause before the next command. Critical switches add an explicit model confirm.
+- **Standard** (`/sdd.start` → … → `/sdd.finish` comando a comando): phase-boundary `AskUserQuestion` always runs → you get a pause before the next command. **`/sdd.start` entry** and critical switches (`start→spec`, `test→build`, `build→finish`) add explicit model confirm — **BLOCKING**.
 - **Express** (`/sdd.go`): fewer pauses by design. Cost is still capped by each delegated command’s frontmatter; you will **not** get every educational pause. Prefer Standard when learning the cost rhythm.
 
 ---
@@ -132,9 +134,41 @@ or
 
 ---
 
+## Command entry — model confirm (BLOCKING)
+
+For **`entry:start`** (and the same moment at the beginning of `/sdd.go` when it delegates to `/sdd.start --express`), **before Step 1 / any file creation / profile AskUserQuestion**:
+
+1. Show the **full box** for `phase_key`: `entry:start`.
+2. Run **entry model-confirm** AskUserQuestion (always include **Outros**):
+
+```
+AskUserQuestion(
+  questions=[{
+    "question": "Este /sdd.start deve rodar em haiku (só metadados + pasta WIP). Confirme antes de continuar — não confie só no cabeçalho Sonnet da sessão.",
+    "header": "Modelo /start",
+    "options": [
+      {"label": "Haiku — seguir (Recomendado)", "description": "Frontmatter model: haiku. Após o start, confira /usage: tokens de haiku devem dominar este passo."},
+      {"label": "Não estou em haiku — parar", "description": "STOP: rode /model haiku e reinvocar /sdd.start, ou Outros com o caminho"},
+      {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
+    ],
+    "multiSelect": false
+  }]
+)
+```
+
+| Selection | Action |
+|-----------|--------|
+| Haiku — seguir | Continue to Step 0 (profile) and the rest of `/sdd.start` |
+| Não estou em haiku — parar | **STOP** — do not create WIP, meta.md, or branch until user fixes model and re-runs `/sdd.start` |
+| Outros | Follow free text; default to STOP if model path is unclear |
+
+> **Why**: Claude Code may keep the session on Sonnet while `/sdd.start` runs. The frontmatter pin is not always visible to the user; this gate makes cost explicit.
+
+---
+
 ## Critical switch — model confirm (BLOCKING)
 
-For `phase_key` **`test→build`** and **`build→finish`** (and the same points inside `/sdd.go`), **after** the full box and **before or as part of** next-steps, call AskUserQuestion with a dedicated model question (always include **Outros**):
+For `phase_key` **`start→spec`**, **`test→build`**, and **`build→finish`** (and the same points inside `/sdd.go`), **after** the full box and **before or as part of** next-steps, call AskUserQuestion with a dedicated model question (always include **Outros**):
 
 ```
 AskUserQuestion(
@@ -181,7 +215,8 @@ Example:
 
 1. Look up `phase_key` in the catalog table.
 2. Print the **full box** to the user (not inside AskUserQuestion JSON).
-3. If critical switch (`test→build` / `build→finish`) → run **model-confirm** AskUserQuestion (BLOCKING).
-4. Then invoke next-steps `AskUserQuestion` with enhanced descriptions on the recommended option.
-5. Do not tell the user they must manually `/model` to avoid overpaying — frontmatter already pins cost. Mention `/model` only for hosts that ignore command frontmatter, or for extremo beyond `/sdd.fix`.
-6. Do not link or modify `SUGESTAO-MODELOS.md` from gates — this reference is self-contained for agents.
+3. If `entry:start` → run **entry model-confirm** before any other start work (BLOCKING).
+4. If critical switch (`start→spec` / `test→build` / `build→finish`) → run **model-confirm** AskUserQuestion (BLOCKING).
+5. Then invoke next-steps `AskUserQuestion` with enhanced descriptions on the recommended option.
+6. For `/sdd.start`: mention `/usage` after finish if Sonnet dominated — user may need `/model haiku` + re-run on hosts that ignore frontmatter.
+7. Do not link or modify `SUGESTAO-MODELOS.md` from gates — this reference is self-contained for agents.
