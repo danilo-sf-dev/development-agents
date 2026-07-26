@@ -157,12 +157,15 @@ AI: "Perfect, I'll initialize the payment feature..."  ← English
 |---------|---------|--------|---------|
 | **Response language** | Agent's conversational replies | User's message language (auto-detected) | User writes Spanish → agent replies in Spanish |
 | **Spec document language** | Written spec content (functional, technical) | `PROJECT.md` → `language.specs` | Specs in English regardless of chat language |
+| **Task document language** | `tasks.json` titles, descriptions, AC prose | Same resolution as specs | `language.specs: pt` → tasks in Portuguese |
 
 ### Resolution Order for Spec Language
 
 1. `meta.md` → `spec_language` field (feature-level override)
 2. `PROJECT.md` → `language.specs` field (project-level setting)
 3. Fallback → `en` (English)
+
+The same order applies to **`/sdd.plan` task text** (`title`, `description`, human-readable `acceptance_criteria`).
 
 ### Key Rules
 
@@ -171,8 +174,10 @@ AI: "Perfect, I'll initialize the payment feature..."  ← English
 - **Technical terms** (API, REST, CRUD, MessageQueue, KeyValueStore, OAuth, JWT, UUID, SDK, MCP) always stay in English regardless of spec language
 - **Section headers** in specs follow the template structure (English)
 - **User stories, descriptions, acceptance criteria** → written in the resolved spec language
+- **`tasks.json` prose** (`title`, `description`, AC text) → **same resolved language as specs** (not English-by-default)
 - **Code identifiers** (function names, variables, class names) → always English
 - **NEVER mix languages** within a single spec document
+- **NEVER** emit English-only tasks when `spec_language` / `language.specs` is `pt` or `es`
 
 ### Supported Languages
 
