@@ -40,7 +40,7 @@ Show the box **before** any optional CONTEXT ADVISORY (prefer **model advisory f
 
 ### Pause guarantee
 
-- **Standard** (`/sdd.start` → … → `/sdd.finish` comando a comando): phase-boundary `AskUserQuestion` always runs → you get a pause before the next command. Critical switches add an explicit model confirm.
+- **Standard** (`/sdd.start` → … → `/sdd.finish` comando a comando): phase-boundary `AskUserQuestion` always runs → you get a pause before the next command. **`/sdd.start` entry** and critical switches (`start→spec`, `test→build`, `build→finish`) add explicit model confirm — **BLOCKING**.
 - **Express** (`/sdd.go`): fewer pauses by design. Cost is still capped by each delegated command’s frontmatter; you will **not** get every educational pause. Prefer Standard when learning the cost rhythm.
 
 ---
