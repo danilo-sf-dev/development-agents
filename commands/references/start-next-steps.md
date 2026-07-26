@@ -8,6 +8,8 @@
 
 **Model advisory** (before AskUserQuestion): Read `references/model-suggestion-advisory.md` and show the full box for `phase_key`: `start→spec`.
 
+**Model confirm** (BLOCKING): Run **Critical switch — model confirm** for `start→spec` **before** the next-steps AskUserQuestion below (two-question payload if the host supports it; otherwise model-confirm first).
+
 After displaying success message, use **AskUserQuestion** to offer next actions:
 
 **Determine options based on context**:

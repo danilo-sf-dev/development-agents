@@ -31,11 +31,17 @@ Infer kebab name → detect stack → create `sdd/wip/YYYYMMDD-name/` + meta.md 
 Modes: Standard (confirm) | Express (minimal). Templates: standard | `--lite` (combined short spec).
 App name ≠ feature name. See `/sdd.help start`.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:start`.
+**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — **BLOCKING** entry model-confirm for `phase_key`: `entry:start` **before Step 0.5** (full box + AskUserQuestion; do not skip).
 
 ## Workflow (Steps in Order)
 
-### Step 0: User Profile Check (BLOCKING)
+### Step 0: Model Confirm (BLOCKING)
+
+> **Before profile, validation, or any file creation.** Session header may still show Sonnet — do not proceed without this gate.
+> Read `references/model-suggestion-advisory.md` → **Command entry — model confirm** for `entry:start`.
+> If user selects **Não estou em haiku — parar** → STOP entirely (no WIP, no branch, no profile write).
+
+### Step 0.5: User Profile Check (BLOCKING)
 
 > Never skip. If global profile missing → AskUserQuestion (technical/non-technical) before Step 1.
 > **ONLY IF** needing full AskUserQuestion payloads / yaml paths:
@@ -164,7 +170,7 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 ## AI Agent Instructions
 
 1. Flag-first: if `--help`/`--reopen`/`--rename`/`--from-backlog`/`--audio` → load matching ref, do not run full happy path.
-2. Order: Steps 0→12; never skip profile (Step 0/5.5) or input validation (Step 1).
+2. Order: Step 0 (model confirm) → Steps 0.5→12; never skip model confirm (Step 0) or profile (Step 0.5) or input validation (Step 1).
 3. Infer kebab-case feature name from description; confirm only if ambiguous.
 4. Critical: Application name ≠ feature name; never invent external app registration; stack from detection + PROJECT.md.
 
