@@ -98,13 +98,15 @@ Read both specs:
 
 ### Step 5: Generate Tasks
 
+**Language first**: resolve `meta.md` `spec_language` → `PROJECT.md` `language.specs` → `en`. Write `title` / `description` / AC prose in that language (never English-default when `pt`/`es`).
 Map Design Decisions (DD-N) onto each task (`design_decisions` field).
 Mandatory (backend/web): Dockerfile(s) if missing, `/ping`, validation task.
 Migrations: use project migration tool from PROJECT.md — never invent Flyway/Liquibase/manual SQL paths.
 Tests: always full unit/integration from AC + edges via `/sdd.test`; E2E only if `testing.e2e.enabled`.
 Lazy: mobile → `plan-mobile-tasks.md`; `(NEW)` infra → `infra-tasks.md`; frontend-web → `frontend-tasks.md`.
 > **ONLY IF** needing E2E script/flow, migration examples, full generation rules:
-> Read `references/plan-generate-tasks.md`.
+> Read `references/plan-generate-tasks.md` (includes task language rules).
+> Key rules also in `references/plan-key-rules.md`.
 
 ### Extension point: after-implementation
 
