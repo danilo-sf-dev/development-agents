@@ -14,6 +14,7 @@ description: Context monitoring skill to prevent token exhaustion. Monitors cont
 ## When to Use This Skill
 
 Invoke this skill:
+
 - Before starting a new phase (`/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.build`)
 - After reading multiple large files (5+)
 - After multiple MCP queries (3+)
@@ -38,12 +39,12 @@ When invoked, perform this assessment:
 
 Count approximate token usage from:
 
-| Source | Estimation Method | Typical Cost |
-|--------|-------------------|--------------|
-| **Conversation turns** | ~500 tokens per turn average | Count turns x 500 |
-| **Files read** | ~20 tokens per line | Sum lines read x 20 |
-| **MCP responses** | ~1500 tokens average | Count MCP calls x 1500 |
-| **Large operations** | Variable | Track heavy operations |
+| Source                 | Estimation Method            | Typical Cost           |
+| ---------------------- | ---------------------------- | ---------------------- |
+| **Conversation turns** | ~500 tokens per turn average | Count turns x 500      |
+| **Files read**         | ~20 tokens per line          | Sum lines read x 20    |
+| **MCP responses**      | ~1500 tokens average         | Count MCP calls x 1500 |
+| **Large operations**   | Variable                     | Track heavy operations |
 
 ### Step 2: Calculate Percentage
 
@@ -54,12 +55,12 @@ estimated_percentage = (estimated_tokens / 200000) x 100  # Assuming 200K contex
 
 ### Step 3: Determine Status
 
-| Percentage | Status | Color |
-|------------|--------|-------|
-| 0-40% | `NORMAL` | Green |
-| 40-60% | `ELEVATED` | Yellow |
-| 60-80% | `DELEGATE_MODE` | Orange |
-| 80%+ | `CRITICAL` | Red |
+| Percentage | Status          | Color  |
+| ---------- | --------------- | ------ |
+| 0-40%      | `NORMAL`        | Green  |
+| 40-60%     | `ELEVATED`      | Yellow |
+| 60-80%     | `DELEGATE_MODE` | Orange |
+| 80%+       | `CRITICAL`      | Red    |
 
 ---
 
@@ -88,6 +89,8 @@ estimated_percentage = (estimated_tokens / 200000) x 100  # Assuming 200K contex
 ---
 
 ## Recommendations by Status
+
+> Every "Task()-delegated subagents" recommendation below is `DELEGATE_OFFLOAD` (context-saving delegation, no bias-protection requirement — degrades to running inline on harnesses without a delegation mechanism) — see `framework/_shared/harness-capabilities.md`.
 
 ### NORMAL (0-40%)
 
@@ -132,7 +135,7 @@ Status: DELEGATE_MODE - Mandatory subagent delegation
 ```
 Recommendations:
   1. IMMEDIATE: /clear recommended — specs contain all decisions, start fresh
-  2. If /clear not possible: Run genai-compact-state.sh to compress state
+  2. If /clear not possible: manually summarize sdd/wip/[feature] into a short state note
   3. Complete current task then optimize context
   4. Alternative: Start new session with state file
 
@@ -142,21 +145,14 @@ To clear and restart:
   /clear then resume with /sdd.build (specs are source of truth)
 
 To compact instead:
-  bash ~/.development-agents/tools/genai/genai-compact-state.sh sdd/wip/[feature] --level MINIMAL
+  Manually write a MINIMAL-level state note for sdd/wip/[feature] — a short summary of current phase, key decisions made, and remaining tasks — then continue in the same or a new session using that note as context instead of the full history.
 ```
 
 ---
 
-## Delegation & Compaction References
+## Delegation & Compaction Guidance
 
-Based on the assessed status, load the relevant reference:
-
-| Status | Action |
-|--------|--------|
-| NORMAL / ELEVATED | No reference needed — use inline recommendations above |
-| DELEGATE_MODE | Read `references/delegation-rules.md` for mandatory delegation rules |
-| CRITICAL | Read `references/compaction-guide.md` for compression level selection |
-| Phase transition | Read `references/compaction-guide.md` for auto-compact triggers |
+Delegation rules and compaction/compression-level guidance for each status (NORMAL/ELEVATED/DELEGATE_MODE/CRITICAL) are the inline "Recommendations" lists under each status section above — nothing further to load.
 
 ---
 
@@ -164,15 +160,15 @@ Based on the assessed status, load the relevant reference:
 
 Operations that consume significant context:
 
-| Operation | Est. Tokens | Delegation |
-|-----------|-------------|------------|
-| PROJECT.md wizard | ~15,000 | sdd-project-wizard |
-| Full MCP SDK docs | ~3,000 |  |
-| MCP API specs | ~5,000 |  |
-| Code review (full) | ~2,000 | sdd-validator-runner |
-| System design | ~5,000 | sdd-system-designer |
-| Large file (500+ lines) | ~10,000 | Explore agent |
-| Multiple file search | ~3,000 | Explore agent |
+| Operation               | Est. Tokens | Delegation           |
+| ----------------------- | ----------- | -------------------- |
+| PROJECT.md wizard       | ~15,000     | sdd-project-wizard   |
+| Full MCP SDK docs       | ~3,000      |                      |
+| MCP API specs           | ~5,000      |                      |
+| Code review (full)      | ~2,000      | sdd-validator-runner |
+| System design           | ~5,000      | sdd-system-designer  |
+| Large file (500+ lines) | ~10,000     | Explore agent        |
+| Multiple file search    | ~3,000      | Explore agent        |
 
 ---
 
@@ -200,13 +196,13 @@ Operations that consume significant context:
 
 The following commands should check context:
 
-| Command | When to Check | Threshold for Warning |
-|---------|---------------|----------------------|
-| `/sdd.start` | Before PROJECT.md wizard | 30% |
-| `/sdd.spec technical` | Before MCP queries | 40% |
-| `/sdd.plan` | Before task generation | 50% |
-| `/sdd.build` | Before implementation | 40% |
-| `/sdd.finish` | Before final validation | 60% |
+| Command               | When to Check            | Threshold for Warning |
+| --------------------- | ------------------------ | --------------------- |
+| `/sdd.start`          | Before PROJECT.md wizard | 30%                   |
+| `/sdd.spec technical` | Before MCP queries       | 40%                   |
+| `/sdd.plan`           | Before task generation   | 50%                   |
+| `/sdd.build`          | Before implementation    | 40%                   |
+| `/sdd.finish`         | Before final validation  | 60%                   |
 
 ### Example Integration
 
@@ -266,15 +262,15 @@ Natural language phrases that should invoke this skill:
 
 ## Related Components
 
-- **genai-compact-state.sh**: Compresses context when CRITICAL
-- **CONTEXT_STEWARD.md**: Full system documentation
+- **Manual state summarization**: When CRITICAL, summarize `sdd/wip/[feature]` into a short state note (current phase, key decisions, remaining tasks) — the only compaction path in this pack
 - **Context Budget Protocol**: Monitor token usage and trigger compaction when needed
 
 ---
 
 ## Version History
 
-- **v1.4.0** (2026-03-03): Refactored — extracted delegation rules and compaction guide to `references/` for lazy-loading
+- **v1.4.1** (2026-08-12): Removed dangling `references/delegation-rules.md`/`references/compaction-guide.md` pointers — that extraction never shipped; delegation/compaction guidance lives inline under "Recommendations" per status
+- **v1.4.0** (2026-03-03): Added compression level selection (MINIMAL/STANDARD/FULL) and phase-transition auto-compact recommendations
 - **v1.3.0** (2026-01-21): Added auto-compact recommendations for phase transitions
 - **v1.2.0** (2026-01-21): Added compression level selection (MINIMAL/STANDARD/FULL)
 - **v1.1.0** (2026-01-19): Added MCP delegation rules

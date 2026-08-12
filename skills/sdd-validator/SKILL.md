@@ -7,6 +7,8 @@ description: Build and compliance validator for SDD Kit. This is a SKILL (invoke
 
 > **SKILL**: Run mechanical validation tasks - build, tests, coverage, code compliance. Invoke with `Skill("sdd-validator")`. Do NOT confuse with the `sdd-validator-runner` subagent.
 >
+> `Skill(...)` is this pack's `INVOKE_PROCEDURE` capability — see `framework/_shared/harness-capabilities.md` for how it translates on non-Claude-Code harnesses.
+>
 > **Process integrity** (approved tests immutable, phase order, anti-shortcut) is owned by `sdd-validator-runner` Check 6 — see `framework/HARD_GATES.md`. Prefer delegating Process Compliance to that agent rather than re-implementing it here.
 
 ---
@@ -25,25 +27,25 @@ description: Build and compliance validator for SDD Kit. This is a SKILL (invoke
 
 ```bash
 # Use detect-stack.sh — mobile detection runs before language detection
-stack_result=$(bash ~/.development-agents/tools/detection/detect-stack.sh . --json 2>/dev/null)
+stack_result=$(bash development-agents/framework/tools/detect-stack.sh . --json 2>/dev/null)
 platform=$(echo "$stack_result" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
 ```
 
 **Mobile projects (`platform = android | ios`) skip code compliance entirely:**
 
-| Check | Android | iOS | Backend/Web |
-|-------|---------|-----|-------------|
-| code compliance (Dockerfile, /ping) | ❌ Skip | ❌ Skip | ✅ Run |
-| CI Pipeline | ❌ Skip | ❌ Skip | ✅ Run |
-| Mobile build validation | ✅ Run | ✅ Run | ❌ Skip |
-| design system/mobile SDK compliance | ✅ Run | ✅ Run | ❌ Skip |
+| Check                               | Android | iOS     | Backend/Web |
+| ----------------------------------- | ------- | ------- | ----------- |
+| code compliance (Dockerfile, /ping) | ❌ Skip | ❌ Skip | ✅ Run      |
+| CI Pipeline                         | ❌ Skip | ❌ Skip | ✅ Run      |
+| Mobile build validation             | ✅ Run  | ✅ Run  | ❌ Skip     |
+| design system/mobile SDK compliance | ✅ Run  | ✅ Run  | ❌ Skip     |
 
 **Mobile build commands:**
 
-| Platform | Build | Test |
-|----------|-------|------|
-| Android | `./gradlew assembleDebug` | `./gradlew test` |
-| iOS | `xcodebuild build -workspace *.xcworkspace -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16'` | `xcodebuild test -workspace *.xcworkspace -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16'` |
+| Platform | Build                                                                                                             | Test                                                                                                             |
+| -------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Android  | `./gradlew assembleDebug`                                                                                         | `./gradlew test`                                                                                                 |
+| iOS      | `xcodebuild build -workspace *.xcworkspace -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16'` | `xcodebuild test -workspace *.xcworkspace -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16'` |
 
 **Mobile compliance** (only when `platform.type` is android/ios **and** PROJECT.md lists banned/required libraries):
 
@@ -80,14 +82,14 @@ platform=$(echo "$stack_result" | grep -o '"platform":"[^"]*"' | cut -d'"' -f4)
 
 Detect stack by checking for:
 
-| File | Technology | Build | Test |
-|------|------------|-------|------|
-| `pom.xml` | Java (Maven) | `mvn compile` | `mvn test` |
-| `build.gradle` | Java (Gradle) | `./gradlew build` | `./gradlew test` |
-| `package.json` | Node.js | `npm run build` | `npm test` |
-| `go.mod` | Go | `go build ./...` | `go test -race ./...` |
-| `pyproject.toml` | Python | `pip install -e .` | `pytest` |
-| `Cargo.toml` | Rust | `cargo build` | `cargo test` |
+| File             | Technology    | Build              | Test                  |
+| ---------------- | ------------- | ------------------ | --------------------- |
+| `pom.xml`        | Java (Maven)  | `mvn compile`      | `mvn test`            |
+| `build.gradle`   | Java (Gradle) | `./gradlew build`  | `./gradlew test`      |
+| `package.json`   | Node.js       | `npm run build`    | `npm test`            |
+| `go.mod`         | Go            | `go build ./...`   | `go test -race ./...` |
+| `pyproject.toml` | Python        | `pip install -e .` | `pytest`              |
+| `Cargo.toml`     | Rust          | `cargo build`      | `cargo test`          |
 
 ### CI Pipeline Validation
 
@@ -100,14 +102,15 @@ See `build.md` Step 6D for invocation details.
 
 ### 4. Platform Compliance Checks (project-dependent)
 
-| Check | How to Verify | Expected |
-|-------|---------------|----------|
-| Dockerfile(s) | Match existing repo / PROJECT.md | Follow project conventions |
-| Health endpoint | If required by app type | Implemented |
-| Secrets | No hardcoded secrets | Env / secret manager from PROJECT.md |
-| Config | Platform/config files if the project uses them | Present when required |
+| Check           | How to Verify                                  | Expected                             |
+| --------------- | ---------------------------------------------- | ------------------------------------ |
+| Dockerfile(s)   | Match existing repo / PROJECT.md               | Follow project conventions           |
+| Health endpoint | If required by app type                        | Implemented                          |
+| Secrets         | No hardcoded secrets                           | Env / secret manager from PROJECT.md |
+| Config          | Platform/config files if the project uses them | Present when required                |
 
 **Dockerfile Validation**:
+
 ```bash
 # Prefer patterns already used in the repo; do not assume a vendor registry.
 grep -E "^FROM\s+" Dockerfile Dockerfile.runtime 2>/dev/null || echo "CHECK: Dockerfiles per PROJECT.md"
@@ -162,57 +165,62 @@ Do not hard-require a corporate Nexus/BOM version unless PROJECT.md says so.
 
 ### Race Detection is MANDATORY
 
-| Requirement | Command | Rationale |
-|-------------|---------|-----------|
-| Tests | `go test -race ./...` | Detects data races that cause flaky tests and production bugs |
-| Coverage | `go test -race -cover ./...` | Race detection during coverage analysis |
+| Requirement | Command                      | Rationale                                                     |
+| ----------- | ---------------------------- | ------------------------------------------------------------- |
+| Tests       | `go test -race ./...`        | Detects data races that cause flaky tests and production bugs |
+| Coverage    | `go test -race -cover ./...` | Race detection during coverage analysis                       |
 
 **Why?** CI/CD pipelines run with `-race` flag. Tests that pass locally without `-race` may fail in CI/CD when races are detected.
 
 ### Coverage Must Be Measurable
 
 Coverage validation is **BLOCKING** (not a warning):
+
 - If coverage cannot be determined, validation **FAILS**
 - Coverage must be >= 80% threshold
 - Use `-coverprofile=coverage.out` for reliable measurement
 
 ### Common Go Concurrency Issues Caught
 
-| Issue | Symptom | Fix |
-|-------|---------|-----|
-| Map write race | `concurrent map writes` | Use `sync.Map` or `sync.Mutex` |
-| Shared variable | `DATA RACE` on variable | Use channels or mutexes |
-| Goroutine leak | Memory growth over time | Use `context.Context` for cancellation |
+| Issue           | Symptom                 | Fix                                    |
+| --------------- | ----------------------- | -------------------------------------- |
+| Map write race  | `concurrent map writes` | Use `sync.Map` or `sync.Mutex`         |
+| Shared variable | `DATA RACE` on variable | Use channels or mutexes                |
+| Goroutine leak  | Memory growth over time | Use `context.Context` for cancellation |
 
 ---
 
 ## Layer Execution Guide
 
+> **Disambiguation**: this is the "Task Execution Layers" system (System A). The pack has 4
+> unrelated "Layer N" systems total — see `framework/_shared/layers-and-gates.md` if you need to
+> tell them apart.
+
 Tasks execute in layers. This validator runs at specific layers:
 
 ### Layer 1: Local (Code Implementation)
 
-| Step | Validator Role |
-|------|----------------|
-| Write code | None (implementation) |
+| Step        | Validator Role           |
+| ----------- | ------------------------ |
+| Write code  | None (implementation)    |
 | Build check | **Run build validation** |
-| Unit tests | **Run test execution** |
+| Unit tests  | **Run test execution**   |
 
 ### Layer 2: Platform
 
-| Step | Validator Role |
-|------|----------------|
+| Step               | Validator Role                               |
+| ------------------ | -------------------------------------------- |
 | Runtime compliance | **Run project-configured compliance checks** |
-| CI Pipeline | **Run the project's configured CI pipeline** |
-| Dependencies | **Run dependency validation** |
+| CI Pipeline        | **Run the project's configured CI pipeline** |
+| Dependencies       | **Run dependency validation**                |
 
 ### Layer 3: Quality Gates
 
-| Step | Validator Role | Subagent |
-|------|----------------|----------|
-| Performance | Report only | `sdd-performance-expert` |
-| Security | Report only | `sdd-code-reviewer` |
-| Code Review | Report only | `sdd-code-reviewer` |
+| Step        | Validator Role | Subagent                 |
+| ----------- | -------------- | ------------------------ |
+| Performance | Report only    | `sdd-performance-expert` |
+| Security    | Report only    | `sdd-code-reviewer`      |
+| Code Review | Report only    | `sdd-code-reviewer`      |
 
 **Note**: Layer 3 uses specialized subagents. This validator only reports if they were invoked.
 
@@ -234,12 +242,12 @@ Per-Task Completion:
 
 ### Quality Gate Status
 
-| Gate | Pass Criteria | Blocking? |
-|------|---------------|-----------|
-| CI Pipeline | Build, tests, coverage (>=80%), deps, SCA pass | YES |
-| Performance | No critical findings | YES |
-| Security | No HIGH/CRITICAL vulns | YES |
-| Code Review | No blocking comments | NO |
+| Gate        | Pass Criteria                                  | Blocking? |
+| ----------- | ---------------------------------------------- | --------- |
+| CI Pipeline | Build, tests, coverage (>=80%), deps, SCA pass | YES       |
+| Performance | No critical findings                           | YES       |
+| Security    | No HIGH/CRITICAL vulns                         | YES       |
+| Code Review | No blocking comments                           | NO        |
 
 ### Reporting Quality Gates
 
@@ -265,11 +273,11 @@ After all gates run, report:
 
 ## Validation Timing
 
-| Command | When to Validate |
-|---------|------------------|
+| Command               | When to Validate               |
+| --------------------- | ------------------------------ |
 | `/sdd.build` per-task | After each task implementation |
-| `/sdd.build` end | Full validation suite |
-| `/sdd.finish` | Final compliance verification |
+| `/sdd.build` end      | Full validation suite          |
+| `/sdd.finish`         | Final compliance verification  |
 
 ---
 
@@ -277,14 +285,15 @@ After all gates run, report:
 
 This validator coordinates with specialized subagents:
 
-| Subagent | Purpose | Invocation |
-|----------|---------|------------|
-| `sdd-validator-runner` | Isolated validation (no bias) | Heavy validation |
-| `sdd-performance-expert` | N+1 queries, memory leaks | Layer 3 |
-| `sdd-code-reviewer` | OWASP, injections | Layer 3 |
-| `sdd-code-reviewer` | Code quality | Layer 3 |
+| Subagent                 | Purpose                       | Invocation       |
+| ------------------------ | ----------------------------- | ---------------- |
+| `sdd-validator-runner`   | Isolated validation (no bias) | Heavy validation |
+| `sdd-performance-expert` | N+1 queries, memory leaks     | Layer 3          |
+| `sdd-code-reviewer`      | OWASP, injections             | Layer 3          |
+| `sdd-code-reviewer`      | Code quality                  | Layer 3          |
 
 **When to delegate to sdd-validator-runner**:
+
 - Context > 60% (DELEGATE_MODE)
 - Need unbiased validation (didn't write the code)
 - Full validation suite
@@ -294,32 +303,52 @@ This validator coordinates with specialized subagents:
 ## Relationship with sdd-validator-runner Agent
 
 > **Architecture Pattern**: Skill = Coordinator/Documentation, Agent = Executor
+>
+> This section is the **canonical, complete** explanation of the skill/agent split. `agents/sdd-validator-runner.md` carries a short pointer back to this section instead of duplicating it — if you're looking for the agent-side details, they're all here.
 
 ```
 sdd-validator (SKILL) = Coordinator/Documentation
   └── Delegates to sdd-validator-runner (AGENT) = Executor
 ```
 
+### Role Separation
+
+| Component                        | Role                                        | Token Impact                           |
+| -------------------------------- | ------------------------------------------- | -------------------------------------- |
+| **sdd-validator** (skill)        | Documents validation rules, quick reference | Loaded into main context               |
+| **sdd-validator-runner** (agent) | Executes validation in isolation            | Isolated context, returns verdict only |
+
 ### When to Use Which
 
-| Use Case | Use This | Why |
-|----------|----------|-----|
-| Quick inline build check | **sdd-validator** (skill) | Low context overhead, simple validation |
-| Context > 60% | **sdd-validator-runner** (agent) | Isolated context preserves main context |
-| Unbiased validation needed | **sdd-validator-runner** (agent) | No knowledge of implementation decisions |
-| Full validation suite | **sdd-validator-runner** (agent) | Consolidates all checks in isolated context |
-| Layer 3 quality gates | **sdd-validator-runner** (agent) | Performance + security + code-review in one pass |
-| Documentation lookup | **sdd-validator** (skill) | Reference for validation rules |
+| Use Case                   | Use This                         | Why                                              |
+| -------------------------- | -------------------------------- | ------------------------------------------------ |
+| Quick inline build check   | **sdd-validator** (skill)        | Low context overhead, simple validation          |
+| Context > 60%              | **sdd-validator-runner** (agent) | Isolated context preserves main context          |
+| Unbiased validation needed | **sdd-validator-runner** (agent) | No knowledge of implementation decisions         |
+| Full validation suite      | **sdd-validator-runner** (agent) | Consolidates all checks in isolated context      |
+| Layer 3 quality gates      | **sdd-validator-runner** (agent) | Performance + security + code-review in one pass |
+| Documentation lookup       | **sdd-validator** (skill)        | Reference for validation rules                   |
+
+### When the Agent Is Invoked
+
+`sdd-validator-runner` is invoked (instead of running this skill inline) when:
+
+1. **Context > 60%**: Main agent delegates to preserve context
+2. **Full validation suite**: All checks including quality gates
+3. **Unbiased validation**: No implementation context to influence judgment
+4. **Layer 3 quality gates**: Performance + security + code-review consolidated
 
 ### Invocation Patterns
 
-**From /sdd.build - Simple Validation**:
+**From /sdd.build - Simple Validation** — `INVOKE_PROCEDURE` (see `framework/_shared/harness-capabilities.md`):
+
 ```python
 # Use skill for quick inline check
 Skill("sdd-validator")  # ~500 tokens in main context
 ```
 
-**From /sdd.build - Full Validation with Quality Gates**:
+**From /sdd.build - Full Validation with Quality Gates** — this is `DELEGATE_ISOLATED` (context-scrubbed delegation, not just an offload — see `framework/_shared/harness-capabilities.md`):
+
 ```python
 # Delegate to agent for isolated context
 Task(
@@ -333,12 +362,22 @@ Task(
 # Returns: ~300 token verdict JSON, saves ~5700 tokens vs inline skills
 ```
 
+### How the Agent References Skill Patterns
+
+`sdd-validator-runner` reads these skill files directly for pattern definitions rather than duplicating them:
+
+```bash
+# Read patterns from skills when needed (pack root: skills/, not framework/skills/)
+cat development-agents/skills/sdd-performance-expert/SKILL.md
+cat development-agents/skills/sdd-code-reviewer/SKILL.md
+```
+
 ### Token Savings
 
-| Approach | Token Cost | When |
-|----------|------------|------|
-| Skill inline | ~500-2000 tokens | Quick checks |
-| Agent (build+tests) | ~300 token result | Standard validation |
+| Approach                | Token Cost        | When                                  |
+| ----------------------- | ----------------- | ------------------------------------- |
+| Skill inline            | ~500-2000 tokens  | Quick checks                          |
+| Agent (build+tests)     | ~300 token result | Standard validation                   |
 | Agent (+ quality gates) | ~300 token result | Saves ~5700 tokens vs 3 inline skills |
 
 **Recommendation**: For Layer 3 quality gates, ALWAYS delegate to `sdd-validator-runner` with quality gate prompts to preserve main context

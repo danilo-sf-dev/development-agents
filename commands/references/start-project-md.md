@@ -5,37 +5,22 @@
 ### Step 6: Load PROJECT.md
 
 **If `sdd/PROJECT.md` exists**:
-  → Load defaults (e2e_enabled, atlassian_mcp_enabled, etc.)
-  → **Validate PROJECT.md** (GenAI Offloaded):
+→ Load defaults (e2e_enabled, atlassian_mcp_enabled, etc.)
+→ **Validate PROJECT.md** (deterministic):
 
 ```bash
-# Validate PROJECT.md via GenAI Gateway
-validation_result=$(bash development-agents/framework/tools/genai/genai-validate-project.sh .)
-genai_exit=$?
-
-if [ "$genai_exit" -eq 0 ]; then
-    status=$(echo "$validation_result" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
-    if [ "$status" != "PASSED" ]; then
-        echo "PROJECT.md validation: $status"
-        echo "$validation_result" | grep -o '"recommendations":\[[^]]*\]'
-    fi
-elif [ "$genai_exit" -eq 2 ]; then
-    # Fallback to deterministic validation
-    validation_result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
-    is_valid=$(echo "$validation_result" | grep -o '"valid":[^,}]*' | cut -d: -f2)
-    if [ "$is_valid" != "true" ]; then
-        echo "PROJECT.md validation warnings:"
-        echo "$validation_result" | grep -o '"warnings":\[[^]]*\]'
-    fi
+# Validate PROJECT.md
+validation_result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
+is_valid=$(echo "$validation_result" | grep -o '"valid":[^,}]*' | cut -d: -f2)
+if [ "$is_valid" != "true" ]; then
+    echo "PROJECT.md validation warnings:"
+    echo "$validation_result" | grep -o '"warnings":\[[^]]*\]'
 fi
 # Continue regardless - not blocking for start
 ```
 
 **If missing**:
-  → Use AskUserQuestion:
-    1. Create PROJECT.md now (delegate to `sdd-project-wizard` subagent)
-    2. Continue with framework defaults
-    3. What is PROJECT.md?
+→ Use AskUserQuestion: 1. Create PROJECT.md now (delegate to `sdd-project-wizard` subagent) 2. Continue with framework defaults 3. What is PROJECT.md?
 
 #### Step 6.1: Doctor Tip (Non-blocking, ⭐ v1.7.3)
 
@@ -62,5 +47,6 @@ fi
 ```
 
 > **Rules**:
+>
 > - This step does NOT pause, does NOT use AskUserQuestion, and does NOT modify anything.
 > - If the scanner fails or is missing, silently skip (the empty JSON fallback ensures all triggers stay false).

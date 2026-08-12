@@ -18,23 +18,23 @@ argument-hint: "<action> [args]"
 
 Parse the user's input and route to the correct reference file.
 
-| Input | Action |
-|-------|--------|
-| Any `/sdd.hub` action | Read the matching section in `references/hub-workflows.md` and follow it |
-| `/sdd.hub` (no action) | Show help below |
+| Input                  | Action                                                                   |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Any `/sdd.hub` action  | Read the matching section in `references/hub-workflows.md` and follow it |
+| `/sdd.hub` (no action) | Show help below                                                          |
 
 ### Flag parsing
 
 When the user provides flags, parse them and pass to the reference file handler. Supported flags per sub-command:
 
-| Sub-command | Supported flags |
-|-------------|----------------|
-| `spec` | `--approve`, `--summary`, `--audio`, `--iterate "desc"` |
-| `plan` | `--approve` |
-| `build` | `--resume` |
-| `check` | `--sync` |
-| `finish` | `--force` |
-| `sync` | `--pull`, `--members name1,name2` |
+| Sub-command | Supported flags                                         |
+| ----------- | ------------------------------------------------------- |
+| `spec`      | `--approve`, `--summary`, `--audio`, `--iterate "desc"` |
+| `plan`      | `--approve`                                             |
+| `build`     | `--resume`                                              |
+| `check`     | `--sync`                                                |
+| `finish`    | `--force`                                               |
+| `sync`      | `--pull`, `--members name1,name2`                       |
 
 ---
 
@@ -81,7 +81,7 @@ Prerequisite: sdd/PROJECT.md must contain a ## Hub members table.
 
 Before executing ANY sub-command, verify this is a hub:
 
-1. Run: `Bash: bash development-agents/framework/tools/detection/detect-stack.sh --level`
+1. Run: `Bash: bash development-agents/framework/tools/detect-stack.sh --level`
 2. If result is NOT `hub`, stop and show:
    > "This directory is not a hub. A hub requires `sdd/PROJECT.md` with a `## Hub members` table.
    > For single-app features, use `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` (see `framework/PIPELINE.md`)."
@@ -93,16 +93,17 @@ Before executing ANY sub-command, verify this is a hub:
 All sub-commands invoke hooks via `sdd.skill` at defined trigger points.
 Hub phases are:
 
-| Phase | Triggers |
-|-------|----------|
-| `hub-start` | `before-start` |
-| `hub-spec-functional` | `before-start`, `before-approval` |
-| `hub-spec-technical` | `before-start`, `before-approval` |
-| `hub-plan` | `before-start`, `before-approval` |
-| `hub-build` | `before-start`, `after-implementation` |
-| `hub-finish` | `before-start`, `after-implementation` |
+| Phase                 | Triggers                               |
+| --------------------- | -------------------------------------- |
+| `hub-start`           | `before-start`                         |
+| `hub-spec-functional` | `before-start`, `before-approval`      |
+| `hub-spec-technical`  | `before-start`, `before-approval`      |
+| `hub-plan`            | `before-start`, `before-approval`      |
+| `hub-build`           | `before-start`, `after-implementation` |
+| `hub-finish`          | `before-start`, `after-implementation` |
 
 To invoke hooks, check if any skills are connected to the phase:
+
 ```bash
 # Read skill-hooks.json (repo or user layer)
 # If a hook exists for the phase+trigger, invoke that skill

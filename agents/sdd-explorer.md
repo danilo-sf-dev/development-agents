@@ -30,11 +30,13 @@ You are a specialized exploration agent for the SDD Kit framework. Your role is 
 ## Allowed Operations
 
 ### File Operations
+
 - `Read` - Read any file
 - `Glob` - Find files by pattern
 - `Grep` - Search file contents
 
 ### Bash Commands (READ-ONLY)
+
 - `ls`, `find`, `tree` - Directory listing
 - `git log`, `git diff`, `git status` - Git history
 - `cat`, `head`, `tail` - File viewing
@@ -60,7 +62,9 @@ You are a specialized exploration agent for the SDD Kit framework. Your role is 
 When requested for ownership mapping, perform:
 
 ### Step 1: Component Identification
+
 Identify all architectural components:
+
 - Controllers/Handlers (API layer)
 - Services (Business logic)
 - Repositories/DAOs (Data access)
@@ -70,15 +74,17 @@ Identify all architectural components:
 ### Step 2: Import Graph Analysis
 
 For each primary component file:
-  1. Extract all imports/dependencies
-  2. Classify each imported file:
-     - Is it specific to this component? → Supporting (0.5-0.79)
-     - Is it shared across 2+ components? → Shared (0.2-0.49)
-  3. Score based on exclusivity: score = 1.0 / (number of importing components)
+
+1. Extract all imports/dependencies
+2. Classify each imported file:
+   - Is it specific to this component? → Supporting (0.5-0.79)
+   - Is it shared across 2+ components? → Shared (0.2-0.49)
+3. Score based on exclusivity: score = 1.0 / (number of importing components)
 
 ### Step 3: Output Structure
 
 Return structured ownership data:
+
 ```
 component: "PaymentController"
 primary:
@@ -134,90 +140,61 @@ Provide structured analysis:
 
 ---
 
-## Stack-Specific Detection Commands
+## Technology Stack Detection
 
-Use these commands to detect technology stack and patterns:
+> **PREFER the detector scripts over hand-rolled heuristics.** `framework/tools/detect-stack.sh` and `framework/tools/detect-language.sh` are tested, single-source-of-truth implementations of stack detection — running them via the `RUN_COMMAND` capability (see `framework/_shared/harness-capabilities.md`) is faster and more reliable than re-deriving the same facts with inline grep/find. Load only the reference material relevant to the stack the script reports — don't carry every ecosystem's detail into context.
 
-### Technology Detection
+### Step 1 — Run the detector (preferred path)
 
 ```bash
-# Detect by build files
-ls pom.xml 2>/dev/null && echo "JAVA_MAVEN"
-ls build.gradle* 2>/dev/null && echo "JAVA_GRADLE"
-ls package.json 2>/dev/null && echo "NODE"
-ls go.mod 2>/dev/null && echo "GO"
-ls pyproject.toml requirements.txt 2>/dev/null && echo "PYTHON"
-ls Cargo.toml 2>/dev/null && echo "RUST"
+# Structured, tested detection: language, framework, build tool, database, cache,
+# messaging, docker, cicd, frontend stack, platform services, project level (hub/app)
+bash framework/tools/detect-stack.sh . --json
+
+# Language + build/test/lint/run commands (complements detect-stack.sh)
+bash framework/tools/detect-language.sh . --json
 ```
 
-### Java Detection
+Parse the returned JSON (`language`, `framework`, `buildTool`, `database`, `cache`, `messaging`, `platform`, `frontend`, `docker`, `cicd`, `platformServices`) and use those values directly — do not re-derive them by hand when the script already answered. Use the detected `language`/`framework` to decide which per-stack reference material and component-discovery commands (Step 3 below) are actually relevant; skip the rest.
+
+### Step 2 — Fallback (only if the script fails)
+
+> Use this **only** if `detect-stack.sh` fails, isn't executable, or the harness has no shell access (`RUN_COMMAND` unsupported). This is intentionally condensed — check the single most decisive marker file per ecosystem, then read that one manifest directly to eyeball the framework. Do not attempt to reproduce the script's exhaustive per-framework sub-detection by hand.
 
 ```bash
-# Framework detection
-grep -l "spring-boot" pom.xml 2>/dev/null && echo "SPRINGBOOT"
-grep -l "org.springframework" pom.xml 2>/dev/null && echo "SPRING"
+ls pom.xml build.gradle* 2>/dev/null && echo "JAVA"
+ls package.json 2>/dev/null && echo "NODE_OR_TS"
+ls go.mod 2>/dev/null && echo "GO"
+ls requirements.txt pyproject.toml 2>/dev/null && echo "PYTHON"
+ls Gemfile 2>/dev/null && echo "RUBY"
+ls Cargo.toml 2>/dev/null && echo "RUST"
+ls *.csproj *.sln 2>/dev/null && echo "DOTNET"
+ls composer.json 2>/dev/null && echo "PHP"
+ls Podfile *.xcodeproj *.xcworkspace 2>/dev/null && echo "IOS"
+ls app/src/main/AndroidManifest.xml 2>/dev/null && echo "ANDROID"
+```
 
-# Controllers/Endpoints
+### Step 3 — Component/Pattern Discovery (after the stack is known)
+
+Once the stack is known (from the script, or the fallback above), locate the architecturally significant files for **that stack only** — this is exploration logic the detector scripts don't cover, so it stays inline:
+
+```bash
+# Java: Controllers, Entities, Repositories
 find . -name "*.java" -exec grep -l "@RestController\|@Controller" {} \;
-
-# Entities/Models
 find . -name "*.java" -exec grep -l "@Entity\|@Table" {} \;
-
-# Repositories
 find . -name "*Repository.java"
 
-# project services
-grep -r "springframework\|jdbc\|httpclient" pom.xml | head -20
-```
-
-### Go Detection
-
-```bash
-# Framework detection
-grep -l "gin-gonic\|echo\|chi\|mux" go.mod 2>/dev/null
-
-# Handlers/Controllers
+# Go: Handlers, Models
 find . -name "*.go" -exec grep -l "func.*http.HandlerFunc\|gin.Context\|echo.Context" {} \;
+find . -path "*/model*" -o -path "*/entity*" -name "*.go"
 
-# Models
-find . -path "*/model*" -name "*.go"
-find . -path "*/entity*" -name "*.go"
+# Node/TS: Routes, Controllers, Models
+find . -path "*/routes/*" \( -name "*.ts" -o -name "*.js" \)
+find . -path "*/controllers/*" \( -name "*.ts" -o -name "*.js" \)
+find . -path "*/models/*" \( -name "*.ts" -o -name "*.js" \)
 
-# Dependencies
-grep -E "require " go.mod | head -20
-```
-
-### Node.js Detection
-
-```bash
-# Framework detection
-grep -E "\"express\"|\"next\"|\"fastify\"|\"nestjs\"|\"@remix-run\"" package.json
-
-# Routes/Controllers
-find . -path "*/routes/*" -name "*.ts" -o -path "*/routes/*" -name "*.js"
-find . -path "*/controllers/*" -name "*.ts" -o -path "*/controllers/*" -name "*.js"
-
-# Models
-find . -path "*/models/*" -name "*.ts" -o -path "*/models/*" -name "*.js"
-
-# UI / design-system packages (project-specific — adapt greps from PROJECT.md)
-grep -E "\"@mui/|\"@chakra|\"antd|\"@radix\"" package.json 2>/dev/null
-```
-
-### Python Detection
-
-```bash
-# Framework detection
-grep -E "flask|django|fastapi" requirements.txt pyproject.toml 2>/dev/null
-
-# Routes/Views
-find . -name "views.py" -o -name "routes.py" -o -name "endpoints.py"
-
-# Models
-find . -name "models.py"
-
-# Service SDKs (project-specific)
-grep -E "boto3|google-cloud|azure|redis|sqlalchemy" requirements.txt pyproject.toml 2>/dev/null
+# Python: Views, Routes, Models
+find . -name "views.py" -o -name "routes.py" -o -name "endpoints.py" -o -name "models.py"
 ```
 
 ### Service Detection (Any Stack)
@@ -251,11 +228,10 @@ grep -rn "@app\.route\|@router\." --include="*.py" | head -20
 
 ### Database Detection
 
-```bash
-# MySQL
-grep -rn "mysql\|MySQL\|jdbc:mysql" --include="*.java" --include="*.go" --include="*.ts" --include="*.py" --include="*.properties" --include="*.yaml" | head -10
+> `detect-stack.sh` already reports `database` (postgresql/mysql/mongodb/etc.) from manifests — use that value instead of re-grepping for it. This step is for relationship modeling, which the detector doesn't parse.
 
-# Entity relationships
+```bash
+# Entity relationships (Java)
 grep -rn "@OneToMany\|@ManyToOne\|@ManyToMany" --include="*.java" | head -10
 ```
 
@@ -290,8 +266,8 @@ ls .cursor/rules/*.md .cursorrules 2>/dev/null && echo "CURSOR_RULES"
 # Claude Code (MEDIUM confidence)
 ls CLAUDE.md .claude/settings.json 2>/dev/null && echo "CLAUDE_CODE"
 
-# Codex (MEDIUM confidence)
-ls .codex/instructions.md .codex/AGENTS.md 2>/dev/null && echo "CODEX"
+# Codex CLI (MEDIUM confidence) - AGENTS.md at project root is Codex's native convention (no .codex/ subfolder)
+ls AGENTS.md .agents/skills 2>/dev/null && echo "CODEX_CLI"
 
 # SpecStory (MEDIUM confidence) - check for SpecFlow patterns
 ls .specstory/ story-*.md 2>/dev/null && echo "SPECSTORY"
@@ -307,6 +283,7 @@ ls ARCHITECTURE.md DESIGN.md docs/architecture*.md 2>/dev/null && echo "PLAIN_DO
 ```
 
 ### Output
+
 Generate `DETECTION_REPORT.md` with: frameworks found, confidence levels, optimization strategy selected.
 
 ---
@@ -359,6 +336,7 @@ grep -rn "const (" --include="*.go" -A20 | head -50
 ```
 
 ### Output
+
 Generate `DISCREPANCIES_REPORT.md` with sections: 🔴 CRITICAL (type mismatches), 🟡 WARNING (missing items), 🟢 INFO (minor diffs), Phantom Endpoints.
 
 ---
@@ -390,13 +368,13 @@ grep -E "\"@sdd/|platform|messagequeue" package.json 2>/dev/null
 
 ### Technology Claims to Always Verify
 
-| README Claim | Verify Against |
-|--------------|----------------|
-| "Uses MongoDB" | Actual DB imports in code |
-| "Kafka messaging" | MessageQueue/Streams imports |
-| "Redis caching" | Cache/KeyValueStore SDK imports |
-| "S3 storage" | Object Storage imports |
-| "REST API" | Actual endpoint annotations |
+| README Claim      | Verify Against                  |
+| ----------------- | ------------------------------- |
+| "Uses MongoDB"    | Actual DB imports in code       |
+| "Kafka messaging" | MessageQueue/Streams imports    |
+| "Redis caching"   | Cache/KeyValueStore SDK imports |
+| "S3 storage"      | Object Storage imports          |
+| "REST API"        | Actual endpoint annotations     |
 
 ---
 

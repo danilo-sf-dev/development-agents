@@ -12,6 +12,7 @@ argument-hint: "[task-id|--next|--all]"
 **Description**: Implement feature tasks following approved execution strategy
 
 **Usage**:
+
 - `/sdd.build` → Implement all tasks (behavior based on mode)
 - `/sdd.build task TASK-XXX` → Implement specific task
 - `/sdd.build phase N` → Implement specific phase
@@ -27,21 +28,20 @@ argument-hint: "[task-id|--next|--all]"
 
 **Syntax**: `/sdd.build [target] [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Implement all tasks based on mode |
-| `task TASK-XXX` | Implement specific task only |
-| `phase N` | Implement specific phase only |
-| `--layer N` | Implement up to layer N |
-| `--resume` | Resume interrupted session |
-| `--next` | Auto-continue with next pending task |
+| Flag            | Description                          |
+| --------------- | ------------------------------------ |
+| (none)          | Implement all tasks based on mode    |
+| `task TASK-XXX` | Implement specific task only         |
+| `phase N`       | Implement specific phase only        |
+| `--layer N`     | Implement up to layer N              |
+| `--resume`      | Resume interrupted session           |
+| `--next`        | Auto-continue with next pending task |
 
 **See also**: `/sdd.help build`. Prerequisites: tasks + tests approved (`stages.tests` approved).
 
 **Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:build`.
 
 ---
-
 
 ## Plan Mode Integration (lazy-loaded)
 
@@ -65,6 +65,7 @@ Before adding a library: run project dependency-security scanner if configured i
 > **BLOCKING RULE**: See `framework/standards/boundaries.md` — B-07, B-08 and section **`/sdd.build`**.
 
 **Detection (per task)**: if any file in `tests-manifest.json` appears in the working-tree diff → STOP, AskUserQuestion (always include **Outros**). Never auto-approve in Express.
+
 > Read `references/build-anti-gaming-detection.md` for detection steps + AskUserQuestion payload.
 > AskUserQuestion shape: `references/ask-user-question-outros.md`.
 
@@ -75,17 +76,17 @@ Process Compliance failures are BLOCKING — AskUserQuestion (incl. Outros) befo
 
 ## Behavior by Mode
 
-| Mode | Behavior |
-|------|----------|
-| **Express** | Implement all, minimal pauses, auto-fix errors, auto-advance |
-| **Standard** | Report progress, pause on errors, ask user |
+| Mode         | Behavior                                                     |
+| ------------ | ------------------------------------------------------------ |
+| **Express**  | Implement all, minimal pauses, auto-fix errors, auto-advance |
+| **Standard** | Report progress, pause on errors, ask user                   |
 
 ---
 
 ## Skill Hooks (lazy-loaded)
 
 > **ONLY IF** skill-hooks.json / installed skill metadata declares `build` hooks:
-> Read `references/build-skill-hooks.md` at before-start / after-implementation / before-approval.
+> Read `references/skill-hooks.md`, phase=`build`, at before-start / after-implementation / before-approval.
 
 ## Workflow (Steps in Order)
 
@@ -97,12 +98,14 @@ Process Compliance failures are BLOCKING — AskUserQuestion (incl. Outros) befo
 
 `stages.tests` must be `approved`; `detect-phase.sh` stage must be `implementation`. Else stop → `/sdd.test --approve`.
 Detect platform; mobile → optional skills from PROJECT.md. Context >50% → consider `/clear`; >80% → `context-guardian`.
+
 > **ONLY IF** needing bash:
 > Read `references/build-phase-detect.md`.
 
 ### Step 2: Read Task Source
 
 Read tasks from `sdd/wip/[feature]/3-tasks/tasks.json`:
+
 ```bash
 jq '.tasks[] | select(.status == "pending")' tasks.json
 ```
@@ -125,12 +128,13 @@ jq '.tasks[] | select(.status == "pending")' tasks.json
 Do **not** write new unit/integration tests; make approved tests pass; never edit them (anti-gaming).
 Route via `sdd-implementer` (+ validator). Include Design Decisions from tech spec in the prompt.
 E2E only if deferred + enabled. Mobile preamble: `references/build-mobile-preamble.md` ONLY IF android/ios.
+
 > **ONLY IF** needing prompt template / routing table:
 > Read `references/build-per-task.md`.
 
 ### Step 5: Quality Gate + Persist
 
-1) Anti-gaming check 2) `sdd-validator-runner` 3) Fix until APPROVED 4) Mark task `completed` in `tasks.json` on disk (survives `/clear`).
+1. Anti-gaming check 2) `sdd-validator-runner` 3) Fix until APPROVED 4) Mark task `completed` in `tasks.json` on disk (survives `/clear`).
 
 ### Step 5b: Context Check Between Tasks (short)
 
@@ -143,6 +147,7 @@ Between tasks: if context >50% recommend `/clear` + `/sdd.build --next`; >80% in
 ### Step 6: Final Validation
 
 After all tasks: A compliance → B Layer-3 via `sdd-validator-runner` → C code patterns → D local CI (`PROJECT.md` command). Fix all failures.
+
 > **ONLY IF** needing Step 6A–6D bash/details:
 > Read `references/build-final-validation.md`.
 > Platform compliance details: `references/build-platform-compliance.md` (backend/web).
@@ -188,21 +193,21 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 
 ## Optional conditions (lazy-loaded)
 
-| Condition | Reference |
-|-----------|-----------|
-| Plan mode enabled | `references/build-plan-mode.md` |
-| Skill hooks configured | `references/build-skill-hooks.md` |
-| Phase detect bash | `references/build-phase-detect.md` |
-| Layer execution / `--layer` | `references/build-layer-execution.md` |
-| Per-task prompt/routing | `references/build-per-task.md` |
-| Anti-gaming detection UX | `references/build-anti-gaming-detection.md` |
-| Final validation A–D | `references/build-final-validation.md` |
-| Infrastructure creation | `references/build-infra-creation.md` |
-| DB migration branch | `references/database-migration.md` |
-| Mobile preamble | `references/build-mobile-preamble.md` |
-| Platform compliance (backend/web) | `references/build-platform-compliance.md` |
-| Stack command examples | `references/build-commands-by-stack.md` |
-| Next-steps UX | `references/build-next-steps.md` |
+| Condition                         | Reference                                   |
+| --------------------------------- | ------------------------------------------- |
+| Plan mode enabled                 | `references/build-plan-mode.md`             |
+| Skill hooks configured            | `references/skill-hooks.md`, phase=`build`  |
+| Phase detect bash                 | `references/build-phase-detect.md`          |
+| Layer execution / `--layer`       | `references/build-layer-execution.md`       |
+| Per-task prompt/routing           | `references/build-per-task.md`              |
+| Anti-gaming detection UX          | `references/build-anti-gaming-detection.md` |
+| Final validation A–D              | `references/build-final-validation.md`      |
+| Infrastructure creation           | `references/build-infra-creation.md`        |
+| DB migration branch               | `references/database-migration.md`          |
+| Mobile preamble                   | `references/build-mobile-preamble.md`       |
+| Platform compliance (backend/web) | `references/build-platform-compliance.md`   |
+| Stack command examples            | `references/build-commands-by-stack.md`     |
+| Next-steps UX                     | `references/build-next-steps.md`            |
 
 ## AI Agent Instructions
 

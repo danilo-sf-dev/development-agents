@@ -7,37 +7,38 @@ Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 
 ### agents/ (12)
 
-| Agent | Papel no time |
-|-------|----------------|
-| `development-agents-installer` | Instala pack em projetos (alternativa ao script) |
-| `sdd-system-designer` | Arquiteto (spec técnica) |
-| `sdd-explorer` | Descoberta read-only (brownfield) |
-| `sdd-implementer` | Developer |
-| `sdd-small-test-writer` | Test Writer (unit/integration) |
-| `sdd-large-test-writer` | Test Writer (E2E opcional) |
-| `sdd-validator-runner` | Gate automático pós-código |
-| `sdd-layer-analyzer` | Consistência spec ↔ code |
-| `sdd-debugger` | RCA / bugs profundos |
-| `sdd-backlog-manager` | Ops de backlog (`sdd/backlog.md`) |
-| `sdd-project-wizard` | Setup `sdd/PROJECT.md` |
-| `sdd-mcp-setup` | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`) |
+| Agent                          | Papel no time                                                  |
+| ------------------------------ | -------------------------------------------------------------- |
+| `development-agents-installer` | Instala pack em projetos (alternativa ao script)               |
+| `sdd-system-designer`          | Arquiteto (spec técnica)                                       |
+| `sdd-explorer`                 | Descoberta read-only (brownfield)                              |
+| `sdd-implementer`              | Developer                                                      |
+| `sdd-small-test-writer`        | Test Writer (unit/integration)                                 |
+| `sdd-large-test-writer`        | Test Writer (E2E opcional)                                     |
+| `sdd-validator-runner`         | Gate automático pós-código                                     |
+| `sdd-layer-analyzer`           | Consistência spec ↔ code                                       |
+| `sdd-debugger`                 | RCA / bugs profundos                                           |
+| `sdd-backlog-manager`          | Ops de backlog (`sdd/backlog.md`)                              |
+| `sdd-project-wizard`           | Setup `sdd/PROJECT.md`                                         |
+| `sdd-mcp-setup`                | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`) |
 
 ### skills/ (6) — núcleo de processo
 
-| Skill | Função |
-|-------|--------|
-| `sdd-kit-expert` | Manual do workflow |
-| `sdd-code-reviewer` | Code review bloqueante |
-| `sdd-validator` | Build/compliance (genérico) |
-| `sdd-performance-expert` | Review de performance |
-| `context-guardian` | Controle de contexto/tokens |
-| `commit-workflow` | Formatação, validação e commit agnósticos |
+| Skill                    | Função                                    |
+| ------------------------ | ----------------------------------------- |
+| `sdd-kit-expert`         | Manual do workflow                        |
+| `sdd-code-reviewer`      | Code review bloqueante                    |
+| `sdd-validator`          | Build/compliance (genérico)               |
+| `sdd-performance-expert` | Review de performance                     |
+| `context-guardian`       | Controle de contexto/tokens               |
+| `commit-workflow`        | Formatação, validação e commit agnósticos |
 
 ### commands/ (22) — orquestração `/sdd.*`
 
 Inclui: start, spec, plan, **test**, build, go, check, finish, fix, backlog, **mcp**, install, hub, pr, etc.
 
 Medição atual da redução de verbosidade:
+
 - 22 comandos: caminho comum enxuto; ramos raros lazy-loaded
 - `commands/references/`: **~120** referências lazy-loaded (P0 `spec-*` + P1 `start-*`/`build-*`/`finish-*`/`reverse-eng-*`)
 - `framework/_shared/agent-instructions.md`: instruções compartilhadas — **1 referência** substituindo 18 cópias
@@ -60,6 +61,7 @@ Templates, standards, tools e docs do SDD (necessário para os commands).
 - `framework/PIPELINE.md`: **fonte canônica** do diagrama/gates/modos do pipeline — `AGENTS.md`, `WORKFLOW.md`, `COMMANDS.md`, `QUICK_REFERENCE.md` e `skills/sdd-kit-expert/SKILL.md` linkam para lá em vez de duplicar o diagrama completo (reduz custo de manutenção ao adicionar/mudar gates).
 
 Paths do pack:
+
 - **Hub (este repo):** raiz — `agents/`, `commands/`, `framework/`
 - **Projeto alvo:** `development-agents/` (criado pelo instalador)
 
@@ -69,16 +71,16 @@ Paths do pack:
 
 O que foi generalizado nesta passagem:
 
-| Removido / substituído | Em favor de |
-|------------------------|-------------|
-| Hardcoding Mercado Libre / Meli / Fury / Nordic / Everest / Andes / furycloud | Stack e infra do **projeto alvo** |
-| Paths `sdd-kit/` | `development-agents/` |
-| `meli/backlog.md`, `meli/PROJECT.md` | `sdd/backlog.md`, `sdd/PROJECT.md` |
-| Protocolo Fury INFRA Tier A/B/C + `fury` CLI + web.furycloud.io | Passo curto de infra via technical spec + PROJECT.md + IaC/CLI do repo |
-| Skills obrigatórias `fury-*`, LTP MCP obrigatório | Opcionais se PROJECT.md / tooling existirem |
-| Preambles Android/iOS Everest/Andes obrigatórios | Opcionais quando `platform.type` + skills no PROJECT.md |
-| Catálogos fixos de serviços corporativos | “project services / platform services from technical spec” |
-| Detecção Melis-only em `detect-stack.sh` (soft) | Detecção genérica (Android/iOS/web/Java/TS/Go/Python/Rust) |
+| Removido / substituído                                                        | Em favor de                                                            |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Hardcoding Mercado Libre / Meli / Fury / Nordic / Everest / Andes / furycloud | Stack e infra do **projeto alvo**                                      |
+| Paths `sdd-kit/`                                                              | `development-agents/`                                                  |
+| `meli/backlog.md`, `meli/PROJECT.md`                                          | `sdd/backlog.md`, `sdd/PROJECT.md`                                     |
+| Protocolo Fury INFRA Tier A/B/C + `fury` CLI + web.furycloud.io               | Passo curto de infra via technical spec + PROJECT.md + IaC/CLI do repo |
+| Skills obrigatórias `fury-*`, LTP MCP obrigatório                             | Opcionais se PROJECT.md / tooling existirem                            |
+| Preambles Android/iOS Everest/Andes obrigatórios                              | Opcionais quando `platform.type` + skills no PROJECT.md                |
+| Catálogos fixos de serviços corporativos                                      | “project services / platform services from technical spec”             |
+| Detecção Melis-only em `detect-stack.sh` (soft)                               | Detecção genérica (Android/iOS/web/Java/TS/Go/Python/Rust)             |
 
 **Resolução de stack (canônica):**
 
@@ -93,20 +95,20 @@ Menções residuais a marcas legadas devem ser **zero** no pack, exceto nesta se
 
 Uma segunda varredura (além do Cleanup v1) encontrou **resíduo de find-and-replace malsucedido** deixado pela limpeza inicial: bullets com label vazio (`- ****: ...`), frases quebradas com espaço duplo (`in  Systems model`, `use  Secrets`), tabelas com células vazias, e referências a skills/artefatos que **não existem no pack** (`project-services-architect`, `project-snippets-expert`, `project-infra-operations`, `PROJECT_SERVICES.json`). Corrigido em ~25 arquivos (`commands/`, `framework/`, `agents/`, `skills/`):
 
-| Problema | Correção |
-|----------|----------|
-| Labels/frases vazias (`****`, `in  X`, `for  Y`) | Texto genérico correto gramaticalmente |
-| Regra de Dockerfile hardcoded (`your-registry/base-image`) | Condicional a `sdd/PROJECT.md` (só valida se o projeto declarar um prefixo) |
-| Catálogo de serviços internos proprietário (`GLOSSARY.md`, `FAQ.md`) | Removido — serviços vêm de `sdd/PROJECT.md` |
-| `Skill("project-services-architect")` / `project-snippets-expert` / `project-infra-operations` (não existem) | `Skill("sdd-system-designer")` / `Skill("sdd-implementer")` (skills reais) ou lógica condicional a `sdd/PROJECT.md` |
-| Auth `TIGER_TOKEN` + `mcp-remote-proxy` hardcoded (`CONFIGURATION.md`) | Instrução genérica — configure o que seu MCP exigir |
-| Diagrama de pipeline duplicado em 5+ docs | `framework/PIPELINE.md` (fonte canônica) + demais docs linkam |
-| `WORKFLOW.md` exemplo "Standard Feature" sem `/sdd.test` | Corrigido (bug real causado pela duplicação) |
-| `COMMANDS.md` "Total Commands: 17" e tabela sem `test/doctor/hub/install` | Corrigido para 20, categorias atualizadas |
+| Problema                                                                                                     | Correção                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Labels/frases vazias (`****`, `in  X`, `for  Y`)                                                             | Texto genérico correto gramaticalmente                                                                                                                                                                                            |
+| Regra de Dockerfile hardcoded (`your-registry/base-image`)                                                   | Condicional a `sdd/PROJECT.md` (só valida se o projeto declarar um prefixo)                                                                                                                                                       |
+| Catálogo de serviços internos proprietário (`GLOSSARY.md`, `FAQ.md`)                                         | Removido — serviços vêm de `sdd/PROJECT.md`                                                                                                                                                                                       |
+| `Skill("project-services-architect")` / `project-snippets-expert` / `project-infra-operations` (não existem) | Delegação (`DELEGATE_OFFLOAD`) para `sdd-system-designer` / `sdd-implementer` (agentes reais — corrigido nesta rodada de "skills reais", que estava errado: nenhum dos dois é uma skill) ou lógica condicional a `sdd/PROJECT.md` |
+| Auth `TIGER_TOKEN` + `mcp-remote-proxy` hardcoded (`CONFIGURATION.md`)                                       | Instrução genérica — configure o que seu MCP exigir                                                                                                                                                                               |
+| Diagrama de pipeline duplicado em 5+ docs                                                                    | `framework/PIPELINE.md` (fonte canônica) + demais docs linkam                                                                                                                                                                     |
+| `WORKFLOW.md` exemplo "Standard Feature" sem `/sdd.test`                                                     | Corrigido (bug real causado pela duplicação)                                                                                                                                                                                      |
+| `COMMANDS.md` "Total Commands: 17" e tabela sem `test/doctor/hub/install`                                    | Corrigido para 20, categorias atualizadas                                                                                                                                                                                         |
 
 Validação: `rg -i 'meli|fury|nordic|everest|andes|furycloud|ltp\b'` (ignorando falsos positivos de "timeline") → zero hits fora do MANIFEST.
 
-**Gap conhecido, não corrigido nesta rodada**: `COMMANDS.md` documenta `/sdd.skill` (hooks de terceiros) que não existe como comando no pack, e não tem seções para `/sdd.doctor`, `/sdd.hub`, `/sdd.install`. Decidir se `/sdd.skill` é uma feature a implementar ou doc morta a remover.
+**Gap fechado (rodada de fechamento)**: `COMMANDS.md` já tem seções para `/sdd.doctor`, `/sdd.hub` e `/sdd.install` (a nota acima estava desatualizada). A referência morta a `/sdd.skill connect --phases hub-*` (hooks de terceiros que nunca existiram como comando) foi encontrada em `framework/WORKFLOW.md:313` e corrigida — agora documenta explicitamente que o comando não existe, em vez de apontar para um caminho executável inexistente.
 
 ### Commit workflow
 
@@ -122,16 +124,14 @@ O `commit-workflow` foi reescrito para o hub:
 
 ## Excluído de propósito (export inicial)
 
-| Item | Motivo |
-|------|--------|
-| Skills de stack de outro produto (Next/Supabase, impeccable, graphify commit) | Projeto-específico |
-| Profiles Java/Python opcionais | Entram depois se o time precisar |
+| Item                                                                          | Motivo                           |
+| ----------------------------------------------------------------------------- | -------------------------------- |
+| Skills de stack de outro produto (Next/Supabase, impeccable, graphify commit) | Projeto-específico               |
+| Profiles Java/Python opcionais                                                | Entram depois se o time precisar |
 
 ## Instalador
 
-- `install.sh` — Bash (Git Bash / WSL / macOS / Linux)
-- `install.ps1` — PowerShell (Windows)
-- `/sdd.install` — agente (alternativa quando script estiver bloqueado)
+- `/sdd.install` — agente (`development-agents-installer`), único caminho de instalação. Sem scripts `.sh`/`.ps1`: usa as ferramentas de leitura/escrita do próprio harness, funciona em qualquer harness compatível com agentes/skills Markdown (Claude Code, Cursor, etc.).
 
 Repositório hub: https://github.com/danilo-sf-dev/development-agents
 

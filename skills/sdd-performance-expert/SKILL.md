@@ -7,6 +7,8 @@ description: Performance expert for reviewing code for performance issues. This 
 # SDD Performance Expert
 
 > **SKILL**: Detect performance anti-patterns BEFORE they reach production. Invoke with `Skill("sdd-performance-expert")`.
+>
+> `Skill(...)` is this pack's `INVOKE_PROCEDURE` capability — see `framework/_shared/harness-capabilities.md` for how it translates on non-Claude-Code harnesses.
 
 ---
 
@@ -166,7 +168,7 @@ private final Cache<String, Request> recentRequests =
 
 ## Review Output Format
 
-```markdown
+````markdown
 ## Performance Review
 
 ### Critical Issues (Must Fix)
@@ -183,26 +185,32 @@ private final Cache<String, Request> recentRequests =
   }
   // After
   Map<Long, User> users = userRepo.findByIds(orderUserIds);
-  ```
+````
 
 ### Warnings (Should Fix)
+
 #### Warning 1: [Pre-compile Regex]
+
 - **Location**: `src/validator/InputValidator.java:23`
 - **Problem**: Regex compiled on every validation call
 - **Impact**: ~10x slower than pre-compiled
 - **Fix**: Use static `Pattern.compile()`
 
 ### Recommendations (Nice to Have)
+
 #### Recommendation 1: [Consider Caching]
+
 - **Location**: `src/service/UserService.java:67`
 - **Observation**: Same user fetched multiple times per request
 - **Suggestion**: Add request-scoped cache
 
 ## Summary
+
 - Critical: X issues
 - Warnings: Y issues
 - Recommendations: Z items
-```
+
+````
 
 ---
 
@@ -222,7 +230,7 @@ grep -rn "Sync(" --include="*.ts" --include="*.js"
 
 # findAll without pagination
 grep -rn "\.findAll()" --include="*.java"
-```
+````
 
 ---
 
@@ -239,6 +247,8 @@ grep -rn "\.findAll()" --include="*.java"
 ## Verdict Output (MANDATORY)
 
 > **v2.0.0**: After completing the review, you MUST write a verdict file.
+>
+> This skill follows the shared **Verdict Output Protocol** — see `framework/_shared/verdict-protocol.md` for the JSON envelope, file-path convention, and enforcement rule. This section covers only what's specific to `sdd-performance-expert`.
 
 ### Verdict File Location
 
@@ -266,32 +276,16 @@ sdd/wip/<feature>/verdicts/performance.json
 
 ### Verdict Values
 
-| Verdict | Condition | Task Completion |
-|---------|-----------|-----------------|
-| `APPROVED` | 0 critical issues | Allowed |
-| `CAN_PROCEED_WITH_WARNINGS` | 0 critical, warnings ≤ 3 | Allowed |
-| `CANNOT_PROCEED` | Any critical issue | BLOCKED |
+| Verdict                     | Condition                | Task Completion |
+| --------------------------- | ------------------------ | --------------- |
+| `APPROVED`                  | 0 critical issues        | Allowed         |
+| `CAN_PROCEED_WITH_WARNINGS` | 0 critical, warnings ≤ 3 | Allowed         |
+| `CANNOT_PROCEED`            | Any critical issue       | BLOCKED         |
 
 ### Critical vs Warning
 
-| Severity | Examples | Verdict Impact |
-|----------|----------|----------------|
-| **Critical** | N+1 query in production path, unbounded memory growth | CANNOT_PROCEED |
-| **Warning** | Regex in moderate-frequency path, minor inefficiency | CAN_PROCEED_WITH_WARNINGS |
-| **Recommendation** | Optimization suggestions, nice-to-haves | APPROVED |
-
-### Verdict Writing Instructions
-
-1. **Create verdicts directory** if it doesn't exist:
-   ```bash
-   mkdir -p sdd/wip/<feature>/verdicts
-   ```
-
-2. **Write the verdict file** with current findings count
-
-3. **Verdict determines if Layer 3 task can be completed**:
-   - `APPROVED` → Task can be marked complete
-   - `CANNOT_PROCEED` → Must fix issues and re-run this skill
-
-> **CRITICAL**: Enforcement is **agent-based**, not an OS/git hook (see `framework/HARD_GATES.md`).
-> The orchestrating command and `sdd-validator-runner` **must** read this verdict and stop (AskUserQuestion, always including **Outros**) when the result is `CANNOT_PROCEED`.
+| Severity           | Examples                                              | Verdict Impact            |
+| ------------------ | ----------------------------------------------------- | ------------------------- |
+| **Critical**       | N+1 query in production path, unbounded memory growth | CANNOT_PROCEED            |
+| **Warning**        | Regex in moderate-frequency path, minor inefficiency  | CAN_PROCEED_WITH_WARNINGS |
+| **Recommendation** | Optimization suggestions, nice-to-haves               | APPROVED                  |

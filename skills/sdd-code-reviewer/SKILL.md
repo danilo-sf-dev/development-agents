@@ -7,6 +7,8 @@ description: Code review specialist for SDD Kit. This is a SKILL (invoke via Ski
 # SDD Code Reviewer
 
 > **SKILL**: Quality gate for code review. Invoke with `Skill("sdd-code-reviewer")`. Use after each task in /sdd.build and before /sdd.finish.
+>
+> `Skill(...)` is this pack's `INVOKE_PROCEDURE` capability — see `framework/_shared/harness-capabilities.md` for how it translates on non-Claude-Code harnesses.
 
 ---
 
@@ -32,6 +34,7 @@ git diff --name-only main...HEAD
 ### Step 2: Check with code review tool (if available)
 
 If code review tool is available:
+
 ```
 mcp__code review tool__code_review_instructions(application_name)
 mcp__code review tool__pr_review_search(application_name, pr_number)
@@ -42,6 +45,7 @@ mcp__code review tool__pr_review_search(application_name, pr_number)
 If MCP not available, use this checklist:
 
 #### Code Quality
+
 - [ ] Clear, readable code
 - [ ] Proper naming conventions (camelCase, PascalCase as per lang)
 - [ ] No code duplication (DRY principle)
@@ -50,6 +54,7 @@ If MCP not available, use this checklist:
 - [ ] No TODO/FIXME without tracking
 
 #### Security (Critical)
+
 - [ ] No hardcoded secrets (API keys, passwords, tokens)
 - [ ] Input validation present for all user inputs
 - [ ] SQL injection prevention (parameterized queries)
@@ -57,24 +62,28 @@ If MCP not available, use this checklist:
 - [ ] No sensitive data in logs
 
 #### Error Handling
+
 - [ ] Exceptions properly caught and handled
 - [ ] Meaningful error messages
 - [ ] No swallowed exceptions (empty catch blocks)
 - [ ] Graceful degradation where appropriate
 
 #### Testing
+
 - [ ] Unit tests for new code
 - [ ] Test coverage adequate (>80%)
 - [ ] Edge cases covered
 - [ ] Integration tests where needed
 
 #### Runtime Compliance (if your org enforces these)
+
 - [ ] Dockerfile uses the org-approved base image (see `sdd/PROJECT.md`)
 - [ ] Dockerfile.runtime uses the org-approved base image (see `sdd/PROJECT.md`)
 - [ ] Health check endpoint implemented (if required)
 - [ ] Health checks configured
 
 #### Documentation
+
 - [ ] Public APIs documented
 - [ ] Complex logic commented
 - [ ] README updated if needed
@@ -83,7 +92,7 @@ If MCP not available, use this checklist:
 
 ## Review Output Format
 
-```markdown
+````markdown
 ## Code Review Results
 
 ### Summary
@@ -113,33 +122,36 @@ If MCP not available, use this checklist:
 ### Verdict
 [ ] APPROVED - Ready to proceed
 [ ] CHANGES REQUESTED - Fix critical/major issues first
-```
+````
 
 ---
 
 ## Common Issues to Flag
 
 ### Security
-| Pattern | Issue | Severity |
-|---------|-------|----------|
-| `password = "..."` | Hardcoded password | CRITICAL |
-| `"SELECT * FROM " + input` | SQL injection | CRITICAL |
-| `innerHTML = userInput` | XSS vulnerability | CRITICAL |
-| `console.log(password)` | Sensitive data in logs | MAJOR |
+
+| Pattern                    | Issue                  | Severity |
+| -------------------------- | ---------------------- | -------- |
+| `password = "..."`         | Hardcoded password     | CRITICAL |
+| `"SELECT * FROM " + input` | SQL injection          | CRITICAL |
+| `innerHTML = userInput`    | XSS vulnerability      | CRITICAL |
+| `console.log(password)`    | Sensitive data in logs | MAJOR    |
 
 ### Performance
-| Pattern | Issue | Severity |
-|---------|-------|----------|
-| Query in loop | N+1 query problem | MAJOR |
-| `String +=` in loop | String concatenation | MAJOR |
-| Missing index hint | Potential slow query | MINOR |
+
+| Pattern             | Issue                | Severity |
+| ------------------- | -------------------- | -------- |
+| Query in loop       | N+1 query problem    | MAJOR    |
+| `String +=` in loop | String concatenation | MAJOR    |
+| Missing index hint  | Potential slow query | MINOR    |
 
 ### Code Quality
-| Pattern | Issue | Severity |
-|---------|-------|----------|
-| Function > 50 lines | Too long, split it | MINOR |
-| > 3 parameters | Consider object param | MINOR |
-| Empty catch block | Swallowed exception | MAJOR |
+
+| Pattern             | Issue                 | Severity |
+| ------------------- | --------------------- | -------- |
+| Function > 50 lines | Too long, split it    | MINOR    |
+| > 3 parameters      | Consider object param | MINOR    |
+| Empty catch block   | Swallowed exception   | MAJOR    |
 
 ---
 
@@ -157,6 +169,8 @@ If MCP not available, use this checklist:
 ## Verdict Output (MANDATORY)
 
 > **v2.0.0**: After completing the review, you MUST write a verdict file.
+>
+> This skill follows the shared **Verdict Output Protocol** — see `framework/_shared/verdict-protocol.md` for the JSON envelope, file-path convention, and enforcement rule. This section covers only what's specific to `sdd-code-reviewer`.
 
 ### Verdict File Location
 
@@ -184,24 +198,8 @@ sdd/wip/<feature>/verdicts/code_review.json
 
 ### Verdict Values
 
-| Verdict | Condition | Task Completion |
-|---------|-----------|-----------------|
-| `APPROVED` | 0 critical, 0 major, 0 minor | Allowed |
-| `CAN_PROCEED_WITH_WARNINGS` | 0 critical, 0 major, minor ≤ 3 | Allowed |
-| `CANNOT_PROCEED` | Any critical OR any major | BLOCKED |
-
-### Verdict Writing Instructions
-
-1. **Create verdicts directory** if it doesn't exist:
-   ```bash
-   mkdir -p sdd/wip/<feature>/verdicts
-   ```
-
-2. **Write the verdict file** with current findings count
-
-3. **Verdict determines if Layer 3 task can be completed**:
-   - `APPROVED` → Task can be marked complete
-   - `CANNOT_PROCEED` → Must fix issues and re-run this skill
-
-> **CRITICAL**: Enforcement is **agent-based**, not an OS/git hook (see `framework/HARD_GATES.md`).
-> The orchestrating command and `sdd-validator-runner` **must** read this verdict and stop (AskUserQuestion, always including **Outros**) when the result is `CANNOT_PROCEED`.
+| Verdict                     | Condition                      | Task Completion |
+| --------------------------- | ------------------------------ | --------------- |
+| `APPROVED`                  | 0 critical, 0 major, 0 minor   | Allowed         |
+| `CAN_PROCEED_WITH_WARNINGS` | 0 critical, 0 major, minor ≤ 3 | Allowed         |
+| `CANNOT_PROCEED`            | Any critical OR any major      | BLOCKED         |

@@ -42,15 +42,15 @@ AskUserQuestion(
 ```
 
 > **Note**: If saved description exists in meta.md, first option label should be "/sdd.spec (com contexto salvo)" with description "Usa a descrição salva para iniciar a spec — comando em sonnet".
-**On user selection**:
+> **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.spec (com contexto salvo) | `Skill(skill="sdd.spec")` - description auto-loaded from meta.md |
-| /sdd.spec (Recomendado) | `Skill(skill="sdd.spec")` |
-| /sdd.spec --audio | `Skill(skill="sdd.spec", args="--audio")` |
-| /sdd.check | `Skill(skill="sdd.check")` |
-| Outros | User types custom input (e.g., `/sdd.spec "nova descrição"`, questions, etc.) |
+| Selection                      | Action                                                                        |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| /sdd.spec (com contexto salvo) | `CONTINUE_WORKFLOW("/sdd.spec")` - description auto-loaded from meta.md       |
+| /sdd.spec (Recomendado)        | `CONTINUE_WORKFLOW("/sdd.spec")`                                              |
+| /sdd.spec --audio              | `CONTINUE_WORKFLOW("/sdd.spec --audio")`                                      |
+| /sdd.check                     | `CONTINUE_WORKFLOW("/sdd.check")`                                             |
+| Outros                         | User types custom input (e.g., `/sdd.spec "nova descrição"`, questions, etc.) |
 
 > **NOTE**: AskUserQuestion ALWAYS includes "Other" option automatically.
 > Users can write ANY text: another command, a question, feedback, etc.

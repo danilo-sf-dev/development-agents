@@ -32,6 +32,7 @@ bash development-agents/framework/tools/validation/validate-security.sh sdd/wip/
 ```
 
 **Step 6b: Show concise summary** (if validation passed):
+
 ```markdown
 ## Technical Specification Summary
 ### Architecture: [1-2 lines]
@@ -72,20 +73,24 @@ AskUserQuestion(
 ```
 
 **If user selects "Ver spec completa"**:
+
 - Read and display the entire file: `sdd/wip/[feature]/2-technical/spec.md`
 - After displaying, loop back to the approval question (ask again)
 
 **If user selects "Pedir mudanças"**:
+
 - Ask what changes they want to make
 - Apply changes using `--iterate` flow
 
 **On approval - Update meta.md:**
+
 ```bash
 # Get user identity and timestamp (single line to avoid multi-line permission prompts)
 approver=$(git config user.name || echo "Unknown"); timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ"); echo "Approver: $approver | Timestamp: $timestamp"
 ```
 
 Update `meta.md` stages.technical:
+
 - `status: approved`
 - `approved_by: <user from git config>` ← NEVER "AI Agent"
 - `approved_at: <ISO-8601 timestamp>`
@@ -116,9 +121,9 @@ AskUserQuestion(
 
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.plan (Recomendado) | `Skill(skill="sdd.plan")` |
-| /sdd.spec --iterate | `Skill(skill="sdd.spec", args="--iterate")` |
-| /sdd.check | `Skill(skill="sdd.check")` |
-| Outros | User types custom input |
+| Selection               | Action                                     |
+| ----------------------- | ------------------------------------------ |
+| /sdd.plan (Recomendado) | `CONTINUE_WORKFLOW("/sdd.plan")`           |
+| /sdd.spec --iterate     | `CONTINUE_WORKFLOW("/sdd.spec --iterate")` |
+| /sdd.check              | `CONTINUE_WORKFLOW("/sdd.check")`          |
+| Outros                  | User types custom input                    |

@@ -11,6 +11,7 @@
 ### 1. Code is Read More Than Written
 
 Write code for humans first, machines second:
+
 - ✅ Clear variable and function names
 - ✅ Meaningful comments for complex logic
 - ✅ Consistent formatting
@@ -37,6 +38,7 @@ Write code for humans first, machines second:
 ### TypeScript / JavaScript
 
 #### File Naming
+
 - **Components**: PascalCase - `PaymentForm.tsx`
 - **Utilities**: camelCase - `formatCurrency.ts`
 - **Constants**: UPPER_SNAKE_CASE - `API_ENDPOINTS.ts`
@@ -141,6 +143,7 @@ throw new Error('Payment failed');
 > **Rule**: Use `jakarta.*` by default (`javax.*` is deprecated for EE APIs)
 
 **Detection Strategy** (BEFORE generating Java code):
+
 1. Check existing imports: `grep -r "import javax\." src/` and `grep -r "import jakarta\." src/`
    - Found `javax.servlet`, `javax.ws.rs` → Use javax (legacy project)
    - Found `jakarta.servlet`, `jakarta.ws.rs` → Use jakarta
@@ -150,11 +153,13 @@ throw new Error('Payment failed');
 3. No existing code → Default to **jakarta** (modern)
 
 **Important Notes**:
+
 - `javax.sql.*` stays as `javax.sql` (Java SE, not Jakarta EE)
 - NEVER mix javax and jakarta servlet/ws APIs in the same project
 - Show: "Using {jakarta/javax} imports (detected from project)"
 
 **Jakarta Imports** (modern - default):
+
 ```java
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -164,6 +169,7 @@ import jakarta.annotation.PreDestroy;
 ```
 
 **Javax Imports** (legacy - only if project uses them):
+
 ```java
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -177,6 +183,7 @@ import javax.annotation.PreDestroy;
 ### Python (If Used)
 
 #### File Naming
+
 - **Modules**: snake_case - `payment_service.py`
 - **Classes**: PascalCase - `class PaymentService`
 - **Constants**: UPPER_SNAKE_CASE - `MAX_RETRIES = 3`
@@ -254,17 +261,20 @@ describe('PaymentService', () => {
 ```
 
 **Test Naming Convention**:
+
 - Start with `should`
 - Describe expected behavior
 - Include context (when X, should Y)
 - Be specific, not generic
 
 **Good**:
+
 - ✅ `should create payment successfully with valid data`
 - ✅ `should throw PaymentDeclinedError when card is declined`
 - ✅ `should retry 3 times before failing on network error`
 
 **Bad**:
+
 - ❌ `test payment`
 - ❌ `it works`
 - ❌ `payment creation test`
@@ -287,11 +297,7 @@ it('should calculate discount correctly', () => {
 
 ### Coverage Targets
 
-- **Overall**: Minimum 80%
-- **Business Logic**: Minimum 90%
-- **Utils/Helpers**: Minimum 85%
-- **UI Components**: Minimum 70%
-- **Configuration**: Can skip (static)
+> **Canonical thresholds**: see `standards/testing-strategy.md` → "Coverage Requirements" for the authoritative minimum/target numbers by module type (Business Logic, API, Data Access, Utilities, UI, Configuration, Generated Code). This file does not restate them to avoid the two tables drifting apart.
 
 ---
 
@@ -305,18 +311,18 @@ it('should calculate discount correctly', () => {
 These prefixes are defaults only; the target project may configure different
 branch names:
 
-| Branch | Uso |
-|--------|-----|
-| `master` | Rama principal de producción |
-| `develop` | Rama de desarrollo/integración |
-| `feature/*` | Nuevas funcionalidades |
+| Branch          | Uso                                  |
+| --------------- | ------------------------------------ |
+| `master`        | Rama principal de producción         |
+| `develop`       | Rama de desarrollo/integración       |
+| `feature/*`     | Nuevas funcionalidades               |
 | `enhancement/*` | Mejoras a funcionalidades existentes |
-| `fix/*` | Corrección de bugs |
-| `bugfix/*` | Alias de fix (corrección de bugs) |
-| `hotfix/*` | Corrección crítica en producción |
-| `release/*` | Preparación de release |
-| `migration/*` | Migraciones de datos/schema |
-| `revert-*` | Reversión de cambios |
+| `fix/*`         | Corrección de bugs                   |
+| `bugfix/*`      | Alias de fix (corrección de bugs)    |
+| `hotfix/*`      | Corrección crítica en producción     |
+| `release/*`     | Preparación de release               |
+| `migration/*`   | Migraciones de datos/schema          |
+| `revert-*`      | Reversión de cambios                 |
 
 ### Branch Naming
 
@@ -325,6 +331,7 @@ branch names:
 ```
 
 **Examples**:
+
 - ✅ `feature/payment-integration`
 - ✅ `enhancement/improve-checkout-flow`
 - ✅ `fix/payment-validation-error`
@@ -350,6 +357,7 @@ branch names:
 ```
 
 **Types** (obligatorios):
+
 - `feat`: Nueva funcionalidad
 - `fix`: Corrección de bug
 - `refactor`: Refactoring sin cambio funcional
@@ -397,7 +405,7 @@ Closes: #123
 
 #### Public APIs (Always Document)
 
-```typescript
+````typescript
 /**
  * Processes a payment transaction
  *
@@ -423,7 +431,7 @@ export async function processPayment(
 ): Promise<PaymentResult> {
   // Implementation
 }
-```
+````
 
 #### Complex Logic (Add Inline Comments)
 
@@ -451,7 +459,7 @@ function calculateRefund(payment: Payment, reason: RefundReason): Refund {
 
 Every module/feature should have a README:
 
-```markdown
+````markdown
 # Payment Integration
 
 ## Overview
@@ -463,16 +471,20 @@ import { PaymentService } from '@/services/PaymentService';
 
 const service = new PaymentService();
 const result = await service.processPayment(data);
-```
+````
 
 ## Architecture
+
 [Link to your architecture diagram or brief description]
 
 ## Configuration
+
 Environment variables needed, configuration options, etc.
 
 ## Testing
+
 How to run tests for this module.
+
 ```
 
 ---
@@ -491,9 +503,11 @@ Code generated by `/sdd.build` MUST include `@spec` comments that reference back
 ### Format
 
 ```
+
 @spec [feature-name]#[section]
 @implements [US-1, US-2, ...]
-```
+
+````
 
 - **`@spec`**: Required. Points to the feature's technical spec section
 - **`@implements`**: Optional. Lists User Stories being implemented
@@ -519,7 +533,7 @@ export class AuthService {
 async function processRefund(paymentId: string): Promise<Refund> {
   // ...
 }
-```
+````
 
 ### Python
 
@@ -581,17 +595,18 @@ public class AuthService {
 
 ### When to Use
 
-| Scenario | Required? |
-|----------|-----------|
-| New files created by `/sdd.build` | **Yes** |
-| Major classes/modules | **Yes** |
-| Utility functions | No (optional) |
-| Test files | No |
-| Configuration files | No |
+| Scenario                          | Required?     |
+| --------------------------------- | ------------- |
+| New files created by `/sdd.build` | **Yes**       |
+| Major classes/modules             | **Yes**       |
+| Utility functions                 | No (optional) |
+| Test files                        | No            |
+| Configuration files               | No            |
 
 ### Path Resolution
 
 The `@spec` reference uses only the feature name (not full path):
+
 - During development: resolves to `sdd/wip/[feature-name]/2-technical/spec.md`
 - After completion: resolves to `sdd/features/[feature-name]/2-technical/spec.md`
 
@@ -604,12 +619,14 @@ This makes references stable across the feature lifecycle.
 ### Never Commit Secrets
 
 ❌ **Never**:
+
 ```typescript
 const MERCADOPAGO_ACCESS_TOKEN = 'APP_USR-xxx';  // NO!
 const DB_PASSWORD = 'password123';         // NO!
 ```
 
 ✅ **Always**:
+
 ```typescript
 const MERCADOPAGO_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const DB_PASSWORD = process.env.DB_PASSWORD;
@@ -726,11 +743,13 @@ async function getUserProfile(userId: string): Promise<Profile> {
 Before submitting code for review, verify:
 
 ### Functionality
+
 - [ ] Code does what the task acceptance criteria specify
 - [ ] Edge cases handled
 - [ ] Error cases handled gracefully
 
 ### Code Quality
+
 - [ ] Follows naming conventions
 - [ ] No magic numbers (use named constants)
 - [ ] No commented-out code
@@ -738,24 +757,28 @@ Before submitting code for review, verify:
 - [ ] DRY (Don't Repeat Yourself) - no copy-paste code
 
 ### Testing
+
 - [ ] Unit tests written and passing
 - [ ] Integration tests if needed
 - [ ] Coverage meets thresholds
 - [ ] Tests are meaningful, not just for coverage
 
 ### Security
+
 - [ ] No secrets in code
 - [ ] User input validated
 - [ ] SQL injection prevented (use parameterized queries)
 - [ ] XSS prevented (sanitize output)
 
 ### Performance
+
 - [ ] No N+1 queries
 - [ ] Pagination for lists
 - [ ] Caching where appropriate
 - [ ] No blocking operations on main thread (frontend)
 
 ### Documentation
+
 - [ ] Public APIs have JSDoc
 - [ ] Complex logic has inline comments
 - [ ] README updated if needed

@@ -20,7 +20,6 @@ O repo **é** o pack — sem subpasta:
 
 ```
 development-agents/          ← raiz do git (clone = pack pronto)
-├── install.sh / install.ps1
 ├── AGENTS.md
 ├── MANIFEST.md
 ├── FLUXOS-FEATURE-E-FIX.md  ← guia: fluxo Feature vs fluxo Fix (bug)
@@ -33,39 +32,10 @@ development-agents/          ← raiz do git (clone = pack pronto)
 
 ## Instalar em um projeto alvo
 
-Duas formas — mesmo resultado:
-
-| Método | Quando usar |
-|--------|-------------|
-| **Script** (`install.ps1` / `install.sh`) | Máquina permite executar scripts |
-| **Agente** (`/sdd.install`) | Script bloqueado ou prefere instalar via chat |
-
-### Opção A — Script
-
-Clone este repo e rode o instalador **da raiz** apontando para o projeto alvo:
-
-**PowerShell (Windows):**
-
-```powershell
-.\install.ps1 -TargetDir "E:\Projects\meu-app"
-# só Cursor:
-.\install.ps1 -TargetDir "E:\Projects\meu-app" -CursorOnly
-# só Claude Code:
-.\install.ps1 -TargetDir "E:\Projects\meu-app" -ClaudeOnly
-```
-
-**Bash (Git Bash / WSL / macOS / Linux):**
-
-```bash
-bash install.sh /path/to/meu-app
-bash install.sh /path/to/meu-app --cursor-only
-bash install.sh /path/to/meu-app --claude-only
-```
-
-### Opção B — Agente (sem script)
+Instalação é feita pelo agente `development-agents-installer` (via `/sdd.install`) — sem script, sem depender de permissão pra rodar `.sh`/`.ps1`, e funciona igual em qualquer harness de IA que suporte agentes/skills em Markdown (não é exclusivo do Claude Code).
 
 1. Clone ou copie este repo para o projeto (ou rode `/sdd.install` a partir do clone).
-2. Abra o projeto alvo no Cursor ou Claude Code.
+2. Abra o projeto alvo no Cursor, Claude Code, ou outro harness compatível.
 3. No chat:
 
 ```
@@ -74,7 +44,7 @@ bash install.sh /path/to/meu-app --claude-only
 /sdd.install --target E:\Projects\meu-app
 ```
 
-O agente `development-agents-installer` cria as mesmas pastas que o script — **sem** rodar `install.ps1` nem `install.sh`.
+O agente `development-agents-installer` cria as pastas do pack (`development-agents/`, adapters, `sdd/`) usando as próprias ferramentas de leitura/escrita do harness — nunca executa scripts de shell.
 
 **Primeira vez (bootstrap):** se ainda não tem `.cursor/` nem `.claude/`, use no chat:
 
@@ -90,13 +60,13 @@ Depois da primeira instalação, `/sdd.install` passa a funcionar normalmente.
 
 O instalador cria/atualiza **localmente** (não commita nada):
 
-| Destino | Conteúdo |
-|---------|----------|
-| `development-agents/` | Pack canônico |
-| `.claude/commands\|agents\|skills` | Adapter Claude Code |
-| `.cursor/agents\|skills` + rule | Adapter Cursor |
-| `sdd/wip`, `sdd/features` | Working dirs SDD |
-| `.gitignore` | **Append** se já existir; **cria** se não existir |
+| Destino                            | Conteúdo                                          |
+| ---------------------------------- | ------------------------------------------------- |
+| `development-agents/`              | Pack canônico                                     |
+| `.claude/commands\|agents\|skills` | Adapter Claude Code                               |
+| `.cursor/agents\|skills` + rule    | Adapter Cursor                                    |
+| `sdd/wip`, `sdd/features`          | Working dirs SDD                                  |
+| `.gitignore`                       | **Append** se já existir; **cria** se não existir |
 
 O agente/instalador **nunca** roda `git commit`. Só você commita se quiser — inclusive o `.gitignore` atualizado.
 

@@ -31,28 +31,29 @@ graph LR
     B --> C["/sdd.plan<br/>Tasks"]
     C --> T["/sdd.test<br/>Tests"]
     T --> D["/sdd.build<br/>Implement"]
-    D --> E["/sdd.finish<br/>Archive"]
+    D --> K["/sdd.check<br/>Status/Validate"]
+    K --> E["/sdd.finish<br/>Archive"]
     E --> P["/sdd.pr<br/>Open PR"]
     E -.->|"--reopen"| A
 ```
 
 ## Gates
 
-| Gate | Command | What is approved | Enforcement |
-|------|---------|------------------|---------------|
-| 1 | `/sdd.spec` | Functional + technical spec | Soft (`meta.md`) + process check when relevant |
-| 2 | `/sdd.plan` | Task breakdown & implementation strategy | Soft (`tasks.json`) + process check when relevant |
-| 2.5 | `/sdd.test` | Failing tests (red phase) — approved BEFORE implementation | Soft approval + **Process Compliance** via `sdd-validator-runner` during build (no OS hooks) |
-| 3 | `/sdd.finish` | Final validation & archive | Soft + validator |
+| Gate | Command       | What is approved                                           | Enforcement                                                                                  |
+| ---- | ------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 1    | `/sdd.spec`   | Functional + technical spec                                | Soft (`meta.md`) + process check when relevant                                               |
+| 2    | `/sdd.plan`   | Task breakdown & implementation strategy                   | Soft (`tasks.json`) + process check when relevant                                            |
+| 2.5  | `/sdd.test`   | Failing tests (red phase) — approved BEFORE implementation | Soft approval + **Process Compliance** via `sdd-validator-runner` during build (no OS hooks) |
+| 3    | `/sdd.finish` | Final validation & archive                                 | Soft + validator                                                                             |
 
 > Process gates (LLM, portable): [`framework/HARD_GATES.md`](./HARD_GATES.md)
 
 ## Execution modes
 
-| Mode | Commands | Best for |
-|------|----------|----------|
-| **Express** | `/sdd.go "description"` (1 command) | Simple features with clear requirements |
-| **Standard** | `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish` | Most features (default) |
+| Mode         | Commands                                                                                             | Best for                                |
+| ------------ | ---------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Express**  | `/sdd.go "description"` (1 command)                                                                  | Simple features with clear requirements |
+| **Standard** | `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish` | Most features (default)                 |
 
 > `/sdd.test` is **never** skipped. Every feature must pass Gate 2.5 (tests approved, red verified) before `/sdd.build`.
 
@@ -63,12 +64,12 @@ See `commands/sdd.start.md` and `commands/references/reopen-workflow.md` for the
 
 ## Roles
 
-| Role | Where |
-|------|-------|
-| Spec Writer | `/sdd.spec` (+ agent `sdd-explorer`) |
-| Architect | agent `sdd-system-designer` + `/sdd.plan` |
-| Developer | agent `sdd-implementer` |
-| Test Writer | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E optional) |
+| Role                              | Where                                                                                   |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| Spec Writer                       | `/sdd.spec` (+ agent `sdd-explorer`)                                                    |
+| Architect                         | agent `sdd-system-designer` + `/sdd.plan`                                               |
+| Developer                         | agent `sdd-implementer`                                                                 |
+| Test Writer                       | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E optional)    |
 | Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (quality + Process Compliance) |
-| Orchestrator | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert` |
-| Installer | command `/sdd.install` + agent `development-agents-installer` |
+| Orchestrator                      | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert`                               |
+| Installer                         | command `/sdd.install` + agent `development-agents-installer`                           |

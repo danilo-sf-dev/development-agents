@@ -15,6 +15,7 @@ model: sonnet
 > **Note**: PROJECT.md defines team conventions that apply to ALL features. It's optional - without it, framework defaults apply.
 
 **Usage**:
+
 - `/sdd.project` → Interactive wizard (step-by-step)
 - `/sdd.project "<description>"` → Deduce conventions from prompt
 - `/sdd.project --audio` → Record project conventions via microphone
@@ -37,24 +38,24 @@ model: sonnet
 
 **Syntax**: `/sdd.project [description] [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Interactive wizard (step-by-step) |
-| `"<description>"` | Deduce conventions from prompt |
-| `--audio` | Record project conventions via microphone |
-| `--edit` | Edit existing PROJECT.md |
-| `--init` | Initialize PROJECT.md (alias) |
-| `--update` | Update existing conventions |
-| `profile` | View current user profile and Plan Mode settings |
-| `profile --edit` | Update user profile interactively |
-| `patterns` | View/manage PATTERNS.md |
-| `patterns --add` | Add new pattern interactively |
-| `patterns "<desc>"` | Infer patterns from description |
-| `patterns --edit` | Edit PATTERNS.md directly |
-| `vision` | Interactive wizard to define product vision |
-| `vision --edit` | Edit existing vision |
-| `--view` | Open framework viewer in browser |
-| `--hub` | Initialize as hub workspace (adds `## Hub members` table) |
+| Flag                | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| (none)              | Interactive wizard (step-by-step)                         |
+| `"<description>"`   | Deduce conventions from prompt                            |
+| `--audio`           | Record project conventions via microphone                 |
+| `--edit`            | Edit existing PROJECT.md                                  |
+| `--init`            | Initialize PROJECT.md (alias)                             |
+| `--update`          | Update existing conventions                               |
+| `profile`           | View current user profile and Plan Mode settings          |
+| `profile --edit`    | Update user profile interactively                         |
+| `patterns`          | View/manage PATTERNS.md                                   |
+| `patterns --add`    | Add new pattern interactively                             |
+| `patterns "<desc>"` | Infer patterns from description                           |
+| `patterns --edit`   | Edit PATTERNS.md directly                                 |
+| `vision`            | Interactive wizard to define product vision               |
+| `vision --edit`     | Edit existing vision                                      |
+| `--view`            | Open framework viewer in browser                          |
+| `--hub`             | Initialize as hub workspace (adds `## Hub members` table) |
 
 **See also**: `/sdd.help project` · subcommands/flags lazy-loaded at bottom.
 
@@ -62,20 +63,20 @@ Route first: `profile*` | `patterns*` | `vision*` | `--hub` | `--view` | `--edit
 
 ---
 
-
-
 ## Purpose (short)
 
 Create/update `sdd/PROJECT.md` (team conventions). Without it, framework defaults apply.
 Stack from detection — do not invent a corporate default language.
 Belongs: architecture prefs, testing gates, gitflow, frontend/design-system, vision, hub members.
 Does not belong: feature-specific specs (those go in `sdd/wip/`).
+
 > **ONLY IF** full belongs/doesn't ASCII:
 > Read `references/project-purpose.md`.
 
 ## Mode 1: Interactive Wizard (default `/sdd.project`)
 
 Steps: detect stack → architecture (backend) → testing standards → team conventions → frontend config (if web) → summary & write `sdd/PROJECT.md`.
+
 > **ONLY IF** running interactive wizard (no subcommand/flags for other modes):
 > Read `references/project-wizard.md`.
 
@@ -112,7 +113,7 @@ Steps: detect stack → architecture (backend) → testing standards → team co
 ## CLAUDE.md Sync (lazy-loaded)
 
 > **ONLY IF** spec language changed and Claude Code CLAUDE.md exists:
-> Read `references/project-claude-sync.md`.
+> Read `references/project-instructions-sync.md` (writes CLAUDE.md/AGENTS.md per adapter).
 
 ## Integration with /sdd.start (short)
 
@@ -144,16 +145,16 @@ Missing permissions / invalid YAML → show error, do not overwrite silently. Ba
 
 ## Optional flags (lazy-loaded)
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| `--audio` | `references/audio-capture-flow.md` |
-| `--hub` | `references/project-hub.md` |
-| `--view` | `references/project-view.md` |
-| Interactive wizard | `references/project-wizard.md` |
-| Prompt inference | `references/project-prompt-inference.md` |
-| `--edit` / `--update` | `references/project-edit.md` |
-| `patterns*` | `references/project-patterns.md` |
-| `profile*` | `references/project-profile.md` |
-| `vision*` | `references/project-vision.md` |
-| Output template | `references/project-output-template.md` |
-| CLAUDE.md language sync | `references/project-claude-sync.md` |
+| Flag / condition                   | Reference                                 |
+| ---------------------------------- | ----------------------------------------- |
+| `--audio`                          | `references/audio-capture-flow.md`        |
+| `--hub`                            | `references/project-hub.md`               |
+| `--view`                           | `references/project-view.md`              |
+| Interactive wizard                 | `references/project-wizard.md`            |
+| Prompt inference                   | `references/project-prompt-inference.md`  |
+| `--edit` / `--update`              | `references/project-edit.md`              |
+| `patterns*`                        | `references/project-patterns.md`          |
+| `profile*`                         | `references/project-profile.md`           |
+| `vision*`                          | `references/project-vision.md`            |
+| Output template                    | `references/project-output-template.md`   |
+| Project instructions language sync | `references/project-instructions-sync.md` |

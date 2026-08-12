@@ -21,6 +21,7 @@ This is a TOOL CALL you must execute, not content to display.
 **Description**: Setup wizard for optional MCP integrations. Host-agnostic (Cursor, Claude Code, VS Code, JetBrains, other). v1 focus: **Atlassian Jira/Confluence read-only** for `/sdd.spec --include`.
 
 **Usage**:
+
 - `/sdd.mcp` → Interactive wizard (detect → configure → smoke test → PROJECT.md flag)
 - `/sdd.mcp --status` → Report current flag + config (read-only)
 - `/sdd.mcp --test "https://…/browse/PROJ-123"` → Smoke test only
@@ -30,12 +31,12 @@ This is a TOOL CALL you must execute, not content to display.
 
 ## Quick Help
 
-| Flag | Description |
-|------|-------------|
-| (none) | Full setup wizard |
-| `--status` | Inventory only |
+| Flag           | Description                            |
+| -------------- | -------------------------------------- |
+| (none)         | Full setup wizard                      |
+| `--status`     | Inventory only                         |
 | `--test <url>` | Read-only fetch of Jira/Confluence URL |
-| `--disable` | Disable `atlassian_mcp_enabled` |
+| `--disable`    | Disable `atlassian_mcp_enabled`        |
 
 **Examples**:
 
@@ -59,25 +60,25 @@ Siga **integralmente** as instruções em (primeiro caminho que existir):
 - `agents/sdd-mcp-setup.md` (hub / pack na raiz)
 - `development-agents/agents/sdd-mcp-setup.md` (pack em subpasta no projeto)
 
-Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolated subagent when the host supports Task/subagents (`sdd-mcp-setup`); otherwise run the agent instructions in this session.
+Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolated subagent when the host supports Task/subagents (`sdd-mcp-setup`); otherwise run the agent instructions in this session. This is `DELEGATE_OFFLOAD` (context-saving only, no isolation-integrity requirement — see `framework/_shared/harness-capabilities.md`), so the inline fallback is a complete substitute, not a degraded one.
 
 ### 2. Lazy references (agent loads as needed)
 
-| Topic | Reference |
-|-------|-----------|
-| Detect host | `commands/references/mcp-detect-host.md` |
+| Topic                    | Reference                                    |
+| ------------------------ | -------------------------------------------- |
+| Detect host              | `commands/references/mcp-detect-host.md`     |
 | Per-host Atlassian steps | `commands/references/mcp-atlassian-hosts.md` |
-| Smoke test | `commands/references/mcp-smoke-test.md` |
-| Human guide | `framework/MCP_SETUP_GUIDE.md` |
+| Smoke test               | `commands/references/mcp-smoke-test.md`      |
+| Human guide              | `framework/MCP_SETUP_GUIDE.md`               |
 
 ### 3. Flags → comportamento
 
-| Flag | Effect |
-|------|--------|
-| (none) | Wizard Steps 0–8 in agent |
-| `--status` | Status mode |
-| `--test` | Smoke-test mode with given URL |
-| `--disable` | Disable mode |
+| Flag        | Effect                         |
+| ----------- | ------------------------------ |
+| (none)      | Wizard Steps 0–8 in agent      |
+| `--status`  | Status mode                    |
+| `--test`    | Smoke-test mode with given URL |
+| `--disable` | Disable mode                   |
 
 ### 4. Gates
 
@@ -95,17 +96,17 @@ Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolat
 
 **Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `mcp→next` (match recommended option: spec → forte; start → barato).
 
-⛔ INVOKE TOOL (do not print this, CALL the tool):
+⛔ INVOKE TOOL (do not print this, CALL the tool) — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 AskUserQuestion(questions=[{
-  "question": "MCP setup concluído. Próximo passo?",
-  "header": "Próximo",
-  "options": [
-    {"label": "/sdd.spec --include (Recommended)", "description": "Usar URL Jira/Confluence na spec — sugere modelo forte"},
-    {"label": "/sdd.mcp --test", "description": "Rodar outro smoke test"},
-    {"label": "/sdd.start", "description": "Iniciar / continuar feature — sugere modelo barato"},
-    {"label": "Outros", "description": "Descreva o que você vai fazer"}
-  ],
-  "multiSelect": false
+"question": "MCP setup concluído. Próximo passo?",
+"header": "Próximo",
+"options": [
+{"label": "/sdd.spec --include (Recommended)", "description": "Usar URL Jira/Confluence na spec — sugere modelo forte"},
+{"label": "/sdd.mcp --test", "description": "Rodar outro smoke test"},
+{"label": "/sdd.start", "description": "Iniciar / continuar feature — sugere modelo barato"},
+{"label": "Outros", "description": "Descreva o que você vai fazer"}
+],
+"multiSelect": false
 }])
 
 If Express Mode parent (`/sdd.go`): skip this AskUserQuestion; return summary only.
@@ -119,4 +120,4 @@ If Express Mode parent (`/sdd.go`): skip this AskUserQuestion; return summary on
 3. Boundaries: `framework/standards/boundaries.md` — B-12, `/sdd.mcp` section
 4. Preserve existing unrelated MCP servers when merging `.mcp.json`
 5. Manual paste fallback in `spec-include-context.md` remains valid when MCP is off
-)
+   )

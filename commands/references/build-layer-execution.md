@@ -47,16 +47,19 @@ After completing all tasks in a layer:
 4. **Proceed to next layer**
 
 **Why compact between layers**:
-- Layer 1 code details not needed for Layer 2  integration
+
+- Layer 1 code details not needed for Layer 2 integration
 - Layer 2 service configs not needed for Layer 3 quality reviews
 - Prevents context exhaustion on large features
 
 **When to optimize context**:
+
 - Context > 50% after completing a layer → Recommend `/clear` or compaction (show advisory below)
 - Context > 70% → Strongly recommend `/clear` before next layer
 - Large feature (10+ tasks per layer) → Always optimize context
 
 **Context advisory** (when context > 50% at layer boundary):
+
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║  CONTEXT ADVISORY (optional)                          ║
@@ -87,6 +90,7 @@ When Layer 1 has multiple independent tasks, use worktree-isolated agents for pa
 4. **Validate**: Run build + local tests on the merged result
 
 **When NOT to parallelize**:
+
 - Tasks that modify the same files
 - Tasks with data dependencies (task B needs output from task A)
 - Less than 3 independent tasks (overhead not worth it)
@@ -139,12 +143,12 @@ AskUserQuestion(
 
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
+| Selection                                  | Action                                                  |
+| ------------------------------------------ | ------------------------------------------------------- |
 | /clear + /sdd.build --resume (Recommended) | Inform user to run `/clear`, then `/sdd.build --resume` |
-| /sdd.build | `Skill(skill="sdd.build")` |
-| /sdd.check --compact | `Skill(skill="sdd.check", args="--compact")` |
-| /sdd.check --sync | `Skill(skill="sdd.check", args="--sync")` |
-| Other | User types custom input |
+| /sdd.build                                 | `CONTINUE_WORKFLOW("/sdd.build")`                       |
+| /sdd.check --compact                       | `CONTINUE_WORKFLOW("/sdd.check --compact")`             |
+| /sdd.check --sync                          | `CONTINUE_WORKFLOW("/sdd.check --sync")`                |
+| Other                                      | User types custom input                                 |
 
 > **MODE BEHAVIOR**: In Express mode, check context and show advisory only if > 70%, then automatically continue to next layer.

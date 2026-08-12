@@ -16,18 +16,18 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 
 ## Papéis
 
-| Papel | Onde |
-|-------|------|
-| Spec Writer | command `/sdd.spec` (+ agent `sdd-explorer`) |
-| Arquiteto | agent `sdd-system-designer` + `/sdd.plan` |
-| Developer | agent `sdd-implementer` |
-| Test Writer | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E opcional) |
-| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (qualidade **e** integridade do pipeline) |
-| Orquestrador | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert` |
-| Instalador | command `/sdd.install` + agent `development-agents-installer` (alternativa a `install.ps1`) |
-| MCP / integrações | command `/sdd.mcp` + agent `sdd-mcp-setup` (Jira/Confluence read-only; host-agnóstico) |
-| Commit | skill `commit-workflow` com 4 opções e Graphify opcional |
-| Pull Request | command `/sdd.pr` — rascunho SDD → aprovação humana → `gh pr create` |
+| Papel                             | Onde                                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Spec Writer                       | command `/sdd.spec` (+ agent `sdd-explorer`)                                                              |
+| Arquiteto                         | agent `sdd-system-designer` + `/sdd.plan`                                                                 |
+| Developer                         | agent `sdd-implementer`                                                                                   |
+| Test Writer                       | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E opcional)                      |
+| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (qualidade **e** integridade do pipeline)        |
+| Orquestrador                      | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert`                                                 |
+| Instalador                        | command `/sdd.install` + agent `development-agents-installer` (único caminho de instalação — sem scripts) |
+| MCP / integrações                 | command `/sdd.mcp` + agent `sdd-mcp-setup` (Jira/Confluence read-only; host-agnóstico)                    |
+| Commit                            | skill `commit-workflow` com 4 opções e Graphify opcional                                                  |
+| Pull Request                      | command `/sdd.pr` — rascunho SDD → aprovação humana → `gh pr create`                                      |
 
 > Playbook primeiro dia: [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
 

@@ -12,6 +12,7 @@ argument-hint: "[--approve|--refine|--resume]"
 **Description**: Write tests from approved specs and tasks **before** implementation. Human gate — tests must exist and fail (red) before `/sdd.build`.
 
 **Usage**:
+
 - `/sdd.test` → Generate tests from specs + tasks
 - `/sdd.test --refine` → Adjust existing test plan or test files
 - `/sdd.test --approve` → Approve tests and unlock `/sdd.build`
@@ -25,14 +26,15 @@ argument-hint: "[--approve|--refine|--resume]"
 
 **Syntax**: `/sdd.test [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Generate tests from specs + tasks |
-| `--refine` | Adjust test plan or test files |
-| `--approve` | Approve tests (Gate 2.5) |
-| `--resume` | Resume interrupted session |
+| Flag        | Description                       |
+| ----------- | --------------------------------- |
+| (none)      | Generate tests from specs + tasks |
+| `--refine`  | Adjust test plan or test files    |
+| `--approve` | Approve tests (Gate 2.5)          |
+| `--resume`  | Resume interrupted session        |
 
 **Examples**:
+
 ```bash
 /sdd.test              # Write failing tests
 /sdd.test --approve    # Approve tests, then /sdd.build
@@ -46,12 +48,12 @@ argument-hint: "[--approve|--refine|--resume]"
 
 ## Pre-Requisites (BLOCKING)
 
-| Check | On Failure |
-|-------|------------|
+| Check                                            | On Failure                |
+| ------------------------------------------------ | ------------------------- |
 | Tasks approved (`stages.tasks.status: approved`) | Run `/sdd.plan --approve` |
-| `tasks.json` exists | Run `/sdd.plan` |
-| Functional + technical specs approved | Run `/sdd.spec` |
-| Context < 50% (advisory) | `context-guardian` skill |
+| `tasks.json` exists                              | Run `/sdd.plan`           |
+| Functional + technical specs approved            | Run `/sdd.spec`           |
+| Context < 50% (advisory)                         | `context-guardian` skill  |
 
 ```bash
 phase_result=$(bash development-agents/framework/tools/detect-phase.sh sdd/wip/[feature] --json)
@@ -82,6 +84,7 @@ Spec + Tasks (approved)
 ```
 
 **Rules**:
+
 - Tests are written **from acceptance criteria** — not from imagined implementation
 - Tests **must fail** before `/sdd.build` (red phase) — no production code for the feature yet
 - Stubs/mocks/fakes are allowed; **no feature implementation** in production paths
@@ -95,11 +98,11 @@ Spec + Tasks (approved)
 
 All under `sdd/wip/[feature]/4-tests/`:
 
-| File | Purpose |
-|------|---------|
-| `test-plan.md` | AC → test mapping, QA risk bridge, coverage intent |
-| `tests-manifest.json` | Machine-readable test files + **mandatory** `cases[]` contract |
-| `*.test.*` / `*_test.*` | Actual test files in project test dirs (per stack) |
+| File                    | Purpose                                                        |
+| ----------------------- | -------------------------------------------------------------- |
+| `test-plan.md`          | AC → test mapping, QA risk bridge, coverage intent             |
+| `tests-manifest.json`   | Machine-readable test files + **mandatory** `cases[]` contract |
+| `*.test.*` / `*_test.*` | Actual test files in project test dirs (per stack)             |
 
 Copy schema from `framework/templates/tests-manifest.json`.  
 **Canonical field rules**: Read `references/test-manifest-contract.md` before writing the manifest.
@@ -145,6 +148,7 @@ Copy schema from `framework/templates/tests-manifest.json`.
 ```
 
 **Rules**:
+
 - `cases[]` is **mandatory** (never free-text `edge_cases` labels)
 - Each case requires: `id`, `title`, `expect`, `assert_kind`, `qa_surrogate`, `risk_if_missed`
 - `assert_kind`: only `exception` | `status` | `state`
@@ -159,6 +163,7 @@ Copy schema from `framework/templates/tests-manifest.json`.
 Invoke `Skill("context-guardian")` if context > 40%.
 
 Update `meta.md`:
+
 - `Current Stage: tests`
 - `stages.tests.status: in-progress`
 - `stages.tests.started: <ISO-8601>`
@@ -174,27 +179,29 @@ Update `meta.md`:
 
 Create `4-tests/test-plan.md` from `framework/templates/test-plan.md`:
 
-| Section | Content |
-|---------|---------|
-| Coverage map | Each AC → TEST-ID + Case IDs |
+| Section        | Content                                                                |
+| -------------- | ---------------------------------------------------------------------- |
+| Coverage map   | Each AC → TEST-ID + Case IDs                                           |
 | Cases contract | Mandatory fields reminder (`expect`, `assert_kind`, `qa_surrogate`, …) |
-| QA risk bridge | QA/E2E risk → Case ID (`qa_surrogate: true`) |
-| Out of scope | What will NOT be tested in this gate |
-| Red phase | Command + expected fail-for-right-reason |
+| QA risk bridge | QA/E2E risk → Case ID (`qa_surrogate: true`)                           |
+| Out of scope   | What will NOT be tested in this gate                                   |
+| Red phase      | Command + expected fail-for-right-reason                               |
 
 Also create `4-tests/tests-manifest.json` from `framework/templates/tests-manifest.json` with real `cases[]` (no `edge_cases` labels).
+
 > Contract details: Read `references/test-manifest-contract.md`.
 
 ### Step 4: Write Tests (Delegate)
 
 Spawn test writers — **never implement production feature code**:
 
-| Scope | Subagent |
-|-------|----------|
-| Unit + integration | `sdd-small-test-writer` |
+| Scope                          | Subagent                |
+| ------------------------------ | ----------------------- |
+| Unit + integration             | `sdd-small-test-writer` |
 | E2E (if `testing.e2e.enabled`) | `sdd-large-test-writer` |
 
 **Prompt must include**:
+
 - Mode: `tests-first` — write tests only, no production implementation
 - Reference: functional spec AC, technical spec contracts, task acceptance criteria
 - Manifest path + **mandatory `cases[]` contract** (each assertion must match a case `expect` / `assert_kind`)
@@ -220,12 +227,12 @@ pytest
 "red_summary": "N failed, M passed — failures expected"
 ```
 
-| Result | Action |
-|--------|--------|
-| New tests fail | Proceed to approval |
-| New tests pass | **BLOCK** — tests are not testing missing behavior; refine |
-| Tests don't compile | Fix test code only, re-run |
-| Cannot run tests | AskUserQuestion: fix env / abort — do **not** skip the tests-first gate |
+| Result              | Action                                                                  |
+| ------------------- | ----------------------------------------------------------------------- |
+| New tests fail      | Proceed to approval                                                     |
+| New tests pass      | **BLOCK** — tests are not testing missing behavior; refine              |
+| Tests don't compile | Fix test code only, re-run                                              |
+| Cannot run tests    | AskUserQuestion: fix env / abort — do **not** skip the tests-first gate |
 
 ### Step 6: Contract check + Display for Approval
 
@@ -247,11 +254,11 @@ cat sdd/wip/[feature]/4-tests/test-plan.md
 
 Show table:
 
-| TEST-ID | File | Covers | Cases (id → expect) | qa_surrogate | Red? |
-|---------|------|--------|---------------------|--------------|------|
-| TEST-001 | ... | TASK-002, AC-1 | EC-001 → rejects TITLE_REQUIRED | true | ✓ fail |
+| TEST-ID  | File | Covers         | Cases (id → expect)             | qa_surrogate | Red?   |
+| -------- | ---- | -------------- | ------------------------------- | ------------ | ------ |
+| TEST-001 | ...  | TASK-002, AC-1 | EC-001 → rejects TITLE_REQUIRED | true         | ✓ fail |
 
-**⛔ INVOKE TOOL** (Standard mode):
+**⛔ INVOKE TOOL** (Standard mode) — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md` for per-harness translation):
 
 ```
 AskUserQuestion(
@@ -294,7 +301,7 @@ AskUserQuestion(
 
 **Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `test→build` (troca crítica para modelo barato).
 
-**⛔ INVOKE TOOL**:
+**⛔ INVOKE TOOL** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 
 ```
 AskUserQuestion(
@@ -314,14 +321,15 @@ AskUserQuestion(
 ```
 
 > **Critical switch**: Before this next-steps question, run the **model-confirm** AskUserQuestion from `references/model-suggestion-advisory.md` (`phase_key`: `test→build`). BLOCKING in Standard and before build inside `/sdd.go`.
+
 ---
 
 ## Behavior by Mode
 
-| Mode | Generate | Refine | Red verify | Approve |
-|------|----------|--------|------------|---------|
-| **Express** | Auto | Skip | Auto | Auto if red OK |
-| **Standard** | Auto | Ask user | Mandatory | Ask user |
+| Mode         | Generate | Refine   | Red verify | Approve        |
+| ------------ | -------- | -------- | ---------- | -------------- |
+| **Express**  | Auto     | Skip     | Auto       | Auto if red OK |
+| **Standard** | Auto     | Ask user | Mandatory  | Ask user       |
 
 ---
 
@@ -358,12 +366,12 @@ AskUserQuestion(
 
 ## Optional flags (lazy-loaded)
 
-| Flag | Reference |
-|------|-----------|
-| `--refine` | `references/test-refine.md` |
-| `--approve` | Standard path — Step 7 (On Approval); contract gate in Step 6 |
-| `--resume` | Resume from last saved test-writing state in `meta.md` |
-| Manifest/`cases[]` rules | `references/test-manifest-contract.md` |
+| Flag                     | Reference                                                     |
+| ------------------------ | ------------------------------------------------------------- |
+| `--refine`               | `references/test-refine.md`                                   |
+| `--approve`              | Standard path — Step 7 (On Approval); contract gate in Step 6 |
+| `--resume`               | Resume from last saved test-writing state in `meta.md`        |
+| Manifest/`cases[]` rules | `references/test-manifest-contract.md`                        |
 
 ---
 
@@ -372,6 +380,7 @@ AskUserQuestion(
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.test help`:
+
 1. Output ONLY the "Quick Help" section
 2. Do NOT execute test logic
 3. Keep response concise (~15 lines)

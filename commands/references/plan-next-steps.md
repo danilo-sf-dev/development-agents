@@ -26,15 +26,16 @@ AskUserQuestion(
   }]
 )
 ```
+
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
+| Selection                        | Action                                        |
+| -------------------------------- | --------------------------------------------- |
 | /clear + /sdd.test (Recomendado) | Inform user to run `/clear`, then `/sdd.test` |
-| /sdd.test | `Skill(skill="sdd.test")` |
-| /sdd.test --refine | `Skill(skill="sdd.test", args="--refine")` |
-| /sdd.check | `Skill(skill="sdd.check")` |
-| Outros | User types custom input |
+| /sdd.test                        | `CONTINUE_WORKFLOW("/sdd.test")`              |
+| /sdd.test --refine               | `CONTINUE_WORKFLOW("/sdd.test --refine")`     |
+| /sdd.check                       | `CONTINUE_WORKFLOW("/sdd.check")`             |
+| Outros                           | User types custom input                       |
 
 ---
 

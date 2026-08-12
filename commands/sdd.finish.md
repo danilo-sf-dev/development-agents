@@ -11,6 +11,7 @@ model: sonnet
 **Description**: Validate, finalize, and archive completed feature
 
 **Usage**:
+
 - `/sdd.finish` → Validate and archive (behavior based on mode)
 
 ---
@@ -21,15 +22,16 @@ model: sonnet
 
 **Syntax**: `/sdd.finish [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Validate and archive completed feature |
-| `--force` | Skip certain validation checks |
-| `--skip-tests` | Skip test re-run (not recommended) |
+| Flag           | Description                            |
+| -------------- | -------------------------------------- |
+| (none)         | Validate and archive completed feature |
+| `--force`      | Skip certain validation checks         |
+| `--skip-tests` | Skip test re-run (not recommended)     |
 
 **Pre-requisite**: `/sdd.build` FINAL VALIDATION must pass first.
 
 **Example**:
+
 ```bash
 /sdd.finish            # Validate, archive, move to features/
 ```
@@ -39,7 +41,6 @@ model: sonnet
 **Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:finish`.
 
 ---
-
 
 ## PRE-REQUISITE
 
@@ -56,12 +57,12 @@ Do not invent a parallel validation path.
 
 ## Context Advisory (short)
 
->50% context → recommend `/clear` before finish; >80% → `context-guardian`. Archive is disk-safe; validation quality suffers in a full context.
+> 50% context → recommend `/clear` before finish; >80% → `context-guardian`. Archive is disk-safe; validation quality suffers in a full context.
 
 ## Skill Hooks (lazy-loaded)
 
 > **ONLY IF** skill hooks configured for `finish`:
-> Read `references/finish-skill-hooks.md` at before-start / after-implementation / before-approval.
+> Read `references/skill-hooks.md`, phase=`finish`, at before-start / after-implementation / before-approval.
 
 ## Purpose
 
@@ -71,9 +72,9 @@ Final step in feature workflow. Runs comprehensive validation, generates summary
 
 ## Behavior by Mode (short)
 
-| Mode | Behavior |
-|------|----------|
-| Express | Validate → auto-archive → brief success |
+| Mode     | Behavior                                                                 |
+| -------- | ------------------------------------------------------------------------ |
+| Express  | Validate → auto-archive → brief success                                  |
 | Standard | Show results → confirm archive → docs → promote learnings/backlog if any |
 
 > **ONLY IF** profile-specific output examples:
@@ -109,9 +110,11 @@ Final step in feature workflow. Runs comprehensive validation, generates summary
 ## Generated Documentation
 
 ### README.md
+
 Summary of what was built, components, APIs, test coverage.
 
 ### implementation-summary.md
+
 Detailed metrics: timeline, effort, tasks, commits, velocity.
 
 ---
@@ -137,12 +140,14 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 ```
 
 **Feature Naming**:
+
 - The full directory name (including date prefix) is preserved when moving from `wip/` to `features/`
 - Example: `sdd/wip/20260120-user-auth/` → `sdd/features/20260120-user-auth/`
 
 **CRITICAL**: See `framework/standards/boundaries.md` — B-09, `/sdd.finish` section.
 
 > **Telemetry**: Data is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor).
+
 ---
 
 ## Examples (lazy-loaded)
@@ -152,15 +157,15 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 
 ## Optional conditions (lazy-loaded)
 
-| Condition | Reference |
-|-----------|-----------|
-| Mobile validation | `references/finish-mobile-validation.md` |
-| Skill hooks | `references/finish-skill-hooks.md` |
-| Detailed validation bash/checklists | `references/finish-validation-checks.md` |
-| Brownfield spec merge | `references/finish-brownfield-merge.md` |
-| Archive / PATTERNS details | `references/finish-archive-workflow.md` |
-| Examples | `references/finish-examples.md` |
-| Next-steps UX | `references/finish-next-steps.md` |
+| Condition                           | Reference                                   |
+| ----------------------------------- | ------------------------------------------- |
+| Mobile validation                   | `references/finish-mobile-validation.md`    |
+| Skill hooks                         | `references/skill-hooks.md`, phase=`finish` |
+| Detailed validation bash/checklists | `references/finish-validation-checks.md`    |
+| Brownfield spec merge               | `references/finish-brownfield-merge.md`     |
+| Archive / PATTERNS details          | `references/finish-archive-workflow.md`     |
+| Examples                            | `references/finish-examples.md`             |
+| Next-steps UX                       | `references/finish-next-steps.md`           |
 
 ## AI Agent Instructions
 

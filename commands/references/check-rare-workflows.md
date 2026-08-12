@@ -12,12 +12,12 @@ Validates bidirectional consistency between all framework layers based on curren
 
 ### Phase-Aware Validation
 
-| Current Phase | Layers Checked |
-|---------------|----------------|
-| `functional` | Only Functional Spec (nothing to compare) |
-| `technical` | Functional ↔ Technical |
-| `tasks` | Functional ↔ Technical ↔ Tasks |
-| `implementation` | Functional ↔ Technical ↔ Tasks ↔ Code |
+| Current Phase    | Layers Checked                            |
+| ---------------- | ----------------------------------------- |
+| `functional`     | Only Functional Spec (nothing to compare) |
+| `technical`      | Functional ↔ Technical                    |
+| `tasks`          | Functional ↔ Technical ↔ Tasks            |
+| `implementation` | Functional ↔ Technical ↔ Tasks ↔ Code     |
 
 ### Workflow
 
@@ -67,26 +67,25 @@ if [ "$alignment_valid" != "true" ]; then
     echo "$alignment_result" | grep -o '"drifts":\[[^]]*\]'
 fi
 
-# Step 0b: Run cross-layer analysis via GenAI Gateway (offloaded)
-layers_result=$(bash development-agents/framework/tools/genai/genai-analyze-layers.sh sdd/wip/[feature])
-genai_exit=$?
+# Step 0b: Cross-layer analysis (deterministic)
+layers_result=$(bash development-agents/framework/tools/extraction/analyze-layers.sh sdd/wip/[feature] --json)
 
-if [ "$genai_exit" -eq 0 ]; then
-    # GenAI analysis succeeded - use enriched results
+if [ $? -eq 0 ]; then
     verdict=$(echo "$layers_result" | grep -o '"verdict":"[^"]*"' | cut -d'"' -f4)
     echo "📊 Cross-layer analysis: $verdict"
-elif [ "$genai_exit" -eq 2 ]; then
-    # GenAI unavailable - fallback to subagent
+else
     echo "🤖 Delegating to sdd-layer-analyzer for deep analysis..."
     # Use subagent for complex analysis
 fi
 ```
 
 **Deterministic checks**:
+
 - **validate-spec-alignment.sh**: Detects drift between functional and technical specs
 - **analyze-layers.sh**: Cross-layer consistency (functional → technical → tasks → code)
 
 **Benefits**:
+
 - Saves ~2,000-3,000 tokens vs LLM parsing
 - Provides structured input for subagent
 - Fast feedback on common issues
@@ -96,11 +95,13 @@ fi
 #### Functional ↔ Technical
 
 **Functional → Technical:**
+
 - Each User Story has endpoint/service implementing it
 - Each Acceptance Criteria has technical validation/behavior
 - Each NFR has implementation strategy
 
 **Technical → Functional:**
+
 - Each endpoint traces to a User Story (detect scope creep)
 - Each data model traces to a requirement
 - Each external integration is mentioned in functional
@@ -108,21 +109,25 @@ fi
 #### Technical ↔ Tasks
 
 **Technical → Tasks:**
+
 - Each endpoint has task(s) to implement it
 - Each model has task to create it
 - Each integration has configuration task
 
 **Tasks → Technical:**
+
 - Each task has technical spec backing it
 - No orphan tasks without spec
 
 #### Tasks ↔ Code (implementation phase only)
 
 **Tasks → Code:**
+
 - Each acceptance criteria has implementing code
 - Each completed task has modified files
 
 **Code → Tasks:**
+
 - Each new function/class is documented in tasks
 - No undocumented code
 
@@ -166,6 +171,7 @@ Validates technical compliance (build, tests, linting, dependencies) and propose
    ```
 
    **Example Error Output** (when `sdd/PROJECT.md` declares a prefix):
+
    ```
    ❌ Dockerfile: INVALID BASE IMAGE
       Found: FROM eclipse-temurin:21-jdk
@@ -196,12 +202,8 @@ Validates technical compliance (build, tests, linting, dependencies) and propose
 Validates `sdd/PROJECT.md` against framework standards and manages override registration.
 
 ```bash
-# Validate PROJECT.md via GenAI Gateway
-result=$(bash development-agents/framework/tools/genai/genai-validate-project.sh .)
-if [ $? -ne 0 ]; then
-    # Fallback to deterministic validation
-    result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
-fi
+# Validate PROJECT.md (deterministic)
+result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
 ```
 
 ### What It Checks
@@ -227,6 +229,7 @@ Scans ALL specs in the project and validates them against current framework stan
 ### Purpose
 
 When users upgrade the framework mid-project, existing specs (system specs, completed features, WIP features) may have:
+
 - Missing required sections (added in newer versions)
 - Deprecated formats or patterns
 - Incompatible structure with current templates
@@ -310,70 +313,70 @@ sdd/
 
 #### Functional Spec Validation
 
-| Section | Required Since | Check |
-|---------|---------------|-------|
-| `## Problem Statement` | v1.0.0 | Must exist, non-empty |
-| `## User Stories` | v1.0.0 | At least one story |
-| `## Acceptance Criteria` | v1.0.0 | At least one AC per story |
-| `## Out of Scope` | v1.0.0 | Must exist |
-| `## E2E Scenarios` | v1.1.0 | Required if `testing.e2e.enabled: true` |
-| `## Spec Reference Annotations` | v1.0.2 | Required for brownfield |
+| Section                         | Required Since | Check                                   |
+| ------------------------------- | -------------- | --------------------------------------- |
+| `## Problem Statement`          | v1.0.0         | Must exist, non-empty                   |
+| `## User Stories`               | v1.0.0         | At least one story                      |
+| `## Acceptance Criteria`        | v1.0.0         | At least one AC per story               |
+| `## Out of Scope`               | v1.0.0         | Must exist                              |
+| `## E2E Scenarios`              | v1.1.0         | Required if `testing.e2e.enabled: true` |
+| `## Spec Reference Annotations` | v1.0.2         | Required for brownfield                 |
 
 #### Technical Spec Validation
 
-| Section | Required Since | Check |
-|---------|---------------|-------|
-| `## Architecture` | v1.0.0 | Must exist |
-| `## API Contracts` | v1.0.0 | Must exist if feature has endpoints |
-| `## Data Model` | v1.0.0 | Must exist if feature has persistence |
-| `## Project Services` | v1.1.4 | Must exist if the feature uses project services |
-| `## Security Considerations` | v1.0.0 | Must exist |
-| `## Environment Variables` | v1.2.1 | Separate from Secrets |
+| Section                      | Required Since | Check                                           |
+| ---------------------------- | -------------- | ----------------------------------------------- |
+| `## Architecture`            | v1.0.0         | Must exist                                      |
+| `## API Contracts`           | v1.0.0         | Must exist if feature has endpoints             |
+| `## Data Model`              | v1.0.0         | Must exist if feature has persistence           |
+| `## Project Services`        | v1.1.4         | Must exist if the feature uses project services |
+| `## Security Considerations` | v1.0.0         | Must exist                                      |
+| `## Environment Variables`   | v1.2.1         | Separate from Secrets                           |
 
 #### meta.md Validation
 
-| Field | Required Since | Check |
-|-------|---------------|-------|
-| `framework.version_created` | v1.2.1 | Should exist |
-| `testing.e2e.enabled` | v1.1.0 | Must be true/false |
+| Field                       | Required Since | Check              |
+| --------------------------- | -------------- | ------------------ |
+| `framework.version_created` | v1.2.1         | Should exist       |
+| `testing.e2e.enabled`       | v1.1.0         | Must be true/false |
 
 #### tasks.json Validation (per feature)
 
-| Field | Required Since | Check |
-|-------|---------------|-------|
-| Task ID format | v1.0.0 | `TASK-XXX` or `AUTO-TASK-*` |
-| `layer` field | v1.1.0 | Must be 1, 2, or 3 |
-| `complexity` field | v1.1.4 | Must be Low/Medium/High (not Duration) |
-| `depends_on` | v1.0.0 | Referenced tasks must exist |
-| `acceptance_criteria` | v1.0.0 | At least one AC per task |
-| No `duration` or `hours` | v1.1.4 | Deprecated: use Complexity |
+| Field                    | Required Since | Check                                  |
+| ------------------------ | -------------- | -------------------------------------- |
+| Task ID format           | v1.0.0         | `TASK-XXX` or `AUTO-TASK-*`            |
+| `layer` field            | v1.1.0         | Must be 1, 2, or 3                     |
+| `complexity` field       | v1.1.4         | Must be Low/Medium/High (not Duration) |
+| `depends_on`             | v1.0.0         | Referenced tasks must exist            |
+| `acceptance_criteria`    | v1.0.0         | At least one AC per task               |
+| No `duration` or `hours` | v1.1.4         | Deprecated: use Complexity             |
 
 #### PROJECT.md Validation
 
-| Section | Required Since | Check |
-|---------|---------------|-------|
-| `## Project Overview` | v1.0.0 | Must exist |
-| `## Tech Stack` | v1.0.0 | Must define language, framework |
-| `## Team Conventions` | v1.1.0 | Should exist |
-| `## Repository` | v1.0.0 | Must have repo URL |
+| Section               | Required Since | Check                           |
+| --------------------- | -------------- | ------------------------------- |
+| `## Project Overview` | v1.0.0         | Must exist                      |
+| `## Tech Stack`       | v1.0.0         | Must define language, framework |
+| `## Team Conventions` | v1.1.0         | Should exist                    |
+| `## Repository`       | v1.0.0         | Must have repo URL              |
 
 #### PATTERNS.md Validation (if exists)
 
-| Section | Required Since | Check |
-|---------|---------------|-------|
-| `## Patterns` | v1.1.17 | At least one pattern if file exists |
-| Pattern format | v1.1.17 | Each must have: title, context, decision |
-| `source_feature` | v1.1.17 | Must reference originating feature |
+| Section          | Required Since | Check                                    |
+| ---------------- | -------------- | ---------------------------------------- |
+| `## Patterns`    | v1.1.17        | At least one pattern if file exists      |
+| Pattern format   | v1.1.17        | Each must have: title, context, decision |
+| `source_feature` | v1.1.17        | Must reference originating feature       |
 
 #### backlog.md Validation (if exists)
 
-| Section | Required Since | Check |
-|---------|---------------|-------|
-| `## TODOs` | v1.1.10 | Valid section header |
-| `## DEBT` | v1.1.10 | Valid section header |
-| `## IDEAS` | v1.1.10 | Valid section header |
-| Item format | v1.1.10 | ID format: `TODO-XXX`, `DEBT-XXX`, `IDEA-XXX` |
-| No `sdd/backlog/` directory | v1.1.10 | Deprecated: use file, not directory |
+| Section                     | Required Since | Check                                         |
+| --------------------------- | -------------- | --------------------------------------------- |
+| `## TODOs`                  | v1.1.10        | Valid section header                          |
+| `## DEBT`                   | v1.1.10        | Valid section header                          |
+| `## IDEAS`                  | v1.1.10        | Valid section header                          |
+| Item format                 | v1.1.10        | ID format: `TODO-XXX`, `DEBT-XXX`, `IDEA-XXX` |
+| No `sdd/backlog/` directory | v1.1.10        | Deprecated: use file, not directory           |
 
 > **Lazy-loaded**: When `--version` flag is used, Read `references/check-output-examples.md` section "## --version examples" for output format reference.
 
@@ -381,13 +384,13 @@ sdd/
 
 The scan also detects deprecated patterns from previous versions:
 
-| Pattern | Deprecated In | Current Standard | Auto-Fix |
-|---------|--------------|------------------|----------|
-| `Duration: X hours` in tasks | v1.1.4 | `Complexity: Low/Medium/High` | Yes |
-| MySQL endpoint in Secrets table | v1.2.1 | Environment Variables table | Yes |
-| `sdd/backlog/` directory | v1.1.10 | `sdd/backlog.md` file | Manual |
-| Local `development-agents/framework/` folder | v1.1.15 | Global `development-agents/framework/` | Manual |
-| Legacy `project_type` / prototype\|mvp modes in meta | — | Remove field; single full pipeline | Yes |
+| Pattern                                              | Deprecated In | Current Standard                       | Auto-Fix |
+| ---------------------------------------------------- | ------------- | -------------------------------------- | -------- |
+| `Duration: X hours` in tasks                         | v1.1.4        | `Complexity: Low/Medium/High`          | Yes      |
+| MySQL endpoint in Secrets table                      | v1.2.1        | Environment Variables table            | Yes      |
+| `sdd/backlog/` directory                             | v1.1.10       | `sdd/backlog.md` file                  | Manual   |
+| Local `development-agents/framework/` folder         | v1.1.15       | Global `development-agents/framework/` | Manual   |
+| Legacy `project_type` / prototype\|mvp modes in meta | —             | Remove field; single full pipeline     | Yes      |
 
 ### Integration with Default Check
 
@@ -455,6 +458,7 @@ Commit: xyz789 (2025-11-23 14:30)
 Output adapts based on current phase:
 
 ### Phase 1 (Functional)
+
 ```
 Current Stage: functional (Phase 1/4)
 
@@ -467,6 +471,7 @@ Next: Complete spec, then /sdd.spec --approve
 ```
 
 ### Phase 2 (Technical)
+
 ```
 Current Stage: technical (Phase 2/4)
 
@@ -479,6 +484,7 @@ Next: Review technical, then /sdd.spec --approve
 ```
 
 ### Phase 3 (Tasks)
+
 ```
 Current Stage: tasks (Phase 3/4)
 
@@ -491,6 +497,7 @@ Next: /sdd.plan --approve
 ```
 
 ### Phase 4 (Implementation)
+
 Full implementation progress as shown above.
 
 ---
@@ -662,6 +669,7 @@ Resuming from TASK-003...
 ### State File Location
 
 Each feature's state is stored in:
+
 ```
 sdd/wip/<feature-name>/state.json
 ```
@@ -669,6 +677,7 @@ sdd/wip/<feature-name>/state.json
 ### When Sessions are Cleared
 
 State files are automatically deleted when:
+
 - Feature is completed (`/sdd.finish`)
 - Feature is cancelled (`/sdd.cancel`)
 - Session completes successfully

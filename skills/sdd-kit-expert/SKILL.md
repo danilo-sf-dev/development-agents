@@ -5,7 +5,7 @@ description: Expert on SDD Kit framework for Spec-Driven Development. This is a 
 
 # SDD Kit Expert
 
-> **SKILL**: Framework knowledge base for SDD workflow. Invoke with `Skill("sdd-kit-expert")`. Do NOT use `Task(subagent_type=...)` — this is a Skill, not a subagent.
+> **SKILL**: Framework knowledge base for SDD workflow. Invoke with `Skill("sdd-kit-expert")` — this is `INVOKE_PROCEDURE`, not `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD`. Do NOT use `Task(subagent_type=...)` — this is a Skill, not a subagent. See `framework/_shared/harness-capabilities.md` for why that distinction matters (a Skill runs inline in the caller's context; an agent delegation gets its own context).
 
 You are an expert on the SDD Kit framework for Spec-Driven Development (SDD).
 
@@ -48,13 +48,13 @@ sdd/
 
 ### 3. File Naming (EXACT)
 
-| Phase | File Path | File Name |
-|-------|-----------|-----------|
-| Functional | `sdd/wip/YYYYMMDD-feature/1-functional/` | `spec.md` |
-| Technical | `sdd/wip/YYYYMMDD-feature/2-technical/` | `spec.md` |
-| Tasks | `sdd/wip/YYYYMMDD-feature/3-tasks/` | `tasks.json` |
-| Progress | `sdd/wip/YYYYMMDD-feature/4-implementation/` | `progress.md` |
-| Metadata | `sdd/wip/YYYYMMDD-feature/` | `meta.md` |
+| Phase      | File Path                                    | File Name     |
+| ---------- | -------------------------------------------- | ------------- |
+| Functional | `sdd/wip/YYYYMMDD-feature/1-functional/`     | `spec.md`     |
+| Technical  | `sdd/wip/YYYYMMDD-feature/2-technical/`      | `spec.md`     |
+| Tasks      | `sdd/wip/YYYYMMDD-feature/3-tasks/`          | `tasks.json`  |
+| Progress   | `sdd/wip/YYYYMMDD-feature/4-implementation/` | `progress.md` |
+| Metadata   | `sdd/wip/YYYYMMDD-feature/`                  | `meta.md`     |
 
 **❌ WRONG**: `functional-spec.md`, `technical-spec.md`, `feature-spec.md`
 **✅ CORRECT**: `spec.md` inside the numbered phase folder
@@ -76,13 +76,15 @@ sdd/
 ### 6. Phased Workflow (NEVER SKIP)
 
 **Standard Mode** (manual control):
+
 > Canonical pipeline, gates, and diagram: `framework/PIPELINE.md`
 
 ```
-/sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish → /sdd.pr (optional)
+/sdd.start → /sdd.spec functional → /sdd.spec technical → /sdd.plan → /sdd.test → /sdd.build → /sdd.check → /sdd.finish → /sdd.pr (optional)
 ```
 
 **Express Mode** (orchestrated):
+
 ```
 /sdd.go "feature-name"  ← Orchestrates ALL phases automatically
 ```
@@ -105,27 +107,27 @@ SDD Kit is a command-based framework that helps teams build software predictably
 
 ## Key Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sdd.go` | **Express mode** - orchestrates start→spec→plan→test→build→finish |
-| `/sdd.start` | Initialize new feature (also `--reopen` for completed features) |
-| `/sdd.spec` | Create functional/technical specs |
-| `/sdd.plan` | Generate implementation tasks |
-| `/sdd.test` | Write and approve tests (tests-first gate) |
-| `/sdd.build` | Implement tasks until approved tests pass |
-| `/sdd.finish` | Validate and archive |
-| `/sdd.pr` | Draft PR → human approve → open on GitHub |
-| `/sdd.check` | View progress and consistency |
-| `/sdd.fix` | Fix errors across all layers |
-| `/sdd.list` | List all features |
-| `/sdd.cancel` | Cancel current feature |
-| `/sdd.rollback` | Rollback to previous state |
-| `/sdd.backlog` | Manage TODO/DEBT/IDEA backlog |
-| `/sdd.import` | Import existing specs |
-| `/sdd.reverse-eng` | Document existing codebase |
-| `/sdd.help` | Get framework help |
-| `/sdd.project` | View/edit PROJECT.md, `--view` opens framework viewer |
-| `/sdd.hub` | Multi-app hub orchestrator (start, spec, plan, build, check, list, finish, cancel, go, sync) |
+| Command            | Purpose                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `/sdd.go`          | **Express mode** - orchestrates start→spec→plan→test→build→finish                            |
+| `/sdd.start`       | Initialize new feature (also `--reopen` for completed features)                              |
+| `/sdd.spec`        | Create functional/technical specs                                                            |
+| `/sdd.plan`        | Generate implementation tasks                                                                |
+| `/sdd.test`        | Write and approve tests (tests-first gate)                                                   |
+| `/sdd.build`       | Implement tasks until approved tests pass                                                    |
+| `/sdd.finish`      | Validate and archive                                                                         |
+| `/sdd.pr`          | Draft PR → human approve → open on GitHub                                                    |
+| `/sdd.check`       | View progress and consistency                                                                |
+| `/sdd.fix`         | Fix errors across all layers                                                                 |
+| `/sdd.list`        | List all features                                                                            |
+| `/sdd.cancel`      | Cancel current feature                                                                       |
+| `/sdd.rollback`    | Rollback to previous state                                                                   |
+| `/sdd.backlog`     | Manage TODO/DEBT/IDEA backlog                                                                |
+| `/sdd.import`      | Import existing specs                                                                        |
+| `/sdd.reverse-eng` | Document existing codebase                                                                   |
+| `/sdd.help`        | Get framework help                                                                           |
+| `/sdd.project`     | View/edit PROJECT.md, `--view` opens framework viewer                                        |
+| `/sdd.hub`         | Multi-app hub orchestrator (start, spec, plan, build, check, list, finish, cancel, go, sync) |
 
 ## Execution Modes
 
@@ -136,11 +138,11 @@ SDD Kit is a command-based framework that helps teams build software predictably
 
 Tasks are organized into layers for proper sequencing:
 
-| Layer | Name | What | When |
-|-------|------|------|------|
-| 1 | Local | Code, unit tests | First |
-| 2 | Integration | Service integration, project CI | After L1 |
-| 3 | Quality | Code review, security, performance | After L2 |
+| Layer | Name        | What                               | When     |
+| ----- | ----------- | ---------------------------------- | -------- |
+| 1     | Local       | Code, unit tests                   | First    |
+| 2     | Integration | Service integration, project CI    | After L1 |
+| 3     | Quality     | Code review, security, performance | After L2 |
 
 ## Platform / stack resolution
 
@@ -168,34 +170,36 @@ Never invent a corporate platform stack when the repo uses something else.
 
 ### Subagents (Task Delegation)
 
-| Subagent | Purpose | Used By |
-|----------|---------|---------|
-| `sdd-validator-runner` | Isolated quality gates execution | `/sdd.build`, `/sdd.finish` |
-| `sdd-layer-analyzer` | Cross-layer consistency validation | `/sdd.check --sync`, `/sdd.fix` |
-| `sdd-debugger` | Deep debugging and root cause analysis | `/sdd.fix` for complex bugs |
-| `sdd-project-wizard` | Interactive PROJECT.md creation | `/sdd.start` when PROJECT.md missing |
-| `sdd-mcp-setup` | Host-agnostic MCP setup (Atlassian read-only) | `/sdd.mcp` |
-| `context-guardian` | Context and tool delegation for efficiency | All specs requiring external documentation |
-| `sdd-system-designer` | Architecture decisions, multi-stack options | `/sdd.spec technical` |
-| `sdd-explorer` | Project service discovery and configuration | `/sdd.spec technical` |
-| `sdd-large-test-writer` | E2E test generation via E2E | `/sdd.test` or `/sdd.build` if E2E deferred |
-| `sdd-small-test-writer` | Unit and integration tests | `/sdd.test` (tests-first) |
-| `sdd-implementer` | Code implementation from specs | `/sdd.build` for implementation tasks |
-| `sdd-backlog-manager` | Backlog CRUD operations | `/sdd.backlog` |
-| `sdd-explorer` | Codebase exploration + code ownership mapping | `/sdd.reverse-eng` |
+| Subagent                | Purpose                                       | Used By                                     |
+| ----------------------- | --------------------------------------------- | ------------------------------------------- |
+| `sdd-validator-runner`  | Isolated quality gates execution              | `/sdd.build`, `/sdd.finish`                 |
+| `sdd-layer-analyzer`    | Cross-layer consistency validation            | `/sdd.check --sync`, `/sdd.fix`             |
+| `sdd-debugger`          | Deep debugging and root cause analysis        | `/sdd.fix` for complex bugs                 |
+| `sdd-project-wizard`    | Interactive PROJECT.md creation               | `/sdd.start` when PROJECT.md missing        |
+| `sdd-mcp-setup`         | Host-agnostic MCP setup (Atlassian read-only) | `/sdd.mcp`                                  |
+| `context-guardian`      | Context and tool delegation for efficiency    | All specs requiring external documentation  |
+| `sdd-system-designer`   | Architecture decisions, multi-stack options   | `/sdd.spec technical`                       |
+| `sdd-explorer`          | Project service discovery and configuration   | `/sdd.spec technical`                       |
+| `sdd-large-test-writer` | E2E test generation via E2E                   | `/sdd.test` or `/sdd.build` if E2E deferred |
+| `sdd-small-test-writer` | Unit and integration tests                    | `/sdd.test` (tests-first)                   |
+| `sdd-implementer`       | Code implementation from specs                | `/sdd.build` for implementation tasks       |
+| `sdd-backlog-manager`   | Backlog CRUD operations                       | `/sdd.backlog`                              |
+| `sdd-explorer`          | Codebase exploration + code ownership mapping | `/sdd.reverse-eng`                          |
 
-### GenAI Offloaded Tools
+### Inline Analysis Capabilities
 
-| Tool | Purpose | Used By |
-|------|---------|---------|
-| `genai-detect-gaps.sh` | Detect missing spec info by feature type | `/sdd.spec` Completeness Check |
-| `genai-check-compliance.sh` | Pre-process code compliance validation | `sdd-explorer` |
-| `genai-select-arch-pattern.sh` | Pre-select architecture pattern | `sdd-system-designer` |
-| `genai-analyze-e2e.sh` | Analyze E2E test scenarios | `/sdd.plan` E2E planning |
-| `genai-analyze-layers.sh` | Task layer classification | `/sdd.plan` layer assignment |
-| `genai-compact-state.sh` | Context compaction (MINIMAL/STANDARD/FULL) | Context Budget Protocol |
-| `genai-resolve-conflicts.sh` | Resolve spec cross-reference conflicts | `/sdd.spec` conflict detection |
-| `genai-validate-project.sh` | Validate PROJECT.md conventions | `/sdd.project` validation |
+These capabilities are performed directly by the responsible agent/subagent during the relevant phase — there is no external pre-processing script in this pack.
+
+| Capability                                 | Performed By                                                                                                 | Used By                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------ |
+| Detect missing spec info by feature type   | Agent applies `references/spec-completeness-checklist.md` directly against the spec content                  | `/sdd.spec` Completeness Check |
+| Code compliance validation                 | `sdd-explorer` reasoning against coding-standards.md                                                         | `sdd-explorer`                 |
+| Architecture pattern selection             | `sdd-system-designer` applies the pattern-selection rules directly (see its "Architecture Patterns" section) | `sdd-system-designer`          |
+| E2E test scenario analysis                 | Agent reasoning over the functional spec, using `extract-e2e.sh` for deterministic scenario extraction       | `/sdd.plan` E2E planning       |
+| Task layer classification                  | Agent applies the Layer 1/2/3 rules from the `sdd-validator` skill directly                                  | `/sdd.plan` layer assignment   |
+| Context compaction (MINIMAL/STANDARD/FULL) | Manual summarization per `context-guardian` skill guidance                                                   | Context Budget Protocol        |
+| Resolve spec cross-reference conflicts     | Agent reasoning, using `validate-spec-conflicts.sh` to surface candidates                                    | `/sdd.spec` conflict detection |
+| Validate PROJECT.md conventions            | `validate-project.sh` deterministic validator                                                                | `/sdd.project` validation      |
 
 ## Quality Gates
 
@@ -216,9 +220,9 @@ Mandatory validations at every phase:
 - **tasks.json** - Single source of truth for task tracking
 - **LOCAL-SETUP Tasks** - Mock project services during local development
 - **Secrets Management** - Mandatory section in technical specs
-- **Spec Gap Detection** - Context-aware gap detection via `genai-detect-gaps.sh`
+- **Spec Gap Detection** - Context-aware gap detection performed inline by the agent against the completeness checklist
 - **Audio Capture** - Record voice specs via `/sdd.spec --audio` with Whisper transcription
-- **Compression Levels** - MINIMAL/STANDARD/FULL context compaction via `genai-compact-state.sh`
+- **Compression Levels** - MINIMAL/STANDARD/FULL context compaction via manual state-note summarization (see `context-guardian` skill)
 - **Agent Boundaries** - 3-tier system in `standards/boundaries.md`
 - **Spec Reference Annotations** - Cross-feature references for brownfield projects (see below)
 - **Feature Reopen** - `/sdd.start --reopen` brings completed features back to WIP (reverse dependency checking as gate)
@@ -234,13 +238,14 @@ Mandatory validations at every phase:
 
 For brownfield projects where features modify existing behavior:
 
-| Annotation | Purpose | Example |
-|------------|---------|---------|
-| `<!-- overrides: path#section -->` | Completely replaces existing behavior | New login flow replaces old |
-| `<!-- extends: path#section -->` | Adds to existing behavior (backward compatible) | New refund rules added |
-| `<!-- deprecates: path#section -->` | Marks existing behavior as obsolete | Old endpoint deprecated |
+| Annotation                          | Purpose                                         | Example                     |
+| ----------------------------------- | ----------------------------------------------- | --------------------------- |
+| `<!-- overrides: path#section -->`  | Completely replaces existing behavior           | New login flow replaces old |
+| `<!-- extends: path#section -->`    | Adds to existing behavior (backward compatible) | New refund rules added      |
+| `<!-- deprecates: path#section -->` | Marks existing behavior as obsolete             | Old endpoint deprecated     |
 
 **Usage in specs**:
+
 ```markdown
 ## User Stories
 
@@ -261,7 +266,7 @@ For teams with multiple apps collaborating in a domain, `/sdd.hub` coordinates s
 - **Compatibility**: App-level commands (`/sdd.start`, `/sdd.build`, etc.) work unchanged inside member apps
 - **Guard**: `/sdd.go` detects hubs and redirects to `/sdd.hub`
 
-> **Detailed reference**: Read `hub-guide.md` in this skill directory for complete hub documentation.
+> **Detailed reference**: `commands/sdd.hub.md` and `commands/references/hub-workflows.md` for the complete hub documentation.
 
 ## Core Principles
 
@@ -282,4 +287,4 @@ For teams with multiple apps collaborating in a domain, `/sdd.hub` coordinates s
 - User wants to understand the framework structure
 - User needs guidance on project services selection
 
-For detailed command documentation, read the skill files in `~/.development-agents/skills/sdd.*/SKILL.md` or the framework package.
+For detailed command documentation, read the matching file in `development-agents/commands/sdd.*.md` (each command's own doc), or the `framework/` docs for cross-cutting topics.

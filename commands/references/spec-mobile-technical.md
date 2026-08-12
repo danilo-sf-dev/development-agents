@@ -2,6 +2,14 @@
 
 **Used by**: `/sdd.spec technical`, when `platform = android` or `platform = ios`.
 
+> **Status: Project-Provided Extension Point (optional, not bundled)**. `mobile-android-expert`
+> and `mobile-ios-expert` are **not** part of this pack and are **not** created by `/sdd.install`
+> — the installer only sets up the SDD Kit core/agents/skills/commands, never mobile SDK skills.
+> If a project wants mobile-SDK/design-system documentation to override pretraining, the project
+> team must author or install these skills themselves (locally under their own skills directory,
+> or as a separately-distributed Claude Code plugin) — see
+> `framework/_shared/harness-capabilities.md` for how skills are invoked on non-Claude harnesses.
+
 #### Mobile Technical Spec (platform = android | ios)
 
 > **PREREQUISITE**: Verify mobile skills are available before generating the spec.
@@ -14,27 +22,34 @@
 > PLUGIN_PATH="$HOME/.claude/plugins/$plugin_name/skills/$skill_dir"
 >
 > if [ ! -d "$PLUGIN_PATH" ]; then
->     echo "❌ Mobile plugin not found: $plugin_name"
->     echo "   Re-run: sdd-kit install claude"
->     exit 1
+>     echo "⚠️  Mobile plugin not found: $plugin_name"
+>     echo "   This is a project-provided extension, not something SDD Kit installs."
+>     echo "   Proceeding on general Android/iOS knowledge — internal/private SDK details may be stale or wrong."
 > fi
 > ```
 >
-> If skills are not found, **stop here** — do not generate the spec without documentation.
+> **If skills are not found**: do NOT tell the user to re-run `/sdd.install` — it will not fix
+> this. Warn explicitly that mobile-SDK-specific guidance is unavailable and proceed with general
+> Android/iOS knowledge (do not silently pretend the index was consulted). If the project's mobile
+> stack has internal/private libraries with no public documentation, recommend pausing until the
+> project team supplies the skill instead of guessing at library names.
 
 > **MANDATORY — 3-STEP SEQUENCE (all steps required, no skipping)**:
 >
 > **Step A — Invoke the mobile skill** (loads mobile SDK/design system documentation into context):
+>
 > ```
 > Skill("mobile-android-expert")   # if platform = android
 > Skill("mobile-ios-expert")       # if platform = ios
 > ```
 >
 > **Step B — Read the skill documentation** (ALWAYS — before writing any section of the spec):
+>
 > ```bash
 > # SKILL_PATH was resolved in the PREREQUISITE block above
 > cat "$SKILL_PATH/SKILL.md"
 > ```
+>
 > Read SKILL.md fully. Identify and follow the documentation navigation workflows it references
 > for mobile SDK libraries and design system components.
 > Use those workflows to map **every feature requirement** from the functional spec to its
@@ -68,13 +83,13 @@
 
 **Subagents for mobile**:
 
-| Decision type | Subagent | Notes |
-|---|---|---|
+| Decision type                  | Subagent                                                         | Notes                        |
+| ------------------------------ | ---------------------------------------------------------------- | ---------------------------- |
 | Architecture + mobile SDK libs | `Skill("mobile-android-expert")` or `Skill("mobile-ios-expert")` | **MANDATORY (Step A above)** |
-| Conflict detection | `sdd-conflict-resolver` | Same as backend |
+| Conflict detection             | `sdd-conflict-resolver`                                          | Same as backend              |
 
 > ❌ Do NOT invoke `sdd-explorer` for mobile projects
-> ❌ Do NOT include  Services, Dockerfile, /ping, or  Compliance sections
+> ❌ Do NOT include Services, Dockerfile, /ping, or Compliance sections
 > ❌ Do NOT include specific import statements — your team library imports are ML-internal APIs that change across versions and are ONLY reliably known from the skill's official documentation. List libraries by name/purpose only; leave all imports to be resolved at build time.
 >
 > **IMAGE LOADING — MANDATORY RULE**:

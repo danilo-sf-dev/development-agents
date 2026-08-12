@@ -20,6 +20,8 @@
 
 SDD Kit is a **Specification-Driven Development** framework that helps you:
 
+> Canonical pipeline diagram and gate table: [`PIPELINE.md`](./PIPELINE.md). The summary below matches it — `/sdd.test` (Gate 2.5) is a mandatory phase of its own, never skipped, and always runs **before** implementation (tests-first/red-phase).
+
 ```mermaid
 graph LR
     subgraph Workflow["The SDD Workflow"]
@@ -27,42 +29,45 @@ graph LR
         P1["PHASE 1<br/>Functional Spec"]
         P2["PHASE 2<br/>Technical Spec"]
         P3["PHASE 3<br/>Tasks"]
-        P4["PHASE 4<br/>Implement"]
+        P4["PHASE 4<br/>Tests (red)"]
+        P5["PHASE 5<br/>Implement"]
 
-        P1 --> P2 --> P3 --> P4
+        P1 --> P2 --> P3 --> P4 --> P5
 
         P1A["Draft → Clarify → Approve"]
         P2A["Draft → Clarify → Approve"]
         P3A["Generate → Refine → Approve"]
-        P4A["Code → Test → Complete"]
+        P4A["Write failing tests → Approve"]
+        P5A["Implement until green → Validate"]
 
         P1 -.-> P1A
         P2 -.-> P2A
         P3 -.-> P3A
         P4 -.-> P4A
+        P5 -.-> P5A
     end
 ```
 
 ### Key Benefits
 
-| Benefit | Description |
-|---------|-------------|
-| **Predictability** | Know what you're building before coding |
-| **Quality** | Mandatory tests and validations |
-| **Collaboration** | AI assists, humans decide |
-| **Documentation** | Always up-to-date specs |
-| **project Platform compliance** | Built-in your platform support |
-| **Elegance** | Minimal specs, maximum clarity |
+| Benefit                         | Description                             |
+| ------------------------------- | --------------------------------------- |
+| **Predictability**              | Know what you're building before coding |
+| **Quality**                     | Mandatory tests and validations         |
+| **Collaboration**               | AI assists, humans decide               |
+| **Documentation**               | Always up-to-date specs                 |
+| **project Platform compliance** | Built-in your platform support          |
+| **Elegance**                    | Minimal specs, maximum clarity          |
 
 ### The Elegance Principle
 
 > **Specs should be as small and elegant as possible** - containing only what's necessary for Platform AI docs agents and humans to succeed.
 
-| Phase | Target Size | Focus On |
-|-------|-------------|----------|
-| Functional Spec | 1-2 pages | Outcomes, edge cases Platform AI docs won't infer |
-| Technical Spec | 2-3 pages | Architecture decisions, API contracts |
-| Tasks | 0.5 page | Clear deliverables, dependencies |
+| Phase           | Target Size | Focus On                                          |
+| --------------- | ----------- | ------------------------------------------------- |
+| Functional Spec | 1-2 pages   | Outcomes, edge cases Platform AI docs won't infer |
+| Technical Spec  | 2-3 pages   | Architecture decisions, API contracts             |
+| Tasks           | 0.5 page    | Clear deliverables, dependencies                  |
 
 📖 **Full guide**: [standards/elegance-principle.md](./standards/elegance-principle.md)
 
@@ -78,7 +83,7 @@ graph LR
 
 ### For your team Teams
 
-- [ ]  access configured (optional but recommended)
+- [ ] access configured (optional but recommended)
 - [ ] code review tool configured (optional)
 - [ ] E2E test framework configured (optional - for E2E test generation)
 
@@ -86,7 +91,7 @@ graph LR
 
 ```bash
 # Verify SDD Kit is present
-ls -la .development-agents/
+ls -la development-agents/
 
 # Expected output:
 # skills/
@@ -109,6 +114,7 @@ ls -la .development-agents/
 ```
 
 This creates:
+
 ```
 sdd/wip/user-authentication/
 ├── 1-functional/
@@ -131,6 +137,7 @@ sdd/wip/user-authentication/
 > **Note**: The framework automatically detects the active feature from `sdd/wip/`. No need to specify the feature name.
 
 The Platform AI docs will interview you about:
+
 - What problem are you solving?
 - Who are the users?
 - What are the acceptance criteria?
@@ -279,7 +286,7 @@ You: P95 latency < 100ms, handle 1000 RPS.
 
 **Generated Technical Spec** (simplified):
 
-```markdown
+````markdown
 # User Preferences - Technical Specification
 
 ## Architecture
@@ -289,16 +296,18 @@ graph LR
     Client --> API["Preferences API"]
     API --> MySQL[" MySQL"]
     API --> Cache[" Cache"]
-```
+````
 
 ## API Endpoints
 
 ### GET /api/v1/users/{userId}/preferences
+
 - Returns user preferences
 - Cached for 5 minutes
 - P95: < 50ms
 
 ### PUT /api/v1/users/{userId}/preferences
+
 - Updates preferences
 - Invalidates cache
 - P95: < 100ms
@@ -316,14 +325,18 @@ CREATE TABLE user_preferences (
 ```
 
 ## Integration
+
 - IAM/SSO: Authentication via JWT
 - Metrics: Performance monitoring
+
 ```
 
 #### 2.2 Approve Technical Spec
 
 ```
+
 /sdd.spec technical --approve
+
 ```
 
 ---
@@ -333,8 +346,10 @@ CREATE TABLE user_preferences (
 #### 3.1 Generate Tasks
 
 ```
+
 /sdd.plan
-```
+
+````
 
 **Generated Tasks** (simplified):
 
@@ -384,7 +399,7 @@ CREATE TABLE user_preferences (
 - Generates Cucumber/Gherkin feature files
 - Playwright step definitions
 - Complexity: Low
-```
+````
 
 #### 3.2 Refine Tasks (optional)
 
@@ -411,6 +426,7 @@ Adjust estimates, add details, or split tasks.
 ```
 
 The Platform AI docs will:
+
 1. Execute tasks in dependency order
 2. Write code according to specs
 3. Run tests after each task
@@ -458,6 +474,7 @@ Coverage: 87%
 ```
 
 This runs final validations:
+
 - ✅ All tasks completed
 - ✅ Tests passing
 - ✅ Coverage > 80%
@@ -556,6 +573,7 @@ Errors:
 ```
 
 **Solution**:
+
 ```
 /sdd.spec functional --include
 
@@ -571,6 +589,7 @@ Errors:
 ```
 
 **Solution**:
+
 ```
 # Add more tests
 /sdd.build task AUTO-TASK-002
@@ -579,7 +598,7 @@ Errors:
 npm test -- --coverage
 ```
 
-### Issue:  Compliance Fails
+### Issue: Compliance Fails
 
 ```
 ❌ code compliance validation failed
@@ -588,6 +607,7 @@ npm test -- --coverage
 ```
 
 **Solution**:
+
 ```
 # Implement code compliance task
 /sdd.build task AUTO-TASK-001
@@ -613,6 +633,7 @@ npm test -- --coverage
 ### Q: What if requirements change mid-implementation?
 
 Update the spec first:
+
 ```
 /sdd.spec functional --include
 # Make changes
@@ -642,9 +663,9 @@ Feature moves to `sdd/cancelled/` with full history preserved.
 
 ### Q: What's the difference between greenfield and brownfield?
 
-| Mode | Use When | Difference |
-|------|----------|------------|
-| Greenfield | New feature from scratch | Specs describe new functionality |
+| Mode       | Use When                  | Difference                                                   |
+| ---------- | ------------------------- | ------------------------------------------------------------ |
+| Greenfield | New feature from scratch  | Specs describe new functionality                             |
 | Brownfield | Modifying existing system | Specs describe changes, meta.md tracks affected system specs |
 
 ### Q: Do I need ProjectSystemMCP (or an equivalent internal service-discovery MCP)?
@@ -657,21 +678,21 @@ Feature moves to `sdd/cancelled/` with full history preserved.
 
 ### Q: How many tokens does a typical feature consume?
 
-| Feature Size | Phases 1-3 | Phase 4 | Total |
-|--------------|------------|---------|-------|
-| Small (1-3 tasks) | ~30K-50K tokens | ~50K-80K tokens | ~80K-130K tokens |
-| Medium (4-8 tasks) | ~50K-80K tokens | ~80K-150K tokens | ~130K-230K tokens |
-| Large (9+ tasks) | ~80K-120K tokens | ~150K-300K tokens | ~230K-420K tokens |
+| Feature Size       | Phases 1-3       | Phase 4           | Total             |
+| ------------------ | ---------------- | ----------------- | ----------------- |
+| Small (1-3 tasks)  | ~30K-50K tokens  | ~50K-80K tokens   | ~80K-130K tokens  |
+| Medium (4-8 tasks) | ~50K-80K tokens  | ~80K-150K tokens  | ~130K-230K tokens |
+| Large (9+ tasks)   | ~80K-120K tokens | ~150K-300K tokens | ~230K-420K tokens |
 
 ---
 
 ## Next Steps
 
 1. **Try it yourself**: Initialize a small feature
-2. **Read the workflow**: `.development-agents/WORKFLOW.md`
-3. **Master spec elegance**: `~/.development-agents/standards/elegance-principle.md`
-4. **Understand principles**: `~/.development-agents/standards/governance.md`
-5. **Explore commands**: `.development-agents/COMMANDS.md`
+2. **Read the workflow**: `development-agents/framework/WORKFLOW.md`
+3. **Master spec elegance**: `development-agents/framework/standards/elegance-principle.md`
+4. **Understand principles**: `development-agents/framework/standards/governance.md`
+5. **Explore commands**: `development-agents/framework/COMMANDS.md`
 
 ### Command Quick Reference
 

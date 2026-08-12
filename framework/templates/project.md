@@ -8,7 +8,7 @@ These configurations apply to ALL features in this project.
 Hierarchy of precedence:
 1. meta.md (feature-specific) - Highest priority
 2. PROJECT.md (project-wide) - Defaults for all features
-3. ~/.development-agents/standards/ (framework) - Base standards
+3. development-agents/framework/standards/ (framework) - Base standards
 
 Stack-specific standards:
 - Backend: development-agents/framework/standards/coding-standards.md
@@ -90,9 +90,10 @@ vision:
 │ IMPORTANT: Plan Mode settings are now stored in USER PROFILE               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│ Plan Mode preferences are configured per-USER (not per-project):           │
+│ Plan Mode preferences are configured per-USER, stored locally in this      │
+│ project's pack (not committed, not shared via PROJECT.md):                 │
 │                                                                             │
-│   Location: ~/.development-agents/user-profile.yaml                               │
+│   Location: development-agents/framework/user-profile.yaml                 │
 │   Manage:   /sdd.project profile        → View settings                    │
 │             /sdd.project profile --edit → Update settings                  │
 │                                                                             │
@@ -105,7 +106,7 @@ vision:
 Hierarchy of Plan Mode settings (highest to lowest priority):
 1. meta.md (feature-specific override)
 2. PROJECT.md (project-level override) ← This file
-3. ~/.development-agents/user-profile.yaml (user preference)
+3. development-agents/framework/user-profile.yaml (user preference, local to this project)
 4. Framework defaults
 
 Plan Mode uses Claude Code's native EnterPlanMode/ExitPlanMode for user approval
@@ -139,7 +140,7 @@ plan_mode:
 **User profile vs PROJECT.md**:
 | Setting Location | Scope | When to use |
 |------------------|-------|-------------|
-| ~/.development-agents/user-profile.yaml | All projects | Personal preference |
+| `development-agents/framework/user-profile.yaml` | This project (local, not committed) | Personal preference |
 | PROJECT.md | This project | Team/project-specific override |
 
 **Default behavior by command**:
@@ -182,31 +183,30 @@ See: development-agents/framework/standards/coding-standards.md
 
 ### Gitflow (applications)
 
-| Branch | Purpose | Protected | Releasable | PR target |
-|--------|---------|-----------|------------|-----------|
-| `master` | Production branch | Yes | Yes | — |
-| `develop` | Integration/development branch | Yes | No (test/beta only) | — |
-| `feature/*` | New functionality | No | No | `develop` |
-| `enhancement/*` | Technical improvements to existing features | No | No | `develop` |
-| `fix/*` | Bug fixes | No | No | `develop` or `release/*` |
-| `bugfix/*` | Alias for `fix/*` | No | No | `develop` |
-| `hotfix/*` | Emergency production fix | No | Yes | `master` |
-| `release/*` | Release preparation and freeze | No | No | `master` |
-| `migration/*` | Database structural changes (DDL) | No | No | `master` |
-| `revert-*` | Revert previous changes | No | No | `master` or `develop` |
-| `backport/master_*` | Auto-propagates master changes to develop and open releases | No | No | `develop` and `release/*` (automatic) |
+| Branch              | Purpose                                                     | Protected | Releasable          | PR target                             |
+| ------------------- | ----------------------------------------------------------- | --------- | ------------------- | ------------------------------------- |
+| `master`            | Production branch                                           | Yes       | Yes                 | —                                     |
+| `develop`           | Integration/development branch                              | Yes       | No (test/beta only) | —                                     |
+| `feature/*`         | New functionality                                           | No        | No                  | `develop`                             |
+| `enhancement/*`     | Technical improvements to existing features                 | No        | No                  | `develop`                             |
+| `fix/*`             | Bug fixes                                                   | No        | No                  | `develop` or `release/*`              |
+| `bugfix/*`          | Alias for `fix/*`                                           | No        | No                  | `develop`                             |
+| `hotfix/*`          | Emergency production fix                                    | No        | Yes                 | `master`                              |
+| `release/*`         | Release preparation and freeze                              | No        | No                  | `master`                              |
+| `migration/*`       | Database structural changes (DDL)                           | No        | No                  | `master`                              |
+| `revert-*`          | Revert previous changes                                     | No        | No                  | `master` or `develop`                 |
+| `backport/master_*` | Auto-propagates master changes to develop and open releases | No        | No                  | `develop` and `release/*` (automatic) |
 
 ### Libflow (libraries)
 
-| Branch | Purpose | Protected | Releasable | PR target |
-|--------|---------|-----------|------------|-----------|
-| `master` | Latest library version | Yes | Yes | — |
-| `vN.x.x` | Stable major version (e.g., `v1.x.x`) | Yes | Yes | — |
-| `feature/*` | New functionality | No | No | `master` or `vN.x.x` |
-| `enhancement/*` | Technical improvements | No | No | `master` or `vN.x.x` |
-| `fix/*` | Bug fixes | No | No | `master` or `vN.x.x` |
-| `revert-*` | Revert previous changes | No | No | `master` or `vN.x.x` |
-
+| Branch          | Purpose                               | Protected | Releasable | PR target            |
+| --------------- | ------------------------------------- | --------- | ---------- | -------------------- |
+| `master`        | Latest library version                | Yes       | Yes        | —                    |
+| `vN.x.x`        | Stable major version (e.g., `v1.x.x`) | Yes       | Yes        | —                    |
+| `feature/*`     | New functionality                     | No        | No         | `master` or `vN.x.x` |
+| `enhancement/*` | Technical improvements                | No        | No         | `master` or `vN.x.x` |
+| `fix/*`         | Bug fixes                             | No        | No         | `master` or `vN.x.x` |
+| `revert-*`      | Revert previous changes               | No        | No         | `master` or `vN.x.x` |
 
 ---
 

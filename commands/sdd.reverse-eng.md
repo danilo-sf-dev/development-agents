@@ -14,6 +14,7 @@ argument-hint: "[scope]"
 **Description**: Reverse engineer an existing codebase to generate specs for spec-driven evolution.
 
 **Usage**:
+
 - `/sdd.reverse-eng` → Analyze current directory
 - `/sdd.reverse-eng [path]` → Analyze specific path
 - `/sdd.reverse-eng --focus api,database` → Focus on specific areas
@@ -27,17 +28,18 @@ argument-hint: "[scope]"
 
 **Syntax**: `/sdd.reverse-eng [path] [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Analyze current directory |
-| `[path]` | Analyze specific path |
+| Flag                  | Description                                                 |
+| --------------------- | ----------------------------------------------------------- |
+| (none)                | Analyze current directory                                   |
+| `[path]`              | Analyze specific path                                       |
 | `--focus <component>` | Deep-dive into specific component, enriching existing specs |
-| `--focus --audio` | Record component focus description via microphone |
+| `--focus --audio`     | Record component focus description via microphone           |
 
 **Note on `--focus`**: This flag enriches existing specs with more detail about a specific component.
 It does NOT create separate spec files - it updates `functional-spec.md` and `technical-spec.md` directly.
 
 Use cases:
+
 - General extraction first, then `--focus PaymentService` for more detail
 - Re-extract specific component that was too shallow
 - Add detail to existing brownfield specs
@@ -54,7 +56,7 @@ Use cases:
 
 AskUserQuestion first: **FULL** | **UPDATE** | **VIEW STATUS** | (if specs without extracted) **ENHANCE**.
 
-**⛔ INVOKE TOOL (do not print this, CALL the tool):**
+**⛔ INVOKE TOOL (do not print this, CALL the tool):** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`); fixed to include the mandatory **Outros** option per `references/ask-user-question-outros.md` — it was missing here.
 
 ```
 AskUserQuestion(
@@ -65,7 +67,8 @@ AskUserQuestion(
       {"label": "FULL EXTRACTION", "description": "Complete analysis from scratch"},
       {"label": "UPDATE MODE", "description": "Re-analyze and merge with existing specs"},
       {"label": "VIEW STATUS", "description": "Show current extraction summary"},
-      {"label": "ENHANCE SPECS", "description": "Add missing details to existing specs (only if sdd/specs/ exists but sdd/extracted/ doesn't)"}
+      {"label": "ENHANCE SPECS", "description": "Add missing details to existing specs (only if sdd/specs/ exists but sdd/extracted/ doesn't)"},
+      {"label": "Outros", "description": "Describe what you'll do or suggest another path (free text)"}
     ],
     "multiSelect": false
   }]
@@ -74,13 +77,13 @@ AskUserQuestion(
 
 ### Mode Behavior
 
-| Mode | Condition | Behavior |
-|------|-----------|----------|
-| **FULL EXTRACTION** | Any state | Delete existing `sdd/extracted/`, create fresh, run Phase 0-7 |
-| **UPDATE MODE** | `sdd/extracted/` exists | Re-run extraction, compare diffs, update ALL files |
-| **UPDATE MODE + --focus** | `sdd/extracted/` exists + `--focus` flag | **Enrich** existing specs with focused component detail |
-| **VIEW STATUS** | `sdd/extracted/` exists | Show summary of current extraction, no changes |
-| **ENHANCE SPECS** | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs |
+| Mode                      | Condition                                     | Behavior                                                      |
+| ------------------------- | --------------------------------------------- | ------------------------------------------------------------- |
+| **FULL EXTRACTION**       | Any state                                     | Delete existing `sdd/extracted/`, create fresh, run Phase 0-7 |
+| **UPDATE MODE**           | `sdd/extracted/` exists                       | Re-run extraction, compare diffs, update ALL files            |
+| **UPDATE MODE + --focus** | `sdd/extracted/` exists + `--focus` flag      | **Enrich** existing specs with focused component detail       |
+| **VIEW STATUS**           | `sdd/extracted/` exists                       | Show summary of current extraction, no changes                |
+| **ENHANCE SPECS**         | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs         |
 
 > **Lazy-loaded**: When `--focus` is present, Read `references/reverse-eng-focus.md` (includes anti-pattern rules for `-UPDATED` suffixes).
 
@@ -99,6 +102,8 @@ AskUserQuestion(
 │                                                                      │
 │  WHY: Reduces tokens 30-40%, isolates read-only operations,          │
 │       preserves main context for synthesis.                          │
+│       (DELEGATE_OFFLOAD — context-saving, no bias-protection         │
+│       requirement; see framework/_shared/harness-capabilities.md)    │
 │                                                                      │
 │  WORKFLOW:                                                           │
 │  1. Main agent coordinates phases and writes final specs             │
@@ -113,18 +118,19 @@ AskUserQuestion(
 
 Performs comprehensive reverse engineering in **eight phases** (0-7):
 
-| Phase | Name | Purpose |
-|-------|------|---------|
-| **0** | Repository State Detection | Identify existing specs/frameworks before extraction |
-| **1** | Parallel Extraction | Extract data from existing docs/specs AND code (both mandatory) |
-| **2** | Basic Cross-Validation | Compare sources, calculate coverage |
-| **3** | Deep Cross-Validation | Field-by-field comparison, detect phantom endpoints |
-| **4** | Synthesis | Generate specs with 6-level confidence indicators |
-| **5** | Generate PATTERNS.md | Extract established patterns from codebase |
-| **6** | Consistency Check | Validate functional ↔ technical alignment |
-| **7** | Spec Promotion | **Copy specs to `sdd/specs/`** for brownfield mode |
+| Phase | Name                       | Purpose                                                         |
+| ----- | -------------------------- | --------------------------------------------------------------- |
+| **0** | Repository State Detection | Identify existing specs/frameworks before extraction            |
+| **1** | Parallel Extraction        | Extract data from existing docs/specs AND code (both mandatory) |
+| **2** | Basic Cross-Validation     | Compare sources, calculate coverage                             |
+| **3** | Deep Cross-Validation      | Field-by-field comparison, detect phantom endpoints             |
+| **4** | Synthesis                  | Generate specs with 6-level confidence indicators               |
+| **5** | Generate PATTERNS.md       | Extract established patterns from codebase                      |
+| **6** | Consistency Check          | Validate functional ↔ technical alignment                       |
+| **7** | Spec Promotion             | **Copy specs to `sdd/specs/`** for brownfield mode              |
 
 **Use Cases**:
+
 1. **Onboarding**: Document existing system for new team members
 2. **Evolution**: Prepare system for spec-driven feature development
 3. **Migration**: Create specs before technology migration
@@ -164,6 +170,7 @@ mkdir -p sdd/wip/
 ## Forbidden File Names (short)
 
 Never write `FOCUSED_ANALYSIS_*`, `*_DEEP_DIVE.md`, standalone use-case files, or anything in `sdd/` root except `PATTERNS.md`.
+
 > **ONLY IF** validating filenames / remapping content:
 > Read `references/reverse-eng-forbidden.md`.
 
@@ -188,6 +195,7 @@ fi
 ```
 
 **Structure Created**:
+
 ```
 sdd/
 ├── specs/           # For promoted global specs
@@ -213,36 +221,37 @@ sdd/
 
 **Detection Matrix** (execute in order):
 
-| Framework | Detection Patterns | Confidence |
-|-----------|-------------------|------------|
-| **SDD Kit** | `sdd/specs/*.md`, `sdd/wip/*/spec.md` | 🟢 High |
-| **OpenSpec** | `openspec/specs/`, `openspec/project.md` | 🟢 High |
-| **GitHub Spec-Kit** | `memory/`, `.markdownlint-cli2.jsonc` | 🟢 High |
-| **Kiro** | `.kiro/` folder OR triplet with Kiro markers | 🟡 Medium |
-| **Tessl** | `.tessl/framework/`, `@generate`/`@test` tags | 🟢 High |
-| **Cursor Rules** | `.cursor/rules/*.md`, `.cursorrules` | 🟡 Medium |
-| **Claude Code** | `CLAUDE.md`, `.claude/settings.json` | 🟡 Medium |
-| **Codex** | `.codex/instructions.md`, `.codex/AGENTS.md` | 🟡 Medium |
-| **SpecStory** | SpecFlow methodology, captured conversation specs | 🟡 Medium |
-| **OpenAPI/Swagger** | `openapi.yaml`, `swagger.json` | 🟢 High |
-| **ADR/RFC** | `docs/adr/`, `docs/rfc/` | 🟡 Medium |
-| **Plain Docs** | `ARCHITECTURE.md`, `DESIGN.md` | 🟡 Medium |
+| Framework           | Detection Patterns                                                                                  | Confidence |
+| ------------------- | --------------------------------------------------------------------------------------------------- | ---------- |
+| **SDD Kit**         | `sdd/specs/*.md`, `sdd/wip/*/spec.md`                                                               | 🟢 High    |
+| **OpenSpec**        | `openspec/specs/`, `openspec/project.md`                                                            | 🟢 High    |
+| **GitHub Spec-Kit** | `memory/`, `.markdownlint-cli2.jsonc`                                                               | 🟢 High    |
+| **Kiro**            | `.kiro/` folder OR triplet with Kiro markers                                                        | 🟡 Medium  |
+| **Tessl**           | `.tessl/framework/`, `@generate`/`@test` tags                                                       | 🟢 High    |
+| **Cursor Rules**    | `.cursor/rules/*.md`, `.cursorrules`                                                                | 🟡 Medium  |
+| **Claude Code**     | `CLAUDE.md`, `.claude/settings.json`                                                                | 🟡 Medium  |
+| **Codex CLI**       | `AGENTS.md` at project root (Codex's native convention — no `.codex/` subfolder), `.agents/skills/` | 🟡 Medium  |
+| **SpecStory**       | SpecFlow methodology, captured conversation specs                                                   | 🟡 Medium  |
+| **OpenAPI/Swagger** | `openapi.yaml`, `swagger.json`                                                                      | 🟢 High    |
+| **ADR/RFC**         | `docs/adr/`, `docs/rfc/`                                                                            | 🟡 Medium  |
+| **Plain Docs**      | `ARCHITECTURE.md`, `DESIGN.md`                                                                      | 🟡 Medium  |
 
 > **Reference**: See `sdd-explorer` agent for complete detection commands.
 
 **Optimization Strategies** (based on detected frameworks):
 
-| Strategy | When to Use | Expected Speedup |
-|----------|-------------|------------------|
-| **INCREMENTAL** | SDD Kit detected | 60-80% faster |
-| **AUGMENTED** | OpenSpec, Spec-Kit, Kiro detected | 40-60% faster |
-| **API_ANCHORED** | OpenAPI/Tessl detected | 30-50% faster |
-| **ASSISTED** | Cursor Rules, ADR, Plain Docs | 10-20% faster |
-| **FULL** | No frameworks detected | Baseline |
+| Strategy         | When to Use                       | Expected Speedup |
+| ---------------- | --------------------------------- | ---------------- |
+| **INCREMENTAL**  | SDD Kit detected                  | 60-80% faster    |
+| **AUGMENTED**    | OpenSpec, Spec-Kit, Kiro detected | 40-60% faster    |
+| **API_ANCHORED** | OpenAPI/Tessl detected            | 30-50% faster    |
+| **ASSISTED**     | Cursor Rules, ADR, Plain Docs     | 10-20% faster    |
+| **FULL**         | No frameworks detected            | Baseline         |
 
 **Output**: `DETECTION_REPORT.md` with findings + selected `optimization_strategy`
 
 **DETECTION_REPORT.md Template**:
+
 ```markdown
 # Detection Report
 
@@ -329,15 +338,16 @@ sdd/
 ## Anti-Truncation (CRITICAL — short)
 
 Never stop mid-phase; write partial artifacts to disk; resume from last completed phase.
+
 > **ONLY IF** context pressure or long extraction:
 > Read `references/reverse-eng-anti-truncation.md`.
 
 ## AI Agent Instructions
 
-
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.reverse-eng help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute reverse-eng logic
 3. Keep response concise (~15 lines)
@@ -346,30 +356,31 @@ Never stop mid-phase; write partial artifacts to disk; resume from last complete
 
 Read **ONLY IF** flag/condition present:
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| `--focus` | `references/reverse-eng-focus.md` |
-| `--audio` | `references/audio-capture-flow.md` |
-| `platform = android \| ios` | `references/start-mobile-claude.md` |
-| Full output tree | `references/reverse-eng-output-structure.md` |
-| Forbidden filenames | `references/reverse-eng-forbidden.md` |
-| PROJECT.md / CLAUDE.md bootstrap | `references/reverse-eng-project-config.md` |
-| Phase 1 extraction | `references/reverse-eng-phase1.md` |
-| Phase 2–3 validation | `references/reverse-eng-phase2.md`, `phase3.md` |
-| Phase 4–7 | `references/reverse-eng-phase4.md` … `phase7.md` |
-| Anti-truncation | `references/reverse-eng-anti-truncation.md` |
-| Detailed phase rules | `references/reverse-eng-phase-rules.md` |
+| Flag / condition                 | Reference                                        |
+| -------------------------------- | ------------------------------------------------ |
+| `--focus`                        | `references/reverse-eng-focus.md`                |
+| `--audio`                        | `references/audio-capture-flow.md`               |
+| `platform = android \| ios`      | `references/start-mobile-claude.md`              |
+| Full output tree                 | `references/reverse-eng-output-structure.md`     |
+| Forbidden filenames              | `references/reverse-eng-forbidden.md`            |
+| PROJECT.md / CLAUDE.md bootstrap | `references/reverse-eng-project-config.md`       |
+| Phase 1 extraction               | `references/reverse-eng-phase1.md`               |
+| Phase 2–3 validation             | `references/reverse-eng-phase2.md`, `phase3.md`  |
+| Phase 4–7                        | `references/reverse-eng-phase4.md` … `phase7.md` |
+| Anti-truncation                  | `references/reverse-eng-anti-truncation.md`      |
+| Detailed phase rules             | `references/reverse-eng-phase-rules.md`          |
 
 ## Telemetry
 
 Telemetry is captured **automatically by hooks** during reverse-engineering. No manual tracking required.
 
 **Supported Tools**:
-| Tool | Support |
-|------|---------|
-| Claude Code | ✅ |
-| Cursor | ✅ |
-| optional Agent CLI | ✅ |
+
+| Tool               | Support |
+| ------------------ | ------- |
+| Claude Code        | ✅      |
+| Cursor             | ✅      |
+| optional Agent CLI | ✅      |
 
 ---
 

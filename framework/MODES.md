@@ -10,17 +10,17 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 
 ### Execution Modes
 
-| Mode | Flag | Interaction | Control | Best For |
-|------|------|-------------|---------|----------|
-| **Express** | `--express` or `/sdd.go` | Minimal | Low | Simple features, fewer pauses |
-| **Standard** | (default) | Balanced | Medium | Most features |
+| Mode         | Flag                     | Interaction | Control | Best For                      |
+| ------------ | ------------------------ | ----------- | ------- | ----------------------------- |
+| **Express**  | `--express` or `/sdd.go` | Minimal     | Low     | Simple features, fewer pauses |
+| **Standard** | (default)                | Balanced    | Medium  | Most features                 |
 
 ### Template Modes
 
-| Template | Flag | Size | Best For |
-|----------|------|------|---------|
-| **Full** | (default) | ~1,100 lines | Complete specs, compliance sections, multi-team |
-| **Lite** | `--lite` | ~80 lines | Smaller features when a shorter combined spec is enough |
+| Template | Flag      | Size         | Best For                                                |
+| -------- | --------- | ------------ | ------------------------------------------------------- |
+| **Full** | (default) | ~1,100 lines | Complete specs, compliance sections, multi-team         |
+| **Lite** | `--lite`  | ~80 lines    | Smaller features when a shorter combined spec is enough |
 
 > Template size does **not** skip `/sdd.test`, security, or quality gates.
 
@@ -37,6 +37,7 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 ```
 
 **Characteristics**:
+
 - Asks 3-5 critical questions
 - Auto-generates specs
 - Auto-approves specs and tasks
@@ -48,18 +49,21 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 **Token Budget**: ~80K-100K tokens
 
 **Best for**:
+
 - ✅ Solo developers
 - ✅ Simple features (< 10 tasks)
 - ✅ Internal tools
 - ✅ When you trust agent decisions with fewer pauses
 
 **NOT recommended for**:
+
 - ❌ Features that need frequent human review at each gate
 - ❌ Compliance-heavy features (payments, PII)
 - ❌ Multi-team coordination
 - ❌ Complex architecture decisions
 
 **Workflow**:
+
 ```
 /sdd.go → Questions → Specs → Tasks → Build → Finish → Done
            ↑        ↑      ↑      ↑       ↑
@@ -75,6 +79,7 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 ```
 
 **Characteristics**:
+
 - Interactive interview for specs
 - Asks for confirmation before approving
 - User chooses execution strategy
@@ -85,6 +90,7 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 **Token Budget**: ~100K-200K tokens (depending on feature complexity)
 
 **Best for**:
+
 - ✅ Production features
 - ✅ Team environments
 - ✅ Features requiring review
@@ -92,15 +98,17 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 - ✅ Learning the framework
 
 **NOT recommended for**:
+
 - ❌ Very simple features (use Express)
 - ❌ Very complex features where you need per-phase iteration (consider sub-commands)
 
 **Workflow**:
+
 ```
-/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
-              ↑           ↑            ↑              ↑
-              30-60min    10-20min     1-2h           5min
-              (interactive) (review)   (progress)     (summary)
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.check → /sdd.finish
+              ↑           ↑            ↑              ↑                        ↑
+              30-60min    10-20min     1-2h           5min                     5min
+              (interactive) (review)   (progress)     (status)                 (summary)
 ```
 
 ---
@@ -114,11 +122,13 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 ```
 
 **Structure**:
+
 - `1-functional/spec.md` (378 lines)
 - `2-technical/spec.md` (715 lines)
 - **Total**: ~1,100 lines
 
 **Sections included**:
+
 - Comprehensive problem analysis
 - Detailed user stories with acceptance criteria
 - Success metrics and KPIs
@@ -126,12 +136,13 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 - Architecture diagrams
 - Complete API specifications
 - Data models with relationships
--  service configurations
+- service configurations
 - Security and compliance
 - E2E test scenarios
 - ADRs (Architecture Decision Records)
 
 **Best for**:
+
 - ✅ Production features
 - ✅ Compliance requirements (SOX, PCI, GDPR)
 - ✅ Multi-team projects
@@ -148,11 +159,13 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 ```
 
 **Structure**:
+
 - `1-functional/spec.md` (80 lines - combines functional + technical)
 - `2-technical/` (not created)
 - **Total**: ~80 lines
 
 **Sections included**:
+
 - Problem statement (3-5 lines)
 - User stories with acceptance criteria
 - Scope (in/out)
@@ -165,12 +178,14 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 - Open questions
 
 **Best for**:
+
 - ✅ Smaller features where a short combined spec is enough
 - ✅ Internal tools
 - ✅ Solo developer projects
 - ✅ Quick iterations
 
 **NOT recommended for**:
+
 - ❌ Features that need full compliance sections
 - ❌ Multi-team coordination
 - ❌ Complex integrations
@@ -178,6 +193,7 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 > `--lite` changes **spec template size only**. It does not skip tests, security, or `/sdd.test`.
 
 **Behavior in /sdd.spec**:
+
 - `/sdd.spec` → Works on single combined spec
 - `/sdd.spec technical` → Shows message "Lite mode: technical in functional spec"
 
@@ -188,16 +204,19 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 ### Greenfield Mode
 
 **Auto-detected when**:
+
 - Repository is empty (no meaningful content)
 - OR `sdd/specs/` doesn't exist
 
 **Behavior**:
+
 - Offers to create PROJECT.md
 - Offers .gitignore generation
 - No reverse engineering needed
 - Clean slate for architecture
 
 **Commands optimized**:
+
 - `/sdd.start` → Full setup wizard
 - `/sdd.spec` → Ask all questions
 
@@ -206,15 +225,18 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 ### Brownfield Mode
 
 **Auto-detected when**:
+
 - Repository has existing code
 - OR `sdd/specs/` exists
 
 **Behavior**:
+
 - Suggests `/sdd.reverse-eng` first
 - References existing patterns
 - Integrates with existing architecture
 
 **Commands optimized**:
+
 - `/sdd.reverse-eng` → Analyze first
 - `/sdd.spec` → Reference existing code
 - `/sdd.build` → Match existing patterns
@@ -223,16 +245,16 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 
 ## Decision Matrix
 
-| I'm working on... | Execution Mode | Template Mode |
-|-------------------|----------------|---------------|
-| Quick internal tool | Express | Lite |
-| Small well-scoped feature | Standard | Lite |
-| API / service feature | Standard | Full |
-| Payment/PII feature | Standard | Full |
-| Solo dev, simple feature | Express | Lite |
-| Team feature, moderate complexity | Standard | Full |
-| Complex integration, many teams | Standard | Full |
-| Brownfield refactoring | Standard | Full |
+| I'm working on...                 | Execution Mode | Template Mode |
+| --------------------------------- | -------------- | ------------- |
+| Quick internal tool               | Express        | Lite          |
+| Small well-scoped feature         | Standard       | Lite          |
+| API / service feature             | Standard       | Full          |
+| Payment/PII feature               | Standard       | Full          |
+| Solo dev, simple feature          | Express        | Lite          |
+| Team feature, moderate complexity | Standard       | Full          |
+| Complex integration, many teams   | Standard       | Full          |
+| Brownfield refactoring            | Standard       | Full          |
 
 ---
 
@@ -261,6 +283,7 @@ SDD Kit has **2 execution modes** and **2 template modes**.
 No. Mode is set at `/sdd.start` and persists in `meta.md`.
 
 **To change mode**:
+
 1. `/sdd.cancel` - Cancel current feature
 2. `/sdd.start "same-feature" --[new-mode]` - Restart with new mode
 
@@ -270,26 +293,26 @@ No. Mode is set at `/sdd.start` and persists in `meta.md`.
 
 ## Recommendations by Team Size
 
-| Team Size | Recommended Mode | Reasoning |
-|-----------|------------------|-----------|
-| **Solo dev** | Express or Standard + Lite | Speed, simplicity |
-| **2-3 devs** | Standard + Full | Balance, team review |
-| **4+ devs** | Standard + Full | Coordination, approvals |
+| Team Size    | Recommended Mode           | Reasoning               |
+| ------------ | -------------------------- | ----------------------- |
+| **Solo dev** | Express or Standard + Lite | Speed, simplicity       |
+| **2-3 devs** | Standard + Full            | Balance, team review    |
+| **4+ devs**  | Standard + Full            | Coordination, approvals |
 
 ---
 
 ## Recommendations by Feature Type
 
-| Feature Type | Mode | Template |
-|--------------|------|----------|
-| CRUD API | Express | Lite |
-| Payment integration | Standard | Full |
-| Internal admin tool | Standard | Lite |
-| Customer-facing feature | Standard | Full |
-| Data migration | Standard | Full |
-| Spike / throwaway experiment | Prefer outside this pack, or Standard + Full if it ships | Full |
-| Compliance feature (SOX, PCI) | Standard | Full |
-| Refactoring | Standard | Full |
+| Feature Type                  | Mode                                                     | Template |
+| ----------------------------- | -------------------------------------------------------- | -------- |
+| CRUD API                      | Express                                                  | Lite     |
+| Payment integration           | Standard                                                 | Full     |
+| Internal admin tool           | Standard                                                 | Lite     |
+| Customer-facing feature       | Standard                                                 | Full     |
+| Data migration                | Standard                                                 | Full     |
+| Spike / throwaway experiment  | Prefer outside this pack, or Standard + Full if it ships | Full     |
+| Compliance feature (SOX, PCI) | Standard                                                 | Full     |
+| Refactoring                   | Standard                                                 | Full     |
 
 ---
 
@@ -310,6 +333,7 @@ A: Standard mode - shows all steps with confirmations, good for understanding th
 ---
 
 For more details, see:
+
 - [COMMANDS.md](./COMMANDS.md) - Command reference
 - [AGENTS.md](./AGENTS.md) - Agent reference
 - [WORKFLOW.md](./WORKFLOW.md) - Complete workflow guide

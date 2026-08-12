@@ -20,8 +20,8 @@ fi
 
 Then invoke `Skill("context-guardian")` for context check.
 
-| Threshold | Action |
-|-----------|--------|
-| < 50% | Proceed inline |
-| 50-70% | Show advisory, use `genai-analyze-e2e.sh` for E2E detection |
-| > 70% | Recommend compaction before `/sdd.build` |
+| Threshold | Action                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------- |
+| < 50%     | Proceed inline                                                                                                        |
+| 50-70%    | Show advisory, detect E2E scenarios directly from the functional spec (`extract-e2e.sh` for deterministic extraction) |
+| > 70%     | Recommend compaction before `/sdd.build`                                                                              |

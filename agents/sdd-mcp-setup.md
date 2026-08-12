@@ -26,27 +26,30 @@ When `/sdd.mcp` runs (or `/sdd.start` Step 6.5 / `/sdd.spec --include` needs MCP
 
 - AskUserQuestion gates **must** include **Outros** (see `commands/references/ask-user-question-outros.md`)
 - Prefer merging project-root `.mcp.json` only after human approval
+
+> Every `AskUserQuestion(...)` call in this file (host selection, integration/access-mode choice, config-path choice) is `ASK_USER` — see `framework/_shared/harness-capabilities.md` for the per-harness translation.
+
 - Response language = user's language
 
 ## Lazy references (read when needed)
 
-| When | Read |
-|------|------|
-| Host detection | `commands/references/mcp-detect-host.md` |
+| When                     | Read                                         |
+| ------------------------ | -------------------------------------------- |
+| Host detection           | `commands/references/mcp-detect-host.md`     |
 | Atlassian per-host steps | `commands/references/mcp-atlassian-hosts.md` |
-| Smoke test | `commands/references/mcp-smoke-test.md` |
-| Human overview | `framework/MCP_SETUP_GUIDE.md` |
+| Smoke test               | `commands/references/mcp-smoke-test.md`      |
+| Human overview           | `framework/MCP_SETUP_GUIDE.md`               |
 
 ---
 
 ## Modes
 
-| Invocation | Behavior |
-|------------|----------|
-| Default `/sdd.mcp` | Full wizard |
-| `--status` | Report flag + config presence; no writes |
-| `--test <url>` | Smoke test only (requires MCP already usable) |
-| `--disable` | Set `atlassian_mcp_enabled: false`; print how to remove MCP entry (do not delete `.mcp.json` without approval) |
+| Invocation         | Behavior                                                                                                       |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Default `/sdd.mcp` | Full wizard                                                                                                    |
+| `--status`         | Report flag + config presence; no writes                                                                       |
+| `--test <url>`     | Smoke test only (requires MCP already usable)                                                                  |
+| `--disable`        | Set `atlassian_mcp_enabled: false`; print how to remove MCP entry (do not delete `.mcp.json` without approval) |
 
 ---
 
@@ -102,11 +105,11 @@ If user asks for write access: explain v1 is read-only; document that write tool
 
 Check and report:
 
-| Signal | Meaning |
-|--------|---------|
-| `sdd/PROJECT.md` has `atlassian_mcp_enabled: true` | Pack expects Atlassian MCP |
-| Project-root `.mcp.json` has Atlassian / atlassian / AtlassianMCP | Local MCP entry present |
-| Host already shows Atlassian tools available | Prefer smoke test over reconfigure |
+| Signal                                                            | Meaning                            |
+| ----------------------------------------------------------------- | ---------------------------------- |
+| `sdd/PROJECT.md` has `atlassian_mcp_enabled: true`                | Pack expects Atlassian MCP         |
+| Project-root `.mcp.json` has Atlassian / atlassian / AtlassianMCP | Local MCP entry present            |
+| Host already shows Atlassian tools available                      | Prefer smoke test over reconfigure |
 
 If already working → offer smoke test, skip reconfigure.
 
@@ -231,4 +234,4 @@ Run smoke test only. If MCP unavailable → STOP with steps to run full `/sdd.mc
 - Org-internal MCPs (E2E, dependency scanners, ProjectSystemMCP)
 - Auto-install of marketplace plugins
 - Forcing one IDE
-)
+  )

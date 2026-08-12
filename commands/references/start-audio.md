@@ -14,7 +14,9 @@ python3 development-agents/framework/tools/audio-capture/server.py
 
 4. Transcribe the recording.
 5. Store the transcription in `meta.md` as the saved description / initial context.
-6. Invoke `Skill("sdd.spec", args="--audio")` **or** continue with `/sdd.spec` using the saved transcription as initial context.
+6. `CONTINUE_WORKFLOW("/sdd.spec --audio")` — continue with `/sdd.spec` using the saved
+   transcription as initial context (`/sdd.spec` is a command, not a skill; see
+   `framework/_shared/harness-capabilities.md`).
 7. If capture or transcription fails, ask the user to provide the description as text instead.
 
 Audio input enriches the start/spec interview; it does not skip required gates.

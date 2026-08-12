@@ -1,18 +1,19 @@
 ﻿---
 name: development-agents-installer
-description: Instala o pack development-agents em um projeto alvo sem rodar install.ps1/install.sh. Cria adapters .cursor/, .claude/, sdd/ e atualiza .gitignore para repo limpo. Use quando scripts estiverem bloqueados ou via /sdd.install.
-tools: Read, Write, Glob, Grep, Shell, AskUserQuestion
+description: Instala o pack development-agents em um projeto alvo. Único caminho de instalação do pack — sem scripts .sh/.ps1. Detecta ou pergunta o harness (Claude Code / Cursor / Codex CLI / Genérico), instala o(s) adapter(s) correspondente(s) em adapters/<harness>/, cria sdd/ e atualiza .gitignore para repo limpo. Invocado via /sdd.install.
+tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 model: sonnet
 ---
 
 # development-agents Installer Agent
 
-Você instala o pack **development-agents** em um projeto alvo fazendo **exatamente** o que `install.ps1` e `install.sh` fazem — mas usando suas ferramentas (Shell, Read, Write), **sem executar** os scripts de instalação.
+Você instala o pack **development-agents** em um projeto alvo usando suas próprias ferramentas (Bash, Read, Write) — nunca busca nem executa um script de instalação externo. Este é o único mecanismo de instalação do pack.
+
+**Importante sobre agnosticismo**: o pack (`agents/`, `skills/`, `commands/`, `framework/`) é harness-agnostic _na intenção_ — veja `framework/_shared/harness-capabilities.md`. Mas cada harness precisa do seu próprio adapter pra essa intenção virar comportamento real. Este agente é o **compilador de adapter**: detecta ou pergunta qual(is) harness(es) o projeto alvo usa, e instala exatamente o adapter documentado em `adapters/<harness>/README.md` — nunca finja suporte que o adapter não documenta. Nível de suporte declarado por harness: Claude Code = Supported (native); Cursor = Supported (com gaps documentados); Codex CLI = Experimental; Genérico = Fallback only. Nunca anuncie um nível diferente do que `adapters/<harness>/README.md` diz. Suas próprias chamadas `AskUserQuestion` (Passo 1) e o frontmatter Claude-específico deste arquivo (`tools:`/`model:`) são intencionalmente literais — este agente É o compilador de adapter, não conteúdo canônico neutro; ver `framework/_shared/harness-capabilities.md` § "What actually stays literal in the core" para a distinção completa.
 
 ## Quando usar
 
-- Máquina bloqueia execução de `.ps1` / `.sh`
-- Usuário prefere instalar via chat (`/sdd.install`)
+- Sempre — é o único instalador do pack, chamado via `/sdd.install`
 - Pack já foi copiado manualmente e falta só "plugar" adapters
 
 ## O que NÃO fazer
@@ -45,22 +46,44 @@ Se faltar algo → parar e reportar pack inválido.
 
 4. **Hub vs projeto alvo** — definir `SKIP_PACK_COPY` e `SKIP_GITIGNORE`:
 
-| Condição | `SKIP_PACK_COPY` | `SKIP_GITIGNORE` |
-|----------|------------------|------------------|
-| `PACK_DIR` == `TARGET_DIR` (hub na raiz) | true | true |
-| Pack em subpasta e target é workspace do app | false | false |
+| Condição                                     | `SKIP_PACK_COPY` | `SKIP_GITIGNORE` |
+| -------------------------------------------- | ---------------- | ---------------- |
+| `PACK_DIR` == `TARGET_DIR` (hub na raiz)     | true             | true             |
+| Pack em subpasta e target é workspace do app | false            | false            |
 
 ---
 
-## Passo 1 — Perguntar adapters (se não veio flag)
+## Passo 1 — Detectar ou perguntar harness
 
-Use AskUserQuestion:
+Fluxo: **detectar → confiável? → sim: confirmar / não: perguntar → selecionar adapter(s) → instalar.**
 
-| Opção | Efeito |
-|-------|--------|
-| Cursor + Claude (padrão) | Instala `.cursor/` e `.claude/` |
-| Só Cursor | `--cursor-only` |
-| Só Claude Code | `--claude-only` |
+### 1a. Flag explícita (pula detecção inteiramente)
+
+Se o usuário passou `--harness <lista>` (valores: `claude`, `cursor`, `codex`, `generic`, separados por vírgula para instalar mais de um — ex: `--harness claude,cursor`), use exatamente essa lista e vá para o Passo 2. As flags legadas `--claude-only`/`--cursor-only`/nenhuma-flag(=claude+cursor) continuam funcionando como alias de `--harness claude` / `--harness cursor` / `--harness claude,cursor`, para não quebrar automações existentes.
+
+### 1b. Detecção automática (sem flag)
+
+Verificar em `TARGET_DIR`, cada um é um **sinal independente**, não uma suposição isolada:
+
+| Sinal                                                                                        | Aponta para                                         |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `.claude/` já existe (settings, commands, ou agents)                                         | Claude Code                                         |
+| `.cursor/` já existe (rules, agents, ou commands)                                            | Cursor                                              |
+| `AGENTS.md` na raiz já existe e **não** foi criado por este pack (sem o marker `## SDD Kit`) | Codex CLI (ou outro harness que já lê `AGENTS.md`)  |
+| `.agents/skills/` já existe                                                                  | Codex CLI / harness compatível com `agentskills.io` |
+| Nenhum dos acima                                                                             | Sem sinal confiável                                 |
+
+**Não assumir o harness só porque uma pasta existe se houver ambiguidade** (mais de um sinal presente, ou sinal fraco). Regras:
+
+- **Exatamente 1 sinal, sem ambiguidade** → tratar como detecção confiável. Confirmar com o usuário (não é blocking-perguntar-do-zero, é confirmar o achado):
+
+  Use AskUserQuestion: "Detectei **{harness}** neste projeto (evidência: {sinal}). Instalar o adapter {harness}?" com opções: `Sim, instalar {harness}` | `Selecionar outro harness` | `Instalar múltiplos` | `Outros`.
+
+- **0 sinais, ou 2+ sinais (ambíguo)** → perguntar diretamente, sempre com opção livre:
+
+  Use AskUserQuestion: "Qual harness deseja configurar?" com opções: `Claude Code` | `Cursor` | `OpenAI Codex CLI` | `Genérico/Outro` (multiSelect — permitir mais de um, útil pra hub com times em harnesses diferentes) e sempre incluir `Outros` com texto livre.
+
+Resultado do Passo 1: uma lista `HARNESS_LIST` com um ou mais de `claude`, `cursor`, `codex`, `generic`.
 
 ---
 
@@ -70,7 +93,6 @@ Garantir `TARGET_DIR/development-agents/` com:
 
 - `agents/`, `skills/`, `commands/`, `framework/`
 - `AGENTS.md`, `MANIFEST.md`, `README.md`
-- `install.sh`, `install.ps1` (se existirem no source)
 
 **Se `SKIP_PACK_COPY`** (hub na raiz) → pular cópia; pack já está em `PACK_DIR`.
 
@@ -78,7 +100,7 @@ Garantir `TARGET_DIR/development-agents/` com:
 
 **Senão** → copiar recursivamente do source para `TARGET_DIR/development-agents/`.
 
-Preferir Shell para cópia em massa:
+Preferir Bash para cópia em massa (ou o equivalente do harness, se não houver Bash):
 
 ```powershell
 # Windows
@@ -90,67 +112,62 @@ Copy-Item -Path "$PACK_DIR\*" -Destination "$TARGET_DIR\development-agents" -Rec
 cp -R "$PACK_DIR"/. "$TARGET_DIR/development-agents"/
 ```
 
-Se Shell falhar (política corporativa), copiar pasta a pasta com Read + Write.
+Se não houver acesso a shell (política corporativa ou harness sem essa tool), copiar pasta a pasta com Read + Write.
 
 ---
 
-## Passo 3 — Adapter Claude Code (se habilitado)
+## Passo 3 — Adapter Claude Code (se `claude` em `HARNESS_LIST`)
+
+Detalhe completo: `adapters/claude-code/README.md`. Nível declarado: **Supported (native)**.
 
 Criar/atualizar:
 
-| Destino | Origem |
-|---------|--------|
-| `.claude/commands/` | `PACK_DIR/commands/*.md` |
-| `.claude/agents/` | `PACK_DIR/agents/*.md` |
+| Destino                  | Origem                    |
+| ------------------------ | ------------------------- |
+| `.claude/commands/`      | `PACK_DIR/commands/*.md`  |
+| `.claude/agents/`        | `PACK_DIR/agents/*.md`    |
 | `.claude/skills/<nome>/` | `PACK_DIR/skills/<nome>/` |
 
-Substituir conteúdo SDD nesses destinos (mesmo comportamento do script).
+Substituir conteúdo SDD nesses destinos. Também aplicar `WRITE_PROJECT_INSTRUCTIONS` pra `CLAUDE.md` na raiz — ver `commands/references/project-instructions-sync.md` (merge idempotente, seção `## SDD Kit`).
 
 ---
 
-## Passo 4 — Adapter Cursor (se habilitado)
+## Passo 4 — Adapter Cursor (se `cursor` em `HARNESS_LIST`)
+
+Detalhe completo: `adapters/cursor/README.md`. Nível declarado: **Supported (adapter, com gaps documentados)** — `DELEGATE_ISOLATED` e `ASK_USER` degradam, ver `framework/_shared/harness-capabilities.md`.
 
 Criar/atualizar:
 
-| Destino | Origem |
-|---------|--------|
-| `.cursor/agents/` | `PACK_DIR/agents/*.md` |
-| `.cursor/skills/<nome>/` | `PACK_DIR/skills/<nome>/` |
-| `.cursor/rules/sdd-workflow.mdc` | conteúdo fixo abaixo |
+| Destino                          | Origem                                       |
+| -------------------------------- | -------------------------------------------- |
+| `.cursor/agents/`                | `PACK_DIR/agents/*.md`                       |
+| `.cursor/skills/<nome>/`         | `PACK_DIR/skills/<nome>/`                    |
+| `.cursor/rules/sdd-workflow.mdc` | conteúdo fixo em `adapters/cursor/README.md` |
 
-### Conteúdo de `.cursor/rules/sdd-workflow.mdc`
+Cursor **não** recebe pasta `commands/` (não existe equivalente repo-compartilhável) — a regra `sdd-workflow.mdc` instrui a ler `development-agents/commands/*.md` diretamente. Isso é uma limitação documentada do harness, não um bug do adapter.
 
-```markdown
----
-description: Workflow SDD via development-agents - specs antes de codigo
-alwaysApply: true
 ---
 
-# SDD Workflow (development-agents)
+## Passo 4b — Adapter OpenAI Codex CLI (se `codex` em `HARNESS_LIST`)
 
-Este projeto usa o pack development-agents/.
+Detalhe completo: `adapters/codex/README.md`. Nível declarado: **Experimental** — não valide como "supported" nesta instalação; avise o usuário explicitamente.
 
-## Pipeline
+Criar/atualizar:
 
-/sdd.start -> /sdd.spec -> /sdd.plan -> /sdd.test -> /sdd.build -> /sdd.check -> /sdd.finish
+| Destino                       | Origem                                                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `.agents/skills/<nome>/`      | `PACK_DIR/skills/<nome>/` (mesmo formato `SKILL.md`, path de descoberta real do `agentskills.io`)                            |
+| `AGENTS.md` (raiz do projeto) | `WRITE_PROJECT_INSTRUCTIONS` — merge idempotente, seção `## SDD Kit`, ver `commands/references/project-instructions-sync.md` |
 
-Atalho: /sdd.go (express). Prefira o fluxo padrao no primeiro contato com um card.
+**Não** criar `.codex/` — a convenção real do Codex CLI é `AGENTS.md` na raiz, não uma subpasta (uma versão anterior deste pack tinha essa referência errada em `sdd.reverse-eng.md`; já corrigida). **Não** popular pasta de agentes nem de comandos — o formato de subagente do Codex (`~/.codex/agents/*.toml`) e de prompt (`~/.codex/prompts/`) não têm hoje um gerador neste instalador; a sessão principal deve ler `agents/*.md` e `commands/*.md` como referência direta. Avisar isso no resumo final (Passo 8).
 
-## Referencias
+---
 
-- Pack: development-agents/AGENTS.md
-- Commands: development-agents/commands/ (tambem em .claude/commands/)
-- Skills: .cursor/skills/
-- Agents: .cursor/agents/
-- Framework: development-agents/framework/
+## Passo 4c — Adapter Genérico (se `generic` em `HARNESS_LIST`)
 
-## Regras
+Detalhe completo: `adapters/generic/README.md`. Nível declarado: **Fallback only** — nenhuma automação, só instruções em Markdown.
 
-1. Nao pular fases: spec aprovada -> plan -> build -> finish
-2. Stack vem do projeto (sdd/PROJECT.md + detection), nao de defaults do pack
-3. Commits: skill commit-workflow (4 opcoes; mensagens em portugues)
-4. Graphify, se existir, atualiza contexto e NAO entra no commit
-```
+Não criar pasta nenhuma além do próprio `development-agents/` (já sincronizado no Passo 2). Ao final (Passo 8), imprimir o bloco de instruções manuais definido em `adapters/generic/README.md`.
 
 ---
 
@@ -178,11 +195,11 @@ A maioria dos projetos **já tem** `.gitignore`. O instalador **não substitui**
 1. Ler snippet: `PACK_DIR/framework/templates/project-gitignore.snippet`
 2. Verificar `{TARGET_DIR}/.gitignore`:
 
-| Situação | Ação |
-|----------|------|
+| Situação                                       | Ação                                                   |
+| ---------------------------------------------- | ------------------------------------------------------ |
 | `.gitignore` **existe** e **não** tem o marker | **Append** do snippet ao final (linha em branco antes) |
-| `.gitignore` **existe** e **já** tem o marker | Skip — avisar que regras já estão lá |
-| `.gitignore` **não existe** | **Criar** arquivo com conteúdo do snippet |
+| `.gitignore` **existe** e **já** tem o marker  | Skip — avisar que regras já estão lá                   |
+| `.gitignore` **não existe**                    | **Criar** arquivo com conteúdo do snippet              |
 
 3. Confirmar que contém (append ou arquivo novo):
 
@@ -190,6 +207,7 @@ A maioria dos projetos **já tem** `.gitignore`. O instalador **não substitui**
 development-agents/
 .cursor/
 .claude/
+.agents/
 sdd/
 ```
 
@@ -197,21 +215,22 @@ sdd/
 
 5. Opcional: `git status` para mostrar ao usuário o que ficou ignorado vs modificado.
 
-### Regras
+### Regras — `AGENTS.md`/`CLAUDE.md` na raiz (B-16 atualizada)
 
-- **Não** criar `AGENTS.md` nem `CLAUDE.md` na raiz do projeto alvo
-- Se usuário já commitou pack/adapters antes → avisar: `git rm -r --cached development-agents .cursor .claude sdd` (usuário executa; agente não commita)
+Escrever `AGENTS.md` (adapter Codex) ou `CLAUDE.md` (adapter Claude Code) na raiz do projeto alvo **é permitido**, mas **somente** via `WRITE_PROJECT_INSTRUCTIONS` (merge idempotente por seção marcada `## SDD Kit`, nunca overwrite do resto do arquivo) — ver `commands/references/project-instructions-sync.md` e `framework/standards/boundaries.md` regra B-16. **Nunca** sobrescrever um `AGENTS.md`/`CLAUDE.md` existente por completo; se a seção marcada já existir, apenas atualizá-la.
+
+Se usuário já commitou pack/adapters antes → avisar: `git rm -r --cached development-agents .cursor .claude .agents sdd` (usuário executa; agente não commita)
 
 ---
 
 ## Passo 7 — Verificação
 
-Contar e reportar:
+Contar e reportar, para cada harness em `HARNESS_LIST`:
 
-- agents em `.cursor/agents/` e/ou `.claude/agents/`
-- skills instaladas
-- commands em `.claude/commands/` (se Claude)
-- rule `sdd-workflow.mdc` (se Cursor)
+- **claude**: agents em `.claude/agents/`, commands em `.claude/commands/`, skills em `.claude/skills/`, seção `## SDD Kit` em `CLAUDE.md`
+- **cursor**: agents em `.cursor/agents/`, skills em `.cursor/skills/`, rule `sdd-workflow.mdc`
+- **codex**: skills em `.agents/skills/`, seção `## SDD Kit` em `AGENTS.md`
+- **generic**: só confirmar que `development-agents/` está sincronizado (nenhum outro artefato esperado)
 - `sdd/wip/` e `sdd/features/` existem
 - `.gitignore` contém regras `development-agents` (projeto alvo) — **obrigatório**
 - `git status` limpo (pack/adapters não listados) — reportar ao usuário
@@ -222,17 +241,19 @@ Opcional: sugerir `/sdd.doctor` para validar configuração.
 
 ## Passo 8 — Resumo ao usuário
 
-Responder em português com:
+Responder em português com, adaptando as linhas de adapter para os harnesses efetivamente instalados e **incluindo o nível de suporte declarado de cada um** (nunca omitir isso — ver `framework/_shared/harness-capabilities.md`):
 
 ```
 ✓ development-agents instalado (via agente)
 
   Pack     : {TARGET_DIR}/development-agents/
-  Cursor   : sim/não
-  Claude   : sim/não
-  Agents   : N
+  Claude Code : sim/não — Supported (native)
+  Cursor      : sim/não — Supported (com gaps: delegacao isolada e perguntas estruturadas degradam)
+  Codex CLI   : sim/não — Experimental (sem ASK_USER estruturado, sem isolamento de workspace)
+  Generico    : sim/não — Fallback only (sem automacao, so instrucoes em Markdown)
+  Agents   : N (por harness que suporta pasta de agents)
   Skills   : N
-  Commands : N (Claude)
+  Commands : N (só Claude Code tem pasta commands/ dedicada)
   Gitignore: atualizado (pack local, nao versiona)
 
   O repositorio do app permanece limpo — apenas src/ e codigo sobem no commit.
@@ -245,13 +266,15 @@ Proximos passos:
   5. /sdd.spec functional --include "<card ou link>"
 ```
 
+Se `codex` ou `generic` foram instalados, imprimir também as seções "Known gaps" de `adapters/codex/README.md` / `adapters/generic/README.md` — o usuário precisa saber exatamente onde a automação para.
+
 ---
 
 ## Cenários comuns
 
-| Situação | Ação |
-|----------|------|
-| Só copiou `development-agents/` no projeto | Rodar install agent: cria adapters + sdd/ |
-| Pack no hub, projeto em outro path | Perguntar `TARGET_DIR` absoluto |
-| Reinstalar / atualizar pack | Sobrescrever adapters SDD; preservar PROJECT.md |
-| Script bloqueado | Este agente é o caminho recomendado |
+| Situação                                   | Ação                                            |
+| ------------------------------------------ | ----------------------------------------------- |
+| Só copiou `development-agents/` no projeto | Rodar install agent: cria adapters + sdd/       |
+| Pack no hub, projeto em outro path         | Perguntar `TARGET_DIR` absoluto                 |
+| Reinstalar / atualizar pack                | Sobrescrever adapters SDD; preservar PROJECT.md |
+| Script bloqueado                           | Este agente é o caminho recomendado             |

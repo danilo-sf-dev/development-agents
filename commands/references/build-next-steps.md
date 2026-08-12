@@ -26,14 +26,15 @@ AskUserQuestion(
   }]
 )
 ```
+
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.finish (Recomendado) | `Skill(skill="sdd.finish")` |
-| /sdd.check --sync | `Skill(skill="sdd.check", args="--sync")` |
-| /sdd.build --layer 3 | `Skill(skill="sdd.build", args="--layer 3")` |
-| Outros | User types custom input |
+| Selection                 | Action                                      |
+| ------------------------- | ------------------------------------------- |
+| /sdd.finish (Recomendado) | `CONTINUE_WORKFLOW("/sdd.finish")`          |
+| /sdd.check --sync         | `CONTINUE_WORKFLOW("/sdd.check --sync")`    |
+| /sdd.build --layer 3      | `CONTINUE_WORKFLOW("/sdd.build --layer 3")` |
+| Outros                    | User types custom input                     |
 
 **MODE BEHAVIOR**: In Express mode, automatically invoke `/sdd.finish` **after** the model-confirm gate for `build→finish` (still show full box + confirm — do not skip the critical switch). On "Seguir com o modelo do comando", proceed to `/sdd.finish`.
 

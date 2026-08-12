@@ -115,13 +115,13 @@ AskUserQuestion(
 **Store profile persistently**:
 
 ```bash
-# Create development-agents/framework/user-profile.yaml
-mkdir -p "$HOME/.sdd-kit"
+# Create development-agents/framework/user-profile.yaml (project-local, not global)
+mkdir -p "development-agents/framework"
 
 if [ "$selected_profile" = "technical" ]; then
     # Technical profile with plan_mode settings
-    cat > "$HOMEdevelopment-agents/framework/user-profile.yaml" << EOF
-# SDD Kit User Profile
+    cat > "development-agents/framework/user-profile.yaml" << EOF
+# development-agents User Profile
 # Generated: $(date -Iseconds)
 #
 # To update these settings:
@@ -142,8 +142,8 @@ plan_mode:
 EOF
 else
     # Non-technical profile (no plan_mode)
-    cat > "$HOMEdevelopment-agents/framework/user-profile.yaml" << EOF
-# SDD Kit User Profile
+    cat > "development-agents/framework/user-profile.yaml" << EOF
+# development-agents User Profile
 # Generated: $(date -Iseconds)
 #
 # To update these settings:
@@ -164,6 +164,7 @@ fi
 **After saving profile, show confirmation**:
 
 For **Technical profile**:
+
 ```
 ✅ Profile saved: technical
 
@@ -178,6 +179,7 @@ For **Technical profile**:
 ```
 
 For **Non-technical profile**:
+
 ```
 ✅ Profile saved: non-technical
 
@@ -193,10 +195,10 @@ For **Non-technical profile**:
 
 **Profile behavior mapping**:
 
-| Profile | Execution Mode | Technical Questions | Display |
-|---------|----------------|---------------------|---------|
-| `non-technical` | **AUTO-EXPRESS** | Agent decides | Simplified |
-| `technical` | User's choice | Ask user | Full detail |
+| Profile         | Execution Mode   | Technical Questions | Display     |
+| --------------- | ---------------- | ------------------- | ----------- |
+| `non-technical` | **AUTO-EXPRESS** | Agent decides       | Simplified  |
+| `technical`     | User's choice    | Ask user            | Full detail |
 
 **⚠️ CRITICAL: Non-Technical = Express Mode**:
 

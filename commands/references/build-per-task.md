@@ -13,16 +13,19 @@ For each task, delegate to subagents based on platform:
 
 **Default routing** (`platform.type` from PROJECT.md — backend, frontend-web, android, ios, or absent):
 
-| Task Type | Subagent | Notes |
-|-----------|----------|-------|
-| Production code | `sdd-implementer` | Follow detected stack + technical spec; make approved tests pass |
-| Run tests (verify) | `sdd-validator` skill or project test command | Re-run after each task — no new test files |
-| E2E tests (if not done in /sdd.test) | `sdd-large-test-writer` | Only if E2E was deferred and `testing.e2e.enabled` |
-| Validation | `sdd-validator-runner` | Independent context |
+| Task Type                            | Subagent                                      | Notes                                                            |
+| ------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------- |
+| Production code                      | `sdd-implementer`                             | Follow detected stack + technical spec; make approved tests pass |
+| Run tests (verify)                   | `sdd-validator` skill or project test command | Re-run after each task — no new test files                       |
+| E2E tests (if not done in /sdd.test) | `sdd-large-test-writer`                       | Only if E2E was deferred and `testing.e2e.enabled`               |
+| Validation                           | `sdd-validator-runner`                        | Independent context                                              |
 
 **Optional mobile / design-system preamble** — when `platform.type` is android/ios:
 
 > **Lazy-loaded**: Read `references/build-mobile-preamble.md`.
+
+`DELEGATE_OFFLOAD` (context-saving delegation to the implementer agent — no isolation requirement;
+see `framework/_shared/harness-capabilities.md`):
 
 ```
 # Extract Design Decisions relevant to this task

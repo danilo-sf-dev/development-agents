@@ -13,10 +13,19 @@ AskUserQuestion(questions=[{...}])
 
 This is a **tool call** you must execute, not content to display.
 
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Capability note (applies to every `AskUserQuestion(...)` block in `commands/`, `agents/`,
+> `skills/`, and `framework/`, whether or not the specific block repeats this pointer)**: this is
+> the conceptual `ASK_USER` capability — structured multi-choice + mandatory free-text "Outros" —
+> not a Claude-Code-only primitive. `AskUserQuestion(...)` is the correct, literal Claude Code
+> implementation; other harnesses translate it per `framework/_shared/harness-capabilities.md`
+> (e.g. numbered-list + free-text on harnesses with no structured choice tool). You do not need to
+> find a per-block "ASK_USER" tag to know this — this file, read at the start of every command, is
+> the blanket rule.
+
+| WRONG                      | CORRECT                                |
+| -------------------------- | -------------------------------------- |
+| Bash(echo "1. Option A")   | Directly call the AskUserQuestion tool |
+| Print the JSON to terminal | Pass the parameters shown to the tool  |
 
 ---
 
@@ -66,7 +75,8 @@ At the **start of every** `/sdd.*` command:
 
 ## Single delivery path (mandatory)
 
-There is **one** feature pipeline: `start → spec → plan → test → build → finish → pr`.
+There is **one** feature pipeline: `start → spec → plan → test → build → check → finish → pr`
+(canonical: `framework/PIPELINE.md`).
 
 - Do **not** invent, ask for, or honor prototype / MVP / production “project types”.
 - Do **not** skip `/sdd.test`, security validation, or quality gates because work “feels experimental”.

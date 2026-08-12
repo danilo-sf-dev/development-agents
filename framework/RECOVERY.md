@@ -52,7 +52,7 @@ flowchart TD
 
 ```bash
 # Check what failed
-bash .development-agents/tools/validation/validate-functional.sh sdd/wip/[feature]
+bash development-agents/tools/validation/validate-functional.sh sdd/wip/[feature]
 
 # Common fixes:
 # - Missing sections: Add required sections to spec
@@ -61,6 +61,7 @@ bash .development-agents/tools/validation/validate-functional.sh sdd/wip/[featur
 ```
 
 **Recovery steps:**
+
 1. Review validator output
 2. Edit `1-functional/spec.md`
 3. Re-run validator
@@ -87,20 +88,20 @@ Recovery:
 
 ```bash
 # Check what failed
-bash .development-agents/tools/validation/validate-technical.sh sdd/wip/[feature]
+bash development-agents/tools/validation/validate-technical.sh sdd/wip/[feature]
 
 # Also check spec alignment
-bash .development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/[feature]
+bash development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/[feature]
 ```
 
 **Common issues and fixes:**
 
-| Issue | Fix |
-|-------|-----|
-| Missing code compliance | Add project platform Platform compliance section |
-| No architecture diagram | Create diagram in `2-technical/architecture.md` |
-| Spec doesn't align with functional | Review functional spec, update technical |
-| Missing security section | Add Security Considerations section |
+| Issue                              | Fix                                              |
+| ---------------------------------- | ------------------------------------------------ |
+| Missing code compliance            | Add project platform Platform compliance section |
+| No architecture diagram            | Create diagram in `2-technical/architecture.md`  |
+| Spec doesn't align with functional | Review functional spec, update technical         |
+| Missing security section           | Add Security Considerations section              |
 
 #### Discovered Functional Gap
 
@@ -120,6 +121,7 @@ Recovery:
 ```
 
 **Command:**
+
 ```bash
 # Manually update stage in meta.md
 sed -i 's/Stage: technical/Stage: functional/' sdd/wip/[feature]/meta.md
@@ -143,6 +145,7 @@ Recovery:
 ```
 
 **Example fix:**
+
 ```markdown
 # Before (circular)
 TASK-003 depends on: TASK-005
@@ -256,8 +259,8 @@ Problem: Validator crashes with bash error.
 
 Fix:
 1. Check bash version: bash --version (need 4.0+)
-2. Check file permissions: ls -la .development-agents/tools/
-3. Make executable: chmod +x .development-agents/tools/*.sh
+2. Check file permissions: ls -la development-agents/tools/
+3. Make executable: chmod +x development-agents/tools/*.sh
 4. Check file encoding: file validator.sh (should be ASCII/UTF-8)
 ```
 
@@ -304,7 +307,7 @@ Fix:
 Problem: /sdd.finish blocked by compliance validation.
 
 Fix:
-1. Run the code validator: bash .development-agents/tools/validation/validate-code.sh .
+1. Run the code validator: bash development-agents/tools/validation/validate-code.sh .
 2. Review each error
 3. Common fixes:
    - Add Dockerfile with the org-approved base image (see sdd/PROJECT.md)
@@ -391,13 +394,13 @@ Fix:
 
 ### Quick Reference
 
-| Situation | Command |
-|-----------|---------|
-| Check feature status | `/sdd.check [feature]` |
-| Validate current phase | Run appropriate validator |
+| Situation                             | Command                          |
+| ------------------------------------- | -------------------------------- |
+| Check feature status                  | `/sdd.check [feature]`           |
+| Validate current phase                | Run appropriate validator        |
 | Get Platform AI docs help with issues | `/sdd.spec functional --include` |
-| Refine tasks | `/sdd.plan --refine` |
-| Cancel feature | `/sdd.cancel [feature]` |
+| Refine tasks                          | `/sdd.plan --refine`             |
+| Cancel feature                        | `/sdd.cancel [feature]`          |
 
 ### Manual Stage Override
 
@@ -421,19 +424,19 @@ sed -i 's/Stage: .*/Stage: [desired-stage]/' sdd/wip/[feature]/meta.md
 feature="[feature-name]"
 
 echo "=== Validating Functional Spec ==="
-bash .development-agents/tools/validation/validate-functional.sh sdd/wip/$feature
+bash development-agents/tools/validation/validate-functional.sh sdd/wip/$feature
 
 echo "=== Validating Technical Spec ==="
-bash .development-agents/tools/validation/validate-technical.sh sdd/wip/$feature
+bash development-agents/tools/validation/validate-technical.sh sdd/wip/$feature
 
 echo "=== Validating Spec Alignment ==="
-bash .development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/$feature
+bash development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/$feature
 
 echo "=== Validating Tasks ==="
-bash .development-agents/tools/validation/validate-tasks.sh sdd/wip/$feature
+bash development-agents/tools/validation/validate-tasks.sh sdd/wip/$feature
 
 echo "=== Validating Code Compliance ==="
-bash .development-agents/tools/validation/validate-code.sh .
+bash development-agents/tools/validation/validate-code.sh .
 ```
 
 ---
@@ -469,4 +472,4 @@ If recovery procedures don't work:
 
 ---
 
-*This guide covers common scenarios. For unique situations, use judgment and document your recovery process for future reference.*
+_This guide covers common scenarios. For unique situations, use judgment and document your recovery process for future reference._

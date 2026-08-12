@@ -12,6 +12,7 @@ argument-hint: "[feature-name]"
 **Description**: Monta rascunho de PR a partir dos artefatos SDD, pausa para revisão humana e abre o PR no GitHub (manual autorizado).
 
 **Usage**:
+
 - `/sdd.pr` → feature WIP ativa ou única em `sdd/wip/`
 - `/sdd.pr [feature-name]` → feature específica
 - `/sdd.pr --draft` → abre PR como draft no GitHub
@@ -22,11 +23,11 @@ argument-hint: "[feature-name]"
 
 **Syntax**: `/sdd.pr [feature] [--draft]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Gera rascunho, aprovação humana, abre PR |
-| `[feature]` | Pasta em `sdd/wip/` ou `sdd/features/` |
-| `--draft` | `gh pr create --draft` |
+| Flag        | Description                              |
+| ----------- | ---------------------------------------- |
+| (none)      | Gera rascunho, aprovação humana, abre PR |
+| `[feature]` | Pasta em `sdd/wip/` ou `sdd/features/`   |
+| `--draft`   | `gh pr create --draft`                   |
 
 **Pre-requisite**: Implementação concluída; commits na branch de feature; `gh` autenticado.
 
@@ -52,12 +53,12 @@ Não substitui review de código nem merge — apenas cria o PR com corpo consis
 
 ### Step 2: Pre-checks (BLOCKING)
 
-| Check | If fail |
-|-------|---------|
-| Not on `main`/`master` (feature branch) | STOP — peça checkout na branch de feature |
-| `git status` limpo ou só untracked gitignored | WARN se staged não commitado |
-| Commits existem vs base provável | WARN se branch vazia |
-| `gh auth status` | STOP — instruir login; oferecer Outros (PR manual) |
+| Check                                         | If fail                                            |
+| --------------------------------------------- | -------------------------------------------------- |
+| Not on `main`/`master` (feature branch)       | STOP — peça checkout na branch de feature          |
+| `git status` limpo ou só untracked gitignored | WARN se staged não commitado                       |
+| Commits existem vs base provável              | WARN se branch vazia                               |
+| `gh auth status`                              | STOP — instruir login; oferecer Outros (PR manual) |
 
 > **ONLY IF** needing gh/auth/branch details:
 > Read `references/pr-prechecks.md`.
@@ -91,7 +92,7 @@ Show the full draft in chat (summary + path).
 
 ### Step 5: Human review (MANDATORY)
 
-**⛔ INVOKE TOOL** — gate; always include **Outros**:
+**⛔ INVOKE TOOL** — gate; always include **Outros** — `ASK_USER` (see `framework/_shared/harness-capabilities.md`):
 
 ```
 AskUserQuestion(
@@ -110,11 +111,11 @@ AskUserQuestion(
 
 Shape: `references/ask-user-question-outros.md`.
 
-| Resposta | Ação |
-|----------|------|
-| Aprovar | → Step 6 |
-| Negar | STOP; informar path do rascunho |
-| Outros | Aplicar ajustes pedidos → regenerar/atualizar `pr-draft.md` → **voltar Step 5** |
+| Resposta | Ação                                                                            |
+| -------- | ------------------------------------------------------------------------------- |
+| Aprovar  | → Step 6                                                                        |
+| Negar    | STOP; informar path do rascunho                                                 |
+| Outros   | Aplicar ajustes pedidos → regenerar/atualizar `pr-draft.md` → **voltar Step 5** |
 
 Nunca chamar `gh pr create` sem aprovação explícita neste passo.
 
@@ -123,7 +124,7 @@ Nunca chamar `gh pr create` sem aprovação explícita neste passo.
 
 ### Step 6: Target base branch (MANDATORY)
 
-Antes de publicar, **sempre** perguntar branch **base** (merge target):
+Antes de publicar, **sempre** perguntar branch **base** (merge target) — `ASK_USER` gate:
 
 ```
 AskUserQuestion(
@@ -163,21 +164,21 @@ Opcional: anotar link em `meta.md` notes ou `implementation-summary.md`.
 
 ## Behavior by Mode
 
-| Mode | Behavior |
-|------|----------|
-| Standard | Sempre Steps 5–6 (aprovação + base branch) |
-| Express | **Mesmo gate** — PR nunca auto-abre sem aprovação humana |
+| Mode     | Behavior                                                 |
+| -------- | -------------------------------------------------------- |
+| Standard | Sempre Steps 5–6 (aprovação + base branch)               |
+| Express  | **Mesmo gate** — PR nunca auto-abre sem aprovação humana |
 
 ---
 
 ## Optional flags (lazy-loaded)
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| Pre-checks gh/auth | `references/pr-prechecks.md` |
+| Flag / condition          | Reference                         |
+| ------------------------- | --------------------------------- |
+| Pre-checks gh/auth        | `references/pr-prechecks.md`      |
 | Fill draft from artifacts | `references/pr-generate-draft.md` |
-| Review loop | `references/pr-approval-flow.md` |
-| gh create | `references/pr-create-gh.md` |
+| Review loop               | `references/pr-approval-flow.md`  |
+| gh create                 | `references/pr-create-gh.md`      |
 
 ## AI Agent Instructions
 

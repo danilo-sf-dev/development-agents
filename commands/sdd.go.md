@@ -12,6 +12,7 @@ argument-hint: "[feature-description]"
 **Description**: Express mode - orchestrates the complete workflow using standard commands
 
 **Usage**:
+
 - `/sdd.go "feature-name"` → Full automatic workflow with explicit name
 - `/sdd.go "feature description"` → Auto-derives name from description
 - `/sdd.go --audio` → Record feature description via microphone
@@ -25,16 +26,17 @@ argument-hint: "[feature-description]"
 
 **Syntax**: `/sdd.go "feature-name" [flags]`
 
-| Flag | Description |
-|------|-------------|
+| Flag             | Description                                |
+| ---------------- | ------------------------------------------ |
 | `"feature-name"` | Full automatic workflow with explicit name |
-| `"description"` | Auto-derives name from description |
-| `--audio` | Record feature description via microphone |
-| `--resume` | Resume interrupted express workflow |
+| `"description"`  | Auto-derives name from description         |
+| `--audio`        | Record feature description via microphone  |
+| `--resume`       | Resume interrupted express workflow        |
 
 **Flow**: start → spec → plan → test → build → finish (3-5 questions total)
 
 **Examples**:
+
 ```bash
 /sdd.go "payment-gateway"    # Full express workflow
 /sdd.go --audio              # Voice-driven express workflow
@@ -44,17 +46,17 @@ argument-hint: "[feature-description]"
 
 ---
 
-
 ## Architecture: Orchestrator Pattern
 
 > **CRITICAL**: `/sdd.go` is an **orchestrator**, NOT a standalone implementation.
 > It invokes standard commands with express mode rules. **DO NOT duplicate logic here.**
 
-**Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish`
+**Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish`
 
 **Model advisory (start of express)**: Read `references/model-suggestion-advisory.md` — show **express compact map** once at Step 0/1. Before delegating to `/sdd.build`, show full box + **model-confirm** for `test→build` (BLOCKING). Before `/sdd.finish`, show full box + **model-confirm** for `build→finish` (BLOCKING). Other intermediate pauses may be skipped in Express.
 
 **Express Rules**:
+
 - 3-5 critical questions only
 - Auto-advance between steps
 - Predefined defaults
@@ -75,24 +77,24 @@ One-command feature development for simple, well-understood features.
 
 ### 1. Consolidated Questions (3-5 only)
 
-| # | Question | Purpose | Triggers |
-|---|----------|---------|----------|
-| 1 | What's the main feature? | Problem statement | Always |
-| 2 | Who uses it? | User context | Always |
-| 3 | Technical constraints? | Architecture decisions | Always |
-| 4 | External integrations? | Dependencies | If mentioned → auto-discovery |
-| 5 | Security requirements? | Security design | If sensitive data |
-| 6 | E2E E2E Testing? [Y/N] | E2E test generation | Always (user chooses) |
+| #   | Question                 | Purpose                | Triggers                      |
+| --- | ------------------------ | ---------------------- | ----------------------------- |
+| 1   | What's the main feature? | Problem statement      | Always                        |
+| 2   | Who uses it?             | User context           | Always                        |
+| 3   | Technical constraints?   | Architecture decisions | Always                        |
+| 4   | External integrations?   | Dependencies           | If mentioned → auto-discovery |
+| 5   | Security requirements?   | Security design        | If sensitive data             |
+| 6   | E2E E2E Testing? [Y/N]   | E2E test generation    | Always (user chooses)         |
 
 ### 2. Predefined Defaults
 
-| Decision | Express Default |
-|----------|-----------------|
-| Execution strategy | Batched |
-| Test coverage target | 80% |
-| Template | Full (not Lite) |
-| JVM language | Java (not Kotlin) |
-| | Always enforced |
+| Decision             | Express Default   |
+| -------------------- | ----------------- |
+| Execution strategy   | Batched           |
+| Test coverage target | 80%               |
+| Template             | Full (not Lite)   |
+| JVM language         | Java (not Kotlin) |
+|                      | Always enforced   |
 
 ### 3. Auto-Advance Behavior
 
@@ -108,15 +110,15 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 
 ## Execution Flow
 
-| Step | Command | Reference | Override |
-|------|---------|-----------|----------|
-| 0 | Input validation | - | Derive name if description |
-| 1 | `/sdd.start "<name>" --express` | `start.md` → "Express Mode" | - |
-| 2 | `/sdd.spec` | `spec.md` → "Express Mode" | Consolidated questions |
-| 3 | `/sdd.plan` | `plan.md` → "Express Mode" | Auto-select Batched |
-| 4 | `/sdd.test` | `test.md` → "Express Mode" | Auto-approve if red verified |
-| 5 | `/sdd.build` | `build.md` → "Express Mode" | Auto-retry 2x max |
-| 6 | `/sdd.finish` | `finish.md` → "Express Mode" | All validations mandatory |
+| Step | Command                         | Reference                    | Override                     |
+| ---- | ------------------------------- | ---------------------------- | ---------------------------- |
+| 0    | Input validation                | -                            | Derive name if description   |
+| 1    | `/sdd.start "<name>" --express` | `start.md` → "Express Mode"  | -                            |
+| 2    | `/sdd.spec`                     | `spec.md` → "Express Mode"   | Consolidated questions       |
+| 3    | `/sdd.plan`                     | `plan.md` → "Express Mode"   | Auto-select Batched          |
+| 4    | `/sdd.test`                     | `test.md` → "Express Mode"   | Auto-approve if red verified |
+| 5    | `/sdd.build`                    | `build.md` → "Express Mode"  | Auto-retry 2x max            |
+| 6    | `/sdd.finish`                   | `finish.md` → "Express Mode" | All validations mandatory    |
 
 ---
 
@@ -125,6 +127,7 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.go help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute go logic
 3. Keep response concise (~15 lines)
@@ -132,6 +135,7 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 ### Hub Guard
 
 **WHEN** `/sdd.go` is invoked, **BEFORE** any other step:
+
 1. Run `detect-stack.sh --level` in the current directory
 2. If result is `hub`:
    - Output: "`/sdd.go` does not support hubs. Use `/sdd.hub go \"description\"` for express mode, or `/sdd.hub start|spec|plan|build|finish` for standard mode."
@@ -141,6 +145,7 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 ### CRITICAL: Orchestrator Implementation
 
 When `/sdd.go` is invoked:
+
 1. **DO NOT implement each step from scratch**
 2. **DO reference and execute the standard commands**
 3. **DO apply express rules as overrides**
@@ -155,7 +160,7 @@ If input is description → derive name (extract key nouns, kebab-case), DO NOT 
 Execute `/sdd.start "<feature-name>" --express`
 → Reference: `start.md` → "Express Mode (`--express`)" section
 
-Includes: app verification,  creation if needed, scaffolding cleanup, git branch, meta.md with `execution_mode: express`
+Includes: app verification, creation if needed, scaffolding cleanup, git branch, meta.md with `execution_mode: express`
 
 ### Step 2: Specifications
 
@@ -197,6 +202,7 @@ All validations mandatory (, tests, code review, security, performance).
 ## Error Handling
 
 If any step fails, show error details and options:
+
 - (a) Fix and retry with appropriate command
 - (b) Continue in standard mode: `/sdd.check`
 - (c) Abort: `/sdd.cancel`
@@ -211,12 +217,12 @@ If any step fails, show error details and options:
 
 ## Comparison with Standard
 
-| Aspect | /sdd.go | Standard |
-|--------|----------|----------|
-| Commands | 1 (orchestrates 5) | 5 separate |
-| Questions | 3-5 critical | Full interviews |
-| Confirmations | None | At each phase |
-| Time | ~10-20 min | ~1-2 hours |
+| Aspect        | /sdd.go            | Standard        |
+| ------------- | ------------------ | --------------- |
+| Commands      | 1 (orchestrates 5) | 5 separate      |
+| Questions     | 3-5 critical       | Full interviews |
+| Confirmations | None               | At each phase   |
+| Time          | ~10-20 min         | ~1-2 hours      |
 
 ---
 
@@ -234,6 +240,6 @@ Inherited from standard commands - see `spec.md`. Map external tech to project s
 
 ## Optional flags (lazy-loaded)
 
-| Flag | Reference |
-|------|-----------|
+| Flag      | Reference                          |
+| --------- | ---------------------------------- |
 | `--audio` | `references/audio-capture-flow.md` |

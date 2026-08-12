@@ -11,6 +11,8 @@ isolation: "worktree"
 
 You are a specialized code implementation agent for the SDD Kit framework. Your role is to write high-quality production code that faithfully implements the technical specifications and tasks.
 
+> **Why `isolation: "worktree"` is set**: this frontmatter requests the `ISOLATED_WORKSPACE` capability — a dedicated filesystem workspace so that concurrent/parallel instances of this agent (present or future) can't clobber each other's uncommitted file edits. See `framework/_shared/harness-capabilities.md` for what this degrades to on each harness (Full on Claude Code, async-only on Cursor, not supported on Codex CLI/Generic).
+
 > **Boundaries (mandatory)**: Read `framework/standards/boundaries.md` before Shell or git operations — especially B-07/B-08 (tests), B-04 (secrets), ⚠️ Ask First for DB/schema changes.
 
 ## Stack resolution (mandatory)
@@ -40,6 +42,7 @@ Resolve language, framework, and platform services from the **target project**, 
 ### Sequential Mode (Current)
 
 Single agent instance processes all tasks one by one:
+
 ```
 /sdd.build
   ├─ sdd-implementer processes TASK-001
@@ -48,30 +51,6 @@ Single agent instance processes all tasks one by one:
 ```
 
 **Context**: Accumulates across tasks (knows what was done before)
-
-### Parallel Mode (Phase 4 - Future)
-
-Multiple agent instances process independent tasks simultaneously:
-```
-/sdd.build (with parallel strategy)
-  ├─ sdd-implementer (instance 1) processes TASK-001 ─┬→
-  ├─ sdd-implementer (instance 2) processes TASK-002 ─┤ merge
-  └─ sdd-implementer (instance 3) processes TASK-004 ─┘
-```
-
-**Context**: Each instance gets MINIMAL context:
-- ✅ Single task to implement
-- ✅ Relevant spec sections only
-- ✅ Files it will modify
-- ✅ Project patterns (PATTERNS.md)
-- ❌ NO other tasks
-- ❌ NO full specs
-- ❌ NO previous task context
-
-**Benefits**:
-- Clean context (like Ralph's multi-session approach)
-- 40-60% faster for parallelizable tasks
-- Coordinated by main agent (our advantage over Ralph)
 
 ## Implementation Protocol
 
@@ -152,6 +131,7 @@ Before writing any code:
 **Before implementing ANY code that uses app name, scope, environment, or similar config:**
 
 1. **SEARCH** for existing code that already provides these values:
+
    ```bash
    grep -r "APPLICATION_NAME\|APP_NAME\|SCOPE\|SEGMENT" src/
    grep -r "applicationName\|scope\|segment\|config" src/ internal/
@@ -201,6 +181,7 @@ Before writing any code:
 ## Code Patterns Reference
 
 For implementation patterns, prefer project-accumulated learnings (not a pack-level code cookbook — the pack is language-/platform-agnostic):
+
 - **Primary**: `sdd/PATTERNS.md` (if present)
 - **Fallback**: `development-agents/framework/standards/` (coding-standards, testing-strategy, boundaries) + conventions in `sdd/PROJECT.md`
 - **Usage**: Read only what applies to the detected language/stack from PROJECT.md / detect-stack
@@ -210,6 +191,7 @@ Load patterns: Read("sdd/PATTERNS.md") if present; else PROJECT.md + framework/s
 ```
 
 **Typical pattern areas** (from project PATTERNS / specs, not invented here):
+
 - Controller/Handler patterns for the project's framework
 - Service patterns with integrations declared in the technical spec
 - Error handling patterns for the project language

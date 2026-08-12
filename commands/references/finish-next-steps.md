@@ -39,12 +39,12 @@ Shape: `ask-user-question-outros.md` — **Outros** is mandatory on gates.
 
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.pr (Recomendado) | Run `/sdd.pr` for archived or last feature |
-| /sdd.start | `Skill(skill="sdd.start")` |
-| /sdd.start --reopen | Show: "Para reabrir depois: `/sdd.start --reopen [feature-name]`" |
-| Outros | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, PR manual |
+| Selection             | Action                                                              |
+| --------------------- | ------------------------------------------------------------------- |
+| /sdd.pr (Recomendado) | Run `/sdd.pr` for archived or last feature                          |
+| /sdd.start            | `CONTINUE_WORKFLOW("/sdd.start")`                                   |
+| /sdd.start --reopen   | Show: "Para reabrir depois: `/sdd.start --reopen [feature-name]`"   |
+| Outros                | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, PR manual |
 
 > **MODE BEHAVIOR**: In Express mode, just show completion message without prompting.
 

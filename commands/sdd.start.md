@@ -12,6 +12,7 @@ argument-hint: "[feature-description] [--express|--lite|--audio|--from-backlog|-
 **Description**: Initialize new feature in SDD Kit framework
 
 **Usage**:
+
 - `/sdd.start "feature-description"` → Standard mode (default)
 - `/sdd.start "feature-description" --express` → Express mode (minimal interaction)
 
@@ -88,6 +89,7 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 ### Step 4: Detect Project Mode
 
 `freshly_scaffolded` or empty → greenfield; else if `sdd/specs|features` or real code → brownfield.
+
 > Brownfield path: Read `references/start-brownfield.md` (ONLY IF brownfield).
 
 ### Step 5: User Profile Selection
@@ -100,7 +102,7 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 ### Step 6: Load PROJECT.md
 
 > Always load/validate PROJECT.md when present (or offer creation). Never skip this step for a lighter “mode”.
-> Read `references/start-project-md.md` (load, GenAI validate, doctor tip).
+> Read `references/start-project-md.md` (load, deterministic script validation, doctor tip).
 > Missing PROJECT.md → recommend `/sdd.project` then continue with framework defaults if user opts in.
 
 ### Step 6.5: Configure Local MCPs (lazy-loaded)
@@ -114,12 +116,14 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 1. Uniqueness across wip/features/cancelled (name without date). On collision: derive better name or `-v2`, show warning, proceed.
 2. Folder: `YYYYMMDD-feature-name` (never legacy `001-` prefixes).
 3. Create WIP tree (1-functional … 5-implementation, meta.md placeholder).
+
 > **ONLY IF** needing mkdir tree / collision bash:
 > Read `references/start-feature-structure.md`.
 
 ### Step 8: Create meta.md
 
 Write meta from template: name, mode, profile, stack, testing flags from PROJECT.md, `spec_language` from PROJECT.md (default `en`), stages pending.
+
 > **ONLY IF** needing field checklist:
 > Read `references/start-meta.md`.
 
@@ -127,13 +131,14 @@ Write meta from template: name, mode, profile, stack, testing flags from PROJECT
 
 If on default branch (master/main/develop per PROJECT.md): create/checkout `feature/<name>` (or project gitflow pattern).
 If already on feature branch: keep it. See `framework/standards/boundaries.md` — B-03, `/sdd.start`.
+
 > **ONLY IF** needing gitflow variants:
 > Read `references/start-git-branch.md`.
 
 ### Step 9.5: CLAUDE.md (lazy-loaded)
 
 > **ONLY IF** Claude Code session and CLAUDE.md integration needed:
-> Read `references/start-claude-md.md`. Mobile CLAUDE extras: `references/start-mobile-claude.md`.
+> Read `references/project-instructions-sync.md` (writes CLAUDE.md/AGENTS.md per adapter). Mobile extras: `references/start-mobile-claude.md`.
 
 ### Step 10: Load PATTERNS.md (lazy-loaded)
 
@@ -151,6 +156,7 @@ If already on feature branch: keep it. See `framework/standards/boundaries.md` �
 ```
 
 **Conditional (only for Prototype projects)**:
+
 ```
    💡 For rapid prototyping: /sdd.go --resume (switches to express mode)
 ```
@@ -178,22 +184,22 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 
 Read the matching reference **ONLY IF** the flag/condition is present. Never load all refs.
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| `--reopen` | `references/reopen-workflow.md` |
-| `--rename` | `references/start-rename.md` |
-| `--from-backlog` | `references/start-from-backlog.md` |
-| `--audio` | `references/start-audio.md` / `audio-capture-flow.md` |
-| CLAUDE.md (Claude Code) | `references/start-claude-md.md` |
-| Mobile CLAUDE extras | `references/start-mobile-claude.md` |
-| Platform/frontend detect bash | `references/start-platform-detect.md` |
-| Scaffolding/stack detect bash | `references/start-stack-detect.md` |
-| Feature folder creation | `references/start-feature-structure.md` |
-| Git branch variants | `references/start-git-branch.md` |
-| `freshly_scaffolded=true` | `references/start-scaffolding-cleanup.md` |
-| `project_mode == brownfield` | `references/start-brownfield.md` |
-| Profile AskUserQuestion / yaml | `references/start-user-profile.md` |
-| Load/validate PROJECT.md | `references/start-project-md.md` |
-| Local MCP setup needed | `references/start-local-mcps.md` |
-| `sdd/PATTERNS.md` exists | `references/start-patterns.md` |
-| Next-steps UX | `references/start-next-steps.md` |
+| Flag / condition                           | Reference                                             |
+| ------------------------------------------ | ----------------------------------------------------- |
+| `--reopen`                                 | `references/reopen-workflow.md`                       |
+| `--rename`                                 | `references/start-rename.md`                          |
+| `--from-backlog`                           | `references/start-from-backlog.md`                    |
+| `--audio`                                  | `references/start-audio.md` / `audio-capture-flow.md` |
+| Project instructions (CLAUDE.md/AGENTS.md) | `references/project-instructions-sync.md`             |
+| Mobile CLAUDE extras                       | `references/start-mobile-claude.md`                   |
+| Platform/frontend detect bash              | `references/start-platform-detect.md`                 |
+| Scaffolding/stack detect bash              | `references/start-stack-detect.md`                    |
+| Feature folder creation                    | `references/start-feature-structure.md`               |
+| Git branch variants                        | `references/start-git-branch.md`                      |
+| `freshly_scaffolded=true`                  | `references/start-scaffolding-cleanup.md`             |
+| `project_mode == brownfield`               | `references/start-brownfield.md`                      |
+| Profile AskUserQuestion / yaml             | `references/start-user-profile.md`                    |
+| Load/validate PROJECT.md                   | `references/start-project-md.md`                      |
+| Local MCP setup needed                     | `references/start-local-mcps.md`                      |
+| `sdd/PATTERNS.md` exists                   | `references/start-patterns.md`                        |
+| Next-steps UX                              | `references/start-next-steps.md`                      |
