@@ -122,7 +122,7 @@ Status: ELEVATED - Prefer delegation for heavy operations
 Recommendations:
   1. MANDATORY: Use subagents for all heavy operations
   2. Use Task()-delegated subagents for ANY MCP query
-  3. Use sdd-validator-runner for validation
+  3. Use sdd-validator for validation
   4. Avoid reading large files directly
   5. Strongly consider /clear at next phase transition — specs are source of truth, fresh context = higher quality
   6. If not at phase boundary: consider compaction
@@ -165,8 +165,8 @@ Operations that consume significant context:
 | PROJECT.md wizard       | ~15,000     | sdd-project-wizard   |
 | Full MCP SDK docs       | ~3,000      |                      |
 | MCP API specs           | ~5,000      |                      |
-| Code review (full)      | ~2,000      | sdd-validator-runner |
-| System design           | ~5,000      | sdd-system-designer  |
+| Code review (full)      | ~2,000      | sdd-validator |
+| System design           | ~5,000      | sdd-system-design  |
 | Large file (500+ lines) | ~10,000     | Explore agent        |
 | Multiple file search    | ~3,000      | Explore agent        |
 
@@ -250,7 +250,7 @@ Natural language phrases that should invoke this skill:
 | Recommendations:                                                |
 |   1. MANDATORY: Use subagents for all heavy operations          |
 |   2. Use Task()-delegated subagents for ANY MCP query           |
-|   3. Use sdd-validator-runner for validation                   |
+|   3. Use sdd-validator for validation                   |
 |   4. Avoid reading large files directly                         |
 |   5. Consider compaction before /sdd.build                     |
 |                                                                 |

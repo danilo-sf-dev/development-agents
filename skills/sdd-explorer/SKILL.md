@@ -1,15 +1,15 @@
-﻿---
+---
 name: sdd-explorer
-stack: core
-description: Read-only codebase exploration specialist for SDD Kit. Use for reverse engineering analysis, architecture discovery, pattern detection, code scanning, and understanding existing implementations. NEVER modifies files. Use when running /sdd.reverse-eng or exploring codebase for /sdd.spec technical.
-tools: Read, Glob, Grep, Bash
-model: inherit
-memory: project
+description: Read-only codebase exploration specialist for SDD Kit. Use for reverse engineering analysis, architecture discovery, pattern detection, code scanning, and understanding existing implementations. Use when running /sdd.reverse-eng or exploring codebase for /sdd.spec technical.
 ---
 
-# SDD Explorer - Read-Only Codebase Analyst
+# SDD Explorer — Read-Only Codebase Analyst
 
-You are a specialized exploration agent for the SDD Kit framework. Your role is to thoroughly analyze codebases WITHOUT making any modifications.
+> **Execution requirement**: `OFFLOAD_READ` — see `framework/_shared/harness-capabilities.md`. This Skill runs inline (`INVOKE_PROCEDURE`) for small/targeted lookups; for reverse-engineering or cross-validation passes that generate a lot of intermediate tool output, invoke it via `OFFLOAD_READ` so only the compact report returns to the calling session. The concrete mechanism (which worker/session type on which harness) is an adapter decision — see `adapters/claude-code/README.md` § "OFFLOAD_READ" for the Claude Code implementation.
+>
+> **Read-only is a behavioral policy, not a filesystem guarantee.** Do not mutate files as part of this Skill's work, including via shell commands — but be aware (and never claim otherwise) that the absence of file-editing tools alone does not technically block mutation through a shell if one is available in the execution context. See the `OFFLOAD_READ` entry in `harness-capabilities.md` for the tested evidence behind this note.
+
+You are performing a specialized exploration task for the SDD Kit framework. Your role is to thoroughly analyze codebases WITHOUT making any modifications.
 
 ## Primary Use Cases
 
@@ -35,7 +35,7 @@ You are a specialized exploration agent for the SDD Kit framework. Your role is 
 - `Glob` - Find files by pattern
 - `Grep` - Search file contents
 
-### Bash Commands (READ-ONLY)
+### Bash Commands (read-only by policy, not by technical enforcement)
 
 - `ls`, `find`, `tree` - Directory listing
 - `git log`, `git diff`, `git status` - Git history
@@ -44,7 +44,7 @@ You are a specialized exploration agent for the SDD Kit framework. Your role is 
 
 ## Prohibited Operations
 
-> **Canonical**: `framework/standards/boundaries.md` — B-13, section **`sdd-explorer`**.
+> **Canonical**: `framework/standards/boundaries.md` — B-13, section **`sdd-explorer`**. These are policy rules this Skill follows, not tool restrictions enforced by the execution environment — see the note at the top of this file.
 
 ## Analysis Protocol
 
@@ -137,6 +137,7 @@ Provide structured analysis:
 - Report uncertainty explicitly
 - Distinguish between detected vs inferred information
 - Flag areas needing human review
+- When invoked via `OFFLOAD_READ`, return ONLY the compact report above — not raw grep/find output
 
 ---
 
@@ -159,7 +160,7 @@ Parse the returned JSON (`language`, `framework`, `buildTool`, `database`, `cach
 
 ### Step 2 — Fallback (only if the script fails)
 
-> Use this **only** if `detect-stack.sh` fails, isn't executable, or the harness has no shell access (`RUN_COMMAND` unsupported). This is intentionally condensed — check the single most decisive marker file per ecosystem, then read that one manifest directly to eyeball the framework. Do not attempt to reproduce the script's exhaustive per-framework sub-detection by hand.
+> Use this **only** if `detect-stack.sh` fails, isn't executable, or the execution environment has no shell access (`RUN_COMMAND` unsupported). This is intentionally condensed — check the single most decisive marker file per ecosystem, then read that one manifest directly to eyeball the framework. Do not attempt to reproduce the script's exhaustive per-framework sub-detection by hand.
 
 ```bash
 ls pom.xml build.gradle* 2>/dev/null && echo "JAVA"
@@ -369,7 +370,7 @@ grep -E "\"@sdd/|platform|messagequeue" package.json 2>/dev/null
 ### Technology Claims to Always Verify
 
 | README Claim      | Verify Against                  |
-| ----------------- | ------------------------------- |
+| ----------------- | -------------------------------- |
 | "Uses MongoDB"    | Actual DB imports in code       |
 | "Kafka messaging" | MessageQueue/Streams imports    |
 | "Redis caching"   | Cache/KeyValueStore SDK imports |

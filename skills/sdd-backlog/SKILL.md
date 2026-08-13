@@ -1,18 +1,17 @@
 ---
-name: sdd-backlog-manager
-stack: core
+name: sdd-backlog
 description: Backlog management specialist for SDD Kit. Use for CRUD operations on sdd/backlog.md during /sdd.backlog command. Handles TODO, DEBT, and IDEA categorization, priority ranking, and backlog-to-feature conversion.
-tools: Read, Glob, Grep, Edit, Write
-model: haiku
 ---
 
-# SDD Backlog Manager - Backlog Operations Specialist
+# SDD Backlog — Backlog Operations Specialist
 
-You are a specialized backlog management agent for the SDD Kit framework. Your role is to efficiently manage the centralized backlog file with CRUD operations.
+> **Execution requirement**: none for the normal case — runs inline (`INVOKE_PROCEDURE`). `DELEGATE_OFFLOAD` only for large backlogs, where reading/rewriting the whole file would otherwise dominate the calling session's context — see `framework/_shared/harness-capabilities.md`. This is a generic offload (no integrity/isolation requirement), not `OFFLOAD_READ` — this Skill **writes** to `sdd/backlog.md` as part of normal operation.
+
+You are performing backlog-management operations for the SDD Kit framework. Your role is to efficiently manage the centralized backlog file with CRUD operations.
 
 **Schema note**: The backlog-item schema in this file is the same schema `/sdd.backlog` uses in practice, documented canonically in `commands/references/backlog-file-format.md`. If the two ever disagree, `backlog-file-format.md` wins — treat it as ground truth and update this file to match.
 
-## When to Use This Agent
+## When to Use This Skill
 
 1. **Backlog Command** (`/sdd.backlog`)
    - List backlog items
@@ -20,7 +19,7 @@ You are a specialized backlog management agent for the SDD Kit framework. Your r
    - Update existing items
    - Resolve completed items
 
-   This is an **optional** delegation target: `/sdd.backlog` can handle small/normal-sized backlogs inline via its own lazy-loaded references. Delegating here is a context-saving choice for large backlogs, not a requirement — see `DELEGATE_OFFLOAD` in `framework/_shared/harness-capabilities.md`.
+   `/sdd.backlog` handles small/normal-sized backlogs inline via its own lazy-loaded references. Offloading is a context-saving choice for large backlogs, not a requirement.
 
 2. **Feature Start** (`/sdd.start --from-backlog`)
    - Convert backlog item to feature
@@ -223,10 +222,10 @@ Never reuse an ID that appears anywhere in the file.
 ## Priority Definitions
 
 | Priority | Meaning                                               | Timeline                   |
-| -------- | ----------------------------------------------------- | -------------------------- |
+| ---------- | -------------------------------------------------------- | ----------------------------- |
 | High     | Critical/urgent — blocks work or causes real problems | This sprint                |
 | Medium   | Important, should be scheduled                        | Next sprint / this quarter |
-| Low      | Nice to have, no urgency                              | Someday                    |
+| Low      | Nice to have, no urgency                               | Someday                    |
 
 Priority is the single field that expresses urgency/severity for every item
 type (TODO, DEBT, IDEA). The real schema has no separate Severity field —
@@ -235,7 +234,7 @@ for DEBT items, use Priority itself to reflect how severe the debt is.
 ## Complexity Definitions
 
 | Complexity | Meaning                               | Scope                            |
-| ---------- | ------------------------------------- | -------------------------------- |
+| ------------ | ---------------------------------------- | ----------------------------------- |
 | Low        | Simple fix, minimal changes           | Single file or small change      |
 | Medium     | Multiple components, moderate scope   | Several files, some coordination |
 | High       | Cross-cutting or architectural impact | Major feature, significant scope |
