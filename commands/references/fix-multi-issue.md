@@ -27,20 +27,19 @@ IF N > 1:
   ⛔ Do NOT start investigating Issue 1 in this context.
 
   The ONLY correct action is (`DELEGATE_OFFLOAD` — context-saving delegation per issue, no
-  isolation/bias-protection requirement; see `framework/_shared/harness-capabilities.md`):
+  isolation/bias-protection requirement; see `framework/_shared/harness-capabilities.md` for the
+  capability and `adapters/<harness>/README.md` for the concrete dispatch on the installed harness):
 
     for each issue in issues (sequentially, one at a time):
-      Task(
-        subagent_type="general-purpose",
-        description="Fix: [short name]",
-        prompt="Working dir: {DIR}\nFollow the /sdd.fix command workflow (commands/sdd.fix.md) for this single issue — this is a command, not a skill:\n{ISSUE_DESCRIPTION}\nReport: classification, root cause, layers, fix record path, status."
-      )
-      → wait for Task result before spawning next
+      dispatch a fresh-context execution of the /sdd.fix command workflow (commands/sdd.fix.md)
+      for this single issue only — working dir, issue description, and the expected report shape
+      (classification, root cause, layers, fix record path, status) as its task
+      → wait for that dispatch to complete before starting the next
 
-  After all Tasks complete → show consolidated batch summary.
+  After all dispatches complete → show consolidated batch summary.
 
   ❌ WRONG: TodoWrite with N items + process each inline in this session
-  ✅ CORRECT: N × Task() calls, one per fix, each subagent gets fresh context
+  ✅ CORRECT: N separate dispatches, one per fix, each with fresh context
   → Full template: see `references/fix-batch.md`
 
 IF N = 1:

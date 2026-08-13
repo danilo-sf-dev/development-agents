@@ -53,7 +53,7 @@ argument-hint: "[task-id|--next|--all]"
 
 > **BLOCKING**: Quality checks after EACH task, not just at the end.
 
-**Per-Task Cycle**: Implement → Test → `VALIDATOR_ISOLATED` Layer-3 gates (`sdd-validator`, isolated mode; on Claude Code: `Task(subagent_type="general-purpose", prompt="<scrubbed: file paths + rules only>", model=resolve-model.sh claude-code STRONG)` — no registered `sdd-validator` subagent type, see `framework/_shared/harness-capabilities.md`) → Fix **all** findings → Re-check → Complete/commit.
+**Per-Task Cycle**: Implement → Test → `VALIDATOR_ISOLATED` Layer-3 gates (`sdd-validator`, isolated mode, always `model_role: STRONG` — see `framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md` for the concrete dispatch on the installed harness) → Fix **all** findings → Re-check → Complete/commit.
 Verdicts under `sdd/wip/<feature>/verdicts/` (do not commit).
 
 ### Dependency Scanning (short)

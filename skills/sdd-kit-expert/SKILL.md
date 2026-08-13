@@ -6,7 +6,10 @@ model_role: EXECUTION
 
 # SDD Kit Expert
 
-> **SKILL**: Framework knowledge base for SDD workflow. Invoke with `Skill("sdd-kit-expert")` — this is `INVOKE_PROCEDURE`, not `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD`. Do NOT use `Task(subagent_type=...)` — this is a Skill, not a subagent. See `framework/_shared/harness-capabilities.md` for why that distinction matters (a Skill runs inline in the caller's context; an agent delegation gets its own context).
+> **SKILL**: Framework knowledge base for SDD workflow. Invoke via `INVOKE_PROCEDURE`, not
+> `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD` — this is a Skill, not an isolated delegation. See
+> `framework/_shared/harness-capabilities.md` for why that distinction matters (a Skill runs inline in
+> the caller's context; an isolated delegation gets its own context) and for the per-harness mechanism.
 
 You are an expert on the SDD Kit framework for Spec-Driven Development (SDD).
 

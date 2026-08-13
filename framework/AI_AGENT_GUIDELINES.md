@@ -544,7 +544,7 @@ After exiting Plan Mode, **ALWAYS**:
 
 ### Detection
 
-`sdd-implementation` is a **Skill** (`skills/sdd-implementation/SKILL.md`) — invoke it via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`; on Claude Code, `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-implementation/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)` — there is no registered `sdd-implementation` subagent type). When reading a snippet file it returns, check for this marker at the top:
+`sdd-implementation` is a **Skill** (`skills/sdd-implementation/SKILL.md`), `model_role: EXECUTION` — invoke it via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md` for the concrete dispatch on the installed harness). When reading a snippet file it returns, check for this marker at the top:
 
 ```markdown
 > **🔒 EXPERT-VALIDATED** | Reviewed: YYYY-MM-DD | Author: reviewer_name | Commit: xxxxxxx
@@ -594,7 +594,7 @@ Expert-validated snippets are managed via the `sdd-implementation` Skill. It is 
 
 ### Reglas
 
-1. **SIEMPRE** empezar delegando a `sdd-implementation` (`DELEGATE_OFFLOAD` — en Claude Code: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-implementation/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)`, sin subagent type `sdd-implementation` registrado)
+1. **SIEMPRE** empezar delegando a `sdd-implementation` (`DELEGATE_OFFLOAD`, `model_role: EXECUTION` — ver `adapters/<harness>/README.md` para el mecanismo concreto en el harness instalado)
 2. **NUNCA** usar WebSearch para documentación de servicios internos
 3. Si el plugin no cubre → return PARTIAL y sugerir documentación oficial
 
@@ -612,18 +612,11 @@ Same agent writes code AND validates it → can rationalize failures → "OK" de
 
 > **MANDATORY**: Validation MUST be run via `DELEGATE_ISOLATED` — the isolated-context delegation capability defined in [`framework/_shared/harness-capabilities.md`](_shared/harness-capabilities.md). The isolation is a **correctness requirement** (it's what defeats the self-validation bias above), not an optional optimization — this step is never skipped and never run inline, regardless of which harness is installed.
 
-Read `framework/_shared/harness-capabilities.md` to see exactly how `DELEGATE_ISOLATED` resolves on the currently-installed harness. On **Claude Code** it resolves 1:1 to:
-
-```python
-# No registered "sdd-validator" subagent type — general-purpose given the Skill's
-# isolated-mode content as its task is the real mechanism. Prompt is scrubbed
-# (file paths + rules only, never the implementer's rationale) per VALIDATOR_ISOLATED.
-Task(
-    subagent_type="general-purpose",
-    prompt="Follow development-agents/skills/sdd-validator/SKILL.md (isolated mode). Validate files: [list]. Run: build, tests, security, performance.",
-    model=<resolve model_role="STRONG" via adapters/<harness>/README.md>
-)
-```
+Read `framework/_shared/harness-capabilities.md` to see exactly how `DELEGATE_ISOLATED` resolves on
+the currently-installed harness, and `adapters/<harness>/README.md` for the concrete dispatch. On
+every harness it is a fresh-context execution of `sdd-validator` (isolated mode), given only a
+scrubbed prompt (file paths + rules — never the implementer's rationale), always at `model_role:
+STRONG`.
 
 `sdd-validator` always declares `model_role: STRONG` (see `framework/_shared/model-routing.md`),
 independently of the `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` isolation guarantee above — isolation

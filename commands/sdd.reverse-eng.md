@@ -98,10 +98,9 @@ AskUserQuestion(
 ┌─────────────────────────────────────────────────────────────────────┐
 │  MANDATORY SUBAGENT: sdd-explorer                                   │
 │                                                                      │
-│  Task(subagent_type="general-purpose", prompt="Follow                │
-│  skills/sdd-explorer/SKILL.md ...", model=resolve-model.sh           │
-│  claude-code EXECUTION) for: Phase 0-3 (no registered                │
-│  sdd-explorer subagent type)                                         │
+│  Delegate Phase 0-3 to sdd-explorer (model_role: EXECUTION),         │
+│  per DELEGATE_OFFLOAD — see harness-capabilities.md +                │
+│  adapters/<harness>/README.md for the concrete dispatch              │
 │                                                                      │
 │  WHY: Reduces tokens 30-40%, isolates read-only operations,          │
 │       preserves main context for synthesis.                          │
@@ -298,7 +297,7 @@ sdd/
 
 ### Phase 1: Parallel Extraction (lazy-loaded)
 
-> Extract from existing docs/specs **and** code (both mandatory). Prefer Task()-delegated subagents.
+> Extract from existing docs/specs **and** code (both mandatory). Prefer delegating to subagents.
 > **ONLY IF** running Phase 1 (full/update/enhance modes that extract):
 > Read `references/reverse-eng-phase1.md`.
 

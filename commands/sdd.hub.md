@@ -15,9 +15,9 @@ argument-hint: "<action> [args]"
 
 **Model Routing**: like `/sdd.go`, `/sdd.hub` declares `model_role: inherit` and does not pin one
 model for the whole run — each per-app `/sdd.*` command it routes to keeps its own `model_role` and
-is dispatched as its own model-pinned call (same automatic, no-operator-action mechanism as
-`/sdd.go` — see `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch" for the
-concrete `Task()`/child-CLI shape; the same principle applies per app, per sub-command here).
+is dispatched as its own isolated, model-resolved execution (same automatic, no-operator-action
+mechanism as `/sdd.go` — see `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch"
+for the dispatch principle; the same principle applies per app, per sub-command here).
 
 ---
 

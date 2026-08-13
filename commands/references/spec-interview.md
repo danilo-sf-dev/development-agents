@@ -21,9 +21,9 @@
 **Gap-Driven Questions** (detected inline by scanning the description/answers for the feature-type signals below):
 
 > If gaps need architecture (`delegate_to: sdd-system-design` or async/storage/concurrent keywords):
-> delegate to `sdd-system-design` (Skill — `DELEGATE_OFFLOAD`, see `framework/_shared/harness-capabilities.md`;
-> on Claude Code: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-system-design/SKILL.md ...", model=resolve-model.sh claude-code STRONG)`
-> — there is no registered `sdd-system-design` subagent type) **before** asking the user. Ask in **product terms only** (no service names).
+> delegate to `sdd-system-design` (Skill, `model_role: STRONG` — `DELEGATE_OFFLOAD`, see
+> `framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md`
+> for the concrete dispatch) **before** asking the user. Ask in **product terms only** (no service names).
 > Candidates stay tentative until technical spec.
 
 | Feature Type | Ask (product terms)                  |

@@ -91,7 +91,7 @@ estimated_percentage = (estimated_tokens / 200000) x 100  # Assuming 200K contex
 
 ## Recommendations by Status
 
-> Every "Task()-delegated subagents" recommendation below is `DELEGATE_OFFLOAD` (context-saving delegation, no bias-protection requirement — degrades to running inline on harnesses without a delegation mechanism) — see `framework/_shared/harness-capabilities.md`.
+> Every "delegate to a subagent" recommendation below is `DELEGATE_OFFLOAD` (context-saving delegation, no bias-protection requirement — degrades to running inline on harnesses without a delegation mechanism) — see `framework/_shared/harness-capabilities.md`.
 
 ### NORMAL (0-40%)
 
@@ -109,7 +109,7 @@ Status: NORMAL - Plenty of context available
 ```
 Recommendations:
   1. Prefer subagents for heavy operations
-  2. Use Task()-delegated subagents for MCP queries
+  2. Delegate MCP queries (`DELEGATE_OFFLOAD`)
   3. Use Explore agent for file searches
   4. Consider completing current phase soon
   5. At phase transitions: Consider /clear — specs contain all decisions, fresh context produces higher quality
@@ -122,7 +122,7 @@ Status: ELEVATED - Prefer delegation for heavy operations
 ```
 Recommendations:
   1. MANDATORY: Use subagents for all heavy operations
-  2. Use Task()-delegated subagents for ANY MCP query
+  2. Delegate ANY MCP query (`DELEGATE_OFFLOAD`)
   3. Use sdd-validator for validation
   4. Avoid reading large files directly
   5. Strongly consider /clear at next phase transition — specs are source of truth, fresh context = higher quality
@@ -250,7 +250,7 @@ Natural language phrases that should invoke this skill:
 |                                                                 |
 | Recommendations:                                                |
 |   1. MANDATORY: Use subagents for all heavy operations          |
-|   2. Use Task()-delegated subagents for ANY MCP query           |
+|   2. Delegate ANY MCP query (DELEGATE_OFFLOAD)                  |
 |   3. Use sdd-validator for validation                   |
 |   4. Avoid reading large files directly                         |
 |   5. Consider compaction before /sdd.build                     |

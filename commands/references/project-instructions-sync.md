@@ -56,9 +56,9 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 - Discovered patterns: `sdd/PATTERNS.md`
 - Model Routing: every command/Skill declares `model_role: STRONG|EXECUTION` — resolve and dispatch
   automatically per `development-agents/framework/_shared/model-routing.md` and this harness's
-  `adapters/<harness>/README.md` § Model Routing (on Codex specifically: dispatch via a child
-  `codex exec --model <resolved> ...` process, don't just run the command's content inline under
-  whatever model this session happens to be on). Never ask the operator to switch models by hand.
+  `adapters/<harness>/README.md` § Model Routing (don't just run the command's content inline under
+  whatever model this session happens to be on — follow the concrete dispatch mechanism that adapter
+  documents). Never ask the operator to switch models by hand.
 
 ### Rules
 - Never create files under `sdd/specs/`, `sdd/wip/`, or `sdd/features/` manually

@@ -16,10 +16,9 @@ model_role: EXECUTION
 > the same fix, a significant cross-module change beyond stated scope, concurrency/transaction
 > complexity, a security-relevant decision, a performance-critical path, high blast radius, or the
 > need to challenge a technical premise in the approved spec — never redesign it silently, surface
-> the concern instead. Escalation must actually execute: dispatch the specific hard sub-decision
-> through the `RESOLVED` mechanism for `STRONG` on the current harness (a `Task()` call with
-> `model` resolved to `STRONG` on Claude Code, a child `agent -p --model ...` on Cursor, a child
-> `codex exec --model ...` on Codex — see `adapters/<harness>/README.md`), get the result, then
+> the concern instead. Escalation must actually execute: dispatch the specific hard sub-decision, at
+> `model_role: STRONG`, through the `RESOLVED` mechanism for the installed harness (see
+> `adapters/<harness>/README.md`), get the result, then
 > **de-escalate back to `EXECUTION`** for the remaining mechanical work — do not keep `STRONG` active
 > once the hard part is resolved. Full rules: `framework/_shared/model-routing.md` § Escalation.
 

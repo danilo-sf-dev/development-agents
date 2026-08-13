@@ -149,14 +149,12 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 #### Backend/Web Technical Spec (platform = backend | web | "")
 
 > **BLOCKING — Architect-First**: before ANY DD / service / dependency / diagram, invoke the
-> `sdd-system-design` Skill (`OFFLOAD_REASONING`; on Claude Code:
-> `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-system-design/SKILL.md ...", model=resolve-model.sh claude-code STRONG)`
-> — no registered `sdd-system-design` subagent type) with functional summary + capabilities. Do not
-> invent services from pre-training. Single recommendation → use it. 2–3 options → Architecture
-> Options ref below.
-> Then for each selected service: invoke the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`; on
-> Claude Code: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-implementation/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)`)
-> for live SDK details.
+> `sdd-system-design` Skill (`OFFLOAD_REASONING`, `model_role: STRONG` — see
+> `framework/_shared/harness-capabilities.md` and `adapters/<harness>/README.md` for the concrete
+> dispatch) with functional summary + capabilities. Do not invent services from pre-training. Single
+> recommendation → use it. 2–3 options → Architecture Options ref below.
+> Then for each selected service: invoke the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`,
+> `model_role: EXECUTION`) for live SDK details.
 
 #### Architecture Options (lazy-loaded)
 

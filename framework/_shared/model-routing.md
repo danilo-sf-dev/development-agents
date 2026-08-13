@@ -105,13 +105,12 @@ reliability. Escalation is not a blanket upgrade for the rest of the task — se
 
 **Escalation must actually execute in `STRONG`, not just be written down as a plan.** When an
 `EXECUTION`-role Skill hits one of the triggers above, it does not keep reasoning about the hard part
-itself under `EXECUTION` — it dispatches *that specific sub-decision* through the same `RESOLVED`
-mechanism `VALIDATOR_ISOLATED` and the other offload capabilities already use (a `Task()` call with
-`model` resolved to `STRONG` on Claude Code; a child `agent -p --model <STRONG> ...` invocation on
-Cursor; a child `codex exec --model <STRONG> ...` invocation on Codex — see each
-`adapters/<harness>/README.md`), gets the decision/result back, and only then continues. This is a
-scoped delegation for one hard sub-problem, not a mode switch for the rest of the task — which is
-exactly why De-escalation (below) is real and automatic, not something the operator has to trigger.
+itself under `EXECUTION` — it dispatches *that specific sub-decision*, at `model_role: STRONG`,
+through the same `RESOLVED` mechanism `VALIDATOR_ISOLATED` and the other offload capabilities already
+use on the installed harness (see `adapters/<harness>/README.md` for the concrete dispatch), gets the
+decision/result back, and only then continues. This is a scoped delegation for one hard sub-problem,
+not a mode switch for the rest of the task — which is exactly why De-escalation (below) is real and
+automatic, not something the operator has to trigger.
 
 ## De-escalation (`STRONG` → `EXECUTION`)
 
@@ -149,62 +148,61 @@ Orchestrator commands that delegate to multiple Skills with different roles in t
 (`/sdd.go`, `/sdd.hub`) declare `model_role: inherit` — meaning "resolved per sub-step by whichever
 Skill is delegated to at that point," not a single role for the whole command.
 
-## Resolution — single authoritative source
+## Resolution — single authoritative source, resolved at runtime, no install step
 
 There is exactly **one** place the Role→model mapping is written down:
 [`config/model-routing.yaml`](../../config/model-routing.yaml). There is exactly **one** place that
 reads it: [`framework/tools/resolve-model.sh <harness> <STRONG|EXECUTION> [--json]`](../tools/resolve-model.sh),
 which prints `model=<value> effort=<value-or-empty>` (or JSON with `--json`). This is the concrete,
-executable form of `resolve_model(harness, model_role)`. Every mechanism that needs a concrete model
-— the installer's frontmatter translation, a Claude Code `Task()` call's `model` parameter, a Cursor
-or Codex child-CLI dispatch — calls this script (or, on Claude Code, reads the YAML directly, since
-the calling agent can parse two levels of flat YAML itself without shelling out) instead of embedding
-its own copy of the table. **No adapter README, Skill, or command file may contain a second copy of
-the Role→model table.** Changing a model means editing `config/model-routing.yaml` in exactly one
-place; every call site that resolves at dispatch time (Cursor, Codex) picks up the change on its next
-invocation, and Claude Code's install-time-baked frontmatter picks it up on the next `/sdd.install`
-run (see `adapters/claude-code/README.md`).
+executable form of `resolve_model(harness, model_role)`. **Resolution happens at dispatch time, on
+every harness, with no install-time step and no generated/cached copy anywhere.** Whatever mechanism
+a harness adapter uses to turn a `model_role` into a running execution (see
+`adapters/<harness>/README.md`) calls this script — or reads `config/model-routing.yaml` directly,
+since it's two levels of flat YAML, cheap to parse without shelling out — at the moment it needs the
+value, never ahead of time. **No adapter README, Skill, command file, or installer may contain a
+second copy of the Role→model table, and none may cache a resolved value from a previous run.**
+Changing a model means editing `config/model-routing.yaml` in exactly one place; every call site
+picks up the change on its **very next dispatch** — no reinstall, no regeneration, no
+installer involvement of any kind. The installer copies commands/Skills (including their
+`model_role:` frontmatter) byte-for-byte, exactly like every other file it installs; it has no
+Model Routing responsibility to begin with, so there is nothing for it to keep in sync.
 
 ## Interactive dispatch — a headless/isolated child cannot answer a Gate itself
 
 Every `RESOLVED` mechanism on every harness dispatches the substantive work of a `model_role`-bearing
 command/Skill as a **separate execution context** from the interactive session the human is talking
-to — a `Task()`-dispatched subagent on Claude Code, a headless `agent -p` child process on Cursor, a
-headless `codex exec` child process on Codex. **None of these three can ask the human a question and
-wait for an answer from inside that dispatch.** This was verified directly, not assumed: a Claude Code
-subagent invoked via `Task()` and instructed to call `AskUserQuestion` receives an immediate tool
-error (`AskUserQuestion is not available inside subagents`) — it does not pause, degrade, or forward
-the question; the call simply fails. Cursor's `agent -p` and Codex's `codex exec` are headless by
-design (no `stdin` prompt loop) and have the same limitation for the same structural reason. This is
-true **on all three harnesses**, not just the two that dispatch via an external CLI — do not assume
-Claude Code is exempt because its dispatch mechanism looks more "native."
+to (see each `adapters/<harness>/README.md` for what that context is concretely). **None of these
+dispatched contexts, on any harness, can ask the human a question and wait for an answer from inside
+that dispatch.** This was verified directly on Claude Code, not assumed: a dispatched worker
+instructed to call the structured question tool receives an immediate error — it does not pause,
+degrade, or forward the question; the call simply fails. Cursor's and Codex's headless child-process
+mechanisms are non-interactive by design (no prompt loop) and have the same limitation for the same
+structural reason. This is true **on all three harnesses**, not just the two that dispatch via an
+external CLI — do not assume Claude Code is exempt because its dispatch mechanism looks more "native."
 
 **The rule this forces**: any dispatched execution that reaches a point requiring human input — a
 Gate (1, 2, 2.5, 3), the tests-immutability `AskUserQuestion` in `/sdd.build`, a next-steps prompt, or
 any other `ASK_USER` point — must **stop there and return a structured request**, never fabricate an
 answer, never silently auto-approve, and never attempt to call an interactive tool that isn't
-available to it. The shape is the same on every harness (only the transport differs):
+available to it. The shape is the same on every harness (only the resume transport differs, and is an
+adapter detail, not a core one):
 
 ```json
-{"status": "NEEDS_USER_INPUT", "resume_token": "<mechanism-specific: subagent has none, Cursor uses a thread id, Codex uses --last>", "gate": "<gate name>", "questions": [...]}
+{"status": "NEEDS_USER_INPUT", "resume_token": "<mechanism-specific — see adapters/<harness>/README.md>", "gate": "<gate name>", "questions": [...]}
 ```
 
-The **calling/interactive session** — which does have the real interactive tool (`AskUserQuestion` on
-Claude Code, plain-text prompts elsewhere) — is the only place a Gate is ever actually answered. After
-it gets the human's answer, it persists that answer to the state the phase already expects
+The **calling/interactive session** — which does have the real interactive tool (`ASK_USER`, per
+`harness-capabilities.md`) — is the only place a Gate is ever actually answered. After it gets the
+human's answer, it persists that answer to the state the phase already expects
 (`sdd/wip/<feature>/meta.md` or wherever that Gate normally writes its result — no new state format),
-then **resumes** the dispatched work under the *same resolved model* it was already running under:
-
-- **Claude Code**: there is no session/thread to resume — a `Task()` call is stateless per invocation.
-  "Resume" means the calling session issues a **new** `Task()` call for the remainder of that
-  phase/Skill (same `model=` resolution as before), instructing it to continue from the state file
-  now that the Gate's answer is recorded there. This is why the pipeline's file-based state handoff
-  (`sdd/wip/<feature>/*.md`) is load-bearing for Model Routing, not incidental: it's what makes a
-  second, independent `Task()` call able to pick up exactly where the first one stopped.
-- **Cursor**: `agent -p --resume "<thread-id>" --model "<same resolved model>" [--force if this was a
-  write dispatch] "<human's answer>"` — see `adapters/cursor/README.md` § "Interactive handoff".
-- **Codex**: `codex exec resume --last "<human's answer>"` — see `adapters/codex/README.md` §
-  "Interactive handoff" for the documented `--json`/session-ID limitation this works around.
+then **resumes** the dispatched work under the *same resolved Model Role* it was already running
+under, using whatever resume mechanism that harness's adapter documents (a fresh dispatch built from
+the persisted state, on a harness with no session to reconnect to; a native session-resume primitive,
+where the harness has one). Live-tested end-to-end on Claude Code: a fixture dispatch returned
+`NEEDS_USER_INPUT`, the calling session asked the real question, persisted the real answer to a state
+file, and a second, independent dispatch (no shared memory with the first) read that file and produced
+a result reflecting the actual answer — confirming the state-file handoff is sufficient, not merely
+theoretical.
 
 **This does not change what a Gate is or when it fires** — Gate 1/2/2.5/3 and every methodological
 `AskUserQuestion` still fire at exactly the same points in the pipeline they always did, asking

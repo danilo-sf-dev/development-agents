@@ -9,7 +9,7 @@
 **Workflow**:
 
 1. After `sdd-explorer` identifies services
-2. For each service, delegate: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-implementation/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)` passing the service name and detected project language (on Claude Code — there is no registered `sdd-implementation` subagent type; other harnesses per the translation table)
+2. For each service, delegate to the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`, `model_role: EXECUTION` — see `adapters/<harness>/README.md` for the concrete dispatch on the installed harness), passing the service name and detected project language
 3. The agent fetches live documentation and returns ready-to-use snippets
 4. Include the returned snippet in the spec under the service entry
 

@@ -18,23 +18,13 @@ optimization: `sdd-validator` (isolated mode) must not see the implementer's rea
 `framework/_shared/harness-capabilities.md`). The "saves ~5700 tokens" note below is a real side
 benefit, not the reason this runs isolated:
 
-```python
-# Single agent call replaces 3 skill calls, saves ~5700 tokens.
-# No registered "sdd-validator" subagent type — general-purpose given the Skill's
-# isolated-mode content as its task is the real mechanism (see
-# docs/adr/0001-agent-skill-execution-architecture.md). Prompt is scrubbed (file
-# paths + rules only, no implementer rationale) per VALIDATOR_ISOLATED property 2.
-Task(
-    subagent_type="general-purpose",
-    model=resolve-model.sh claude-code STRONG,  # VALIDATOR_ISOLATED always runs STRONG
-    prompt="""
-    Follow development-agents/skills/sdd-validator/SKILL.md (isolated mode).
-    Final validation for all modified files (file list below — no implementation rationale).
-    Run Layer 3 quality gates: performance, security, code-review
-    Return unified JSON verdict.
-    """
-)
-```
+One dispatch replaces 3 separate Skill calls (saves ~5700 tokens — a real side benefit, not the
+reason this runs isolated). Dispatch `sdd-validator` (isolated mode) via `VALIDATOR_ISOLATED`, always
+at `model_role: STRONG`, with a scrubbed prompt (file list only, no implementer rationale, per
+`VALIDATOR_ISOLATED` property 2): "Final validation for all modified files. Run Layer 3 quality
+gates: performance, security, code-review. Return unified JSON verdict." — see
+`framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md` for
+the concrete dispatch on the installed harness.
 
 **Step C: Code Pattern Validation**:
 

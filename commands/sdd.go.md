@@ -56,72 +56,51 @@ argument-hint: "[feature-description]"
 ## Model Routing — automatic per-phase dispatch (mandatory mechanism, not documentation-only)
 
 `/sdd.go` declares `model_role: inherit` because it does not pin a single model for the whole
-express run — each phase below has its own `model_role` (from that command's own frontmatter) and
-must actually execute under that phase's resolved model, automatically, with no operator switching
-anything. **Why this can't just be "run everything inline"**: on Claude Code, a single continuous
-turn cannot change its own active model mid-turn — there is no in-turn self-`/model`. So `/sdd.go`
-does not execute each phase's content inline in this same turn/session; it dispatches each phase as
-its own call, pinned to that phase's resolved model:
+express run — each phase below has its own `model_role` (from that phase's own command frontmatter)
+and must actually execute under that phase's resolved Model Role, automatically, with no operator
+switching anything. Each phase is dispatched as its own isolated execution, resolved to that phase's
+`model_role` at the moment of dispatch — see `adapters/<harness>/README.md` § Model Routing for the
+concrete mechanism on the installed harness (it differs per harness — a call-time parameter on some,
+a child-process invocation on others — but the dispatch-per-phase principle is the same everywhere).
+This works cleanly because pipeline phases already pass state through disk (`sdd/wip/<feature>/*.md`,
+`meta.md`) rather than through shared conversation context — the same file-based handoff
+`ISOLATED_WORKSPACE` and `VALIDATOR_ISOLATED` already rely on.
 
-```text
-Task(
-  subagent_type="general-purpose",
-  prompt="Follow development-agents/commands/sdd.<phase>.md for feature <name>
-          (express-mode overrides from this file's Execution Flow table apply).
-          Read prior state from sdd/wip/<feature>/, write results back exactly as
-          that command file specifies.",
-  model=<resolve-model.sh claude-code <phase's model_role>>
-)
-```
+**Gates inside a dispatched phase — `NEEDS_USER_INPUT`, not silent pass-through.** A dispatched phase
+cannot itself ask the human a question — verified directly on Claude Code (an immediate tool error,
+not a pause), and true by design on every harness's headless/isolated dispatch mechanism. This applies
+to every phase below that can reach a Gate (1/2/2.5/3, the tests-immutability check in `/sdd.build`,
+next-steps prompts), which in practice is most of them. So a dispatched phase does not "surface its
+own gates" — it **stops at the gate and returns** `{"status": "NEEDS_USER_INPUT", "gate": "<name>",
+"questions": [...]}` instead of attempting to ask. The orchestrator (the session actually running
+`/sdd.go`, which does have the real `ASK_USER` mechanism) then asks the question itself, persists the
+answer to `sdd/wip/<feature>/meta.md` (or wherever that Gate already persists its result), and
+re-dispatches that phase — resolving its `model_role` fresh again — to continue from the state file
+now that the answer is recorded. A phase may therefore take more than one dispatch (one per Gate it
+contains, plus one final call) — this is expected, not an error. See
+`framework/_shared/model-routing.md` § "Interactive dispatch" for the full, harness-general statement
+of this rule, and `adapters/claude-code/README.md` for a live-tested account of exactly this sequence.
 
-This works cleanly because pipeline phases already pass state through disk
-(`sdd/wip/<feature>/*.md`, `meta.md`) rather than through shared conversation context — the same
-file-based handoff `ISOLATED_WORKSPACE` and `VALIDATOR_ISOLATED` already rely on. On harnesses that
-can't spawn a model-pinned child call either, the equivalent per-harness mechanism from
-`adapters/<harness>/README.md` § Model Routing applies instead (a `codex exec --model ...` child
-process on Codex, an `agent -p --model ...` child process on Cursor) — same dispatch-per-phase
-principle, different concrete call.
+**Phase-by-phase Model Role** (the harness's resolver — see `adapters/<harness>/README.md` — is the
+one and only lookup; no concrete model name is repeated here on purpose, so this table never goes
+stale when `config/model-routing.yaml` changes):
 
-**Gates inside a dispatched phase — `NEEDS_USER_INPUT`, not silent pass-through.** A dispatched
-`Task()` **cannot** call `AskUserQuestion` — this was verified directly: a subagent that attempts it
-gets an immediate tool error (`AskUserQuestion is not available inside subagents`), it does not pause
-or forward the question. This is true for every phase below that can reach a Gate (1/2/2.5/3, the
-tests-immutability check in `/sdd.build`, next-steps prompts), which in practice is most of them. So a
-dispatched phase does not "surface its own gates" — it **stops at the gate and returns**
-`{"status": "NEEDS_USER_INPUT", "gate": "<name>", "questions": [...]}` instead of attempting to ask.
-This orchestrator (the session actually running `/sdd.go`, which does have `AskUserQuestion`) then:
-asks the question itself, writes the answer to `sdd/wip/<feature>/meta.md` (or wherever that Gate
-already persists its result), and issues a **new** `Task()` call for the same phase with the same
-resolved `model=`, instructing it to continue from the state file now that the answer is recorded —
-this is the "resume" primitive on Claude Code, since a `Task()` call has no session to reconnect to.
-A phase may therefore take more than one `Task()` dispatch (one per Gate it contains, plus one final
-call) — this is expected, not an error. See `framework/_shared/model-routing.md` § "Interactive
-dispatch" for the full, harness-general statement of this rule, and `adapters/claude-code/README.md`
-for how this composes with the per-phase table below.
-
-**Phase-by-phase resolution** (`framework/tools/resolve-model.sh <harness> <role>` is the actual
-lookup — values below are the current Claude Code resolution, shown as a concrete example, not a
-second copy of the mapping):
-
-| Phase | `model_role` (from that command's frontmatter) | Resolved via |
-| --- | --- | --- |
-| `/sdd.start --express` | `EXECUTION` | `resolve-model.sh claude-code EXECUTION` |
-| `/sdd.spec` | `STRONG` | `resolve-model.sh claude-code STRONG` |
-| `/sdd.plan` | `EXECUTION` | `resolve-model.sh claude-code EXECUTION` |
-| `/sdd.test` | `STRONG` | `resolve-model.sh claude-code STRONG` |
-| `/sdd.build` (implementation) | `EXECUTION` | `resolve-model.sh claude-code EXECUTION` |
-| `/sdd.build` → validator sub-step | `STRONG` (always — `VALIDATOR_ISOLATED`) | `resolve-model.sh claude-code STRONG` |
-| `/sdd.check` | `EXECUTION` | `resolve-model.sh claude-code EXECUTION` |
-| `/sdd.finish` | `STRONG` | `resolve-model.sh claude-code STRONG` |
-
-The concrete model each of these resolves to today lives only in `config/model-routing.yaml` — not
-copied here on purpose, so this table never goes stale when that file changes.
+| Phase | `model_role` (from that command's frontmatter) |
+| --- | --- |
+| `/sdd.start --express` | `EXECUTION` |
+| `/sdd.spec` | `STRONG` |
+| `/sdd.plan` | `EXECUTION` |
+| `/sdd.test` | `STRONG` |
+| `/sdd.build` (implementation) | `EXECUTION` |
+| `/sdd.build` → validator sub-step | `STRONG` (always — `VALIDATOR_ISOLATED`) |
+| `/sdd.check` | `EXECUTION` |
+| `/sdd.finish` | `STRONG` |
 
 Gates that need a human answer (the 3-5 consolidated Express questions, any `AskUserQuestion`) are
-**never** answered by the phase-dispatch call itself — a `Task()`-dispatched subagent cannot call
-`AskUserQuestion` at all (verified: the tool errors immediately from inside a subagent). The
-orchestrator session running `/sdd.go` asks them, after the current phase-dispatch call returns
-`NEEDS_USER_INPUT` instead of a final result — see "Model Routing" above for the full mechanism.
+**never** answered by the phase-dispatch call itself — a dispatched phase cannot ask the human a
+question at all (verified: the attempt errors immediately). The orchestrator session running
+`/sdd.go` asks them, after the current phase-dispatch call returns `NEEDS_USER_INPUT` instead of a
+final result — see "Model Routing" above for the full mechanism.
 Nothing about model routing changes *which* gates fire or *what* they ask; it changes which model
 executes each phase and which execution context (always the orchestrator) answers a gate along the way.
 

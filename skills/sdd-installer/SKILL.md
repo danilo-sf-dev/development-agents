@@ -136,27 +136,18 @@ Criar/atualizar:
 
 | Destino                  | Origem                    |
 | --------------------------- | ---------------------------- |
-| `.claude/commands/`      | `PACK_DIR/commands/*.md`, com uma tradução de frontmatter (ver abaixo) |
+| `.claude/commands/`      | `PACK_DIR/commands/*.md` (cópia verbatim — `model_role:` incluído como metadado, sem tradução) |
 | `.claude/skills/<nome>/` | `PACK_DIR/skills/<nome>/` (cópia verbatim, `model_role:` incluído como metadado) |
 
 Substituir conteúdo SDD nesses destinos. Também aplicar `WRITE_PROJECT_INSTRUCTIONS` pra `CLAUDE.md` na raiz — ver `commands/references/project-instructions-sync.md` (merge idempotente, seção `## SDD Kit`).
 
-**Tradução obrigatória de `model_role:` → `model:`** (única exceção à cópia verbatim de frontmatter —
-ver `adapters/claude-code/README.md` § Model Routing para o porquê): ao copiar cada
-`commands/sdd.*.md` para `.claude/commands/`, resolva o valor concreto rodando
-`bash PACK_DIR/framework/tools/resolve-model.sh claude-code <STRONG|EXECUTION>` (lê
-`PACK_DIR/config/model-routing.yaml` — a única fonte de verdade do mapeamento; este passo nunca
-hardcoda um nome de modelo) e reescreva a linha `model_role: STRONG|EXECUTION|inherit` do frontmatter
-para `model: <valor resolvido>|inherit` (`inherit` passa sem mudança — é o valor usado por `/sdd.go`
-e `/sdd.hub`, que não pinam um modelo único no comando top-level porque despacham cada fase
-individualmente, ver `commands/sdd.go.md`). O resto do frontmatter e do corpo do arquivo é copiado
-sem alteração. Não deixar `model_role:` no arquivo instalado em `.claude/commands/` — Claude Code não
-lê essa chave.
-
-**Idempotência**: rodar `/sdd.install` de novo com `config/model-routing.yaml` alterado regenera
-`.claude/commands/*.md` com os novos valores resolvidos, sem exigir nenhuma outra mudança — este é o
-único ponto do pipeline que precisa de reinstalação para propagar uma mudança de mapping (Cursor e
-Codex resolvem no momento do dispatch, não em arquivo gerado — ver seus respectivos README).
+**Este instalador não tem responsabilidade nenhuma sobre Model Routing.** `model_role:` é copiado
+verbatim, exatamente como qualquer outro campo de frontmatter — este Skill nunca lê nem resolve
+`config/model-routing.yaml`. A resolução de `model_role` para um modelo concreto acontece inteiramente
+em runtime, no momento de cada dispatch, pelo mecanismo que `adapters/claude-code/README.md` documenta
+— nunca em tempo de instalação. Isso significa que editar `config/model-routing.yaml` já é suficiente
+para a próxima execução usar o novo valor: **não há nenhum arquivo gerado por este instalador para
+regenerar, e reinstalar não é necessário nem tem efeito algum sobre Model Routing.**
 
 ---
 

@@ -95,7 +95,7 @@ Phase-aware: only edit layers that exist/are active for current stage.
 
 ## Subagent Delegation (short)
 
-Complex/multi-file investigation → Task() subagents. `--batch` → one subagent per fix (`references/fix-batch.md`).
+Complex/multi-file investigation → delegate to subagents. `--batch` → one subagent per fix (`references/fix-batch.md`).
 > **ONLY IF** full decision tree / invocation templates:
 > Read `references/fix-subagent.md`.
 
