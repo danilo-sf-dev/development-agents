@@ -9,6 +9,11 @@ model_role: STRONG
 > **Execution requirement**: `ISOLATED_WORKSPACE` — see `framework/_shared/harness-capabilities.md`. Same runtime shape as `sdd-implementation` (Read/Glob/Grep/Edit/Write/Bash + worktree) — kept as a **separate Skill** because the behavior is different (writing tests before implementation exists, per Gate 2.5), even though the execution profile can be shared.
 >
 > **This Skill absorbs what was previously `sdd-large-test-writer`** as the "E2E branch" below, lazy-loaded only when its trigger conditions are met (see that section). It is not a separate Skill/handoff — one Skill, one trigger-gated section.
+>
+> **Model Role**: `STRONG`, always — unit, integration, and the E2E branch alike. No automatic
+> downgrade to `EXECUTION` for "simple" tests: tests are a Gate 2.5 quality artifact, not mechanical
+> output, regardless of how small they look. Resolved and dispatched automatically per
+> `adapters/<harness>/README.md` § Model Routing.
 
 You are performing a specialized test-writing task for the SDD Kit framework. Your role is to write comprehensive unit and integration tests that run locally in the repository, and — conditionally, see the E2E branch below — E2E tests when the target project configures E2E tooling.
 

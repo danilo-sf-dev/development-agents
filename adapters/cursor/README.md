@@ -44,6 +44,7 @@ usuario disser "/sdd.spec" ou equivalente.
 - Skills: .cursor/skills/
 - Framework: development-agents/framework/
 - Traducao de capacidades (Task/AskUserQuestion -> equivalente Cursor): development-agents/framework/_shared/harness-capabilities.md
+- Model Routing (resolucao automatica de modelo): development-agents/framework/_shared/model-routing.md
 
 ## Regras
 
@@ -54,32 +55,63 @@ usuario disser "/sdd.spec" ou equivalente.
 5. Quando um comando pedir Task(subagent_type=...) ou AskUserQuestion(...), traduza pela tabela em
    harness-capabilities.md (delegacao isolada degrada para nova conversa; pergunta estruturada
    degrada para texto simples com opcoes)
+6. **Model Routing e automatico — o operador nunca troca modelo pelo picker.** Antes de executar o
+   CONTEUDO de qualquer /sdd.* (ou de uma Skill offloaded), leia o `model_role:` do frontmatter do
+   comando/Skill, resolva o modelo concreto rodando
+   `bash development-agents/framework/tools/resolve-model.sh cursor <ROLE>`, e dispiche a execucao
+   substantiva via CLI headless: `agent -p --model "<modelo resolvido>" --output-format json
+   "<tarefa: siga development-agents/commands/sdd.<X>.md para a feature <nome>...>"`. NAO execute o
+   conteudo do comando inline nesta sessao interativa sob o modelo ambiente dela — a sessao
+   interativa so resolve o role, dispara o processo filho, e repassa o resultado. Gates que exigem
+   aprovacao humana (Gate 1/2/2.5/3, AskUserQuestion) acontecem DEPOIS que o processo filho retorna
+   (modo -p e headless: nao pausa no meio para perguntar) — a sessao interativa apresenta o resultado
+   do filho e roda o gate normalmente antes do proximo dispatch. Ver "Model Routing" abaixo para o
+   mecanismo completo.
 ```
 
-## Model Routing
+## Model Routing — `RESOLVED`
 
-Canonical policy: `development-agents/framework/_shared/model-routing.md` (`STRONG`/`EXECUTION`, no
-concrete names). This adapter's concrete mapping:
+Canonical policy: `development-agents/framework/_shared/model-routing.md`. Concrete values:
+`config/model-routing.yaml`, resolved via `framework/tools/resolve-model.sh cursor <STRONG|EXECUTION>`
+— this adapter does **not** keep its own copy of the mapping.
 
-| Model Role | Cursor model |
-| --- | --- |
-| `STRONG` | Grok 4.6, high |
-| `EXECUTION` | Compose 2.5, fast |
+**Real mechanism (child CLI invocation, confirmed via current Cursor CLI documentation)**: Cursor CLI
+supports non-interactive, scriptable execution — `agent -p "<prompt>" --model "<model>"
+--output-format json` — documented as the form meant for "CI jobs, git hooks and shell scripts where
+nothing is sitting at a keyboard to approve steps." This is a real `--model` flag, not an interactive
+picker, and it is exactly the "child execution" mechanism this pack's architecture allows an adapter
+to use when the harness can't switch its own running session's model. The rule file above (`sdd-workflow.mdc`,
+regra 6) instructs the interactive agent to resolve the role, then shell out to `agent -p --model ...`
+for the actual work, rather than running the command's content itself under whatever model the
+interactive tab happens to be on.
 
-**Mechanism (gap, not automation):** Cursor has no repo-shareable, per-command programmatic model
-pin — since there is no `.cursor/commands/` folder (see gap below), there is no installed file for
-this adapter to write a translated model field into, unlike Claude Code's `.claude/commands/*.md`.
-Model selection on Cursor is a UI/session choice made by the operator. This adapter does **not**
-fake automatic per-command switching here. Instead: when reading a `development-agents/commands/*.md`
-file directly (per the "Como os comandos funcionam" rule above), the agent should surface that
-command's `model_role:` frontmatter value to the user (e.g. "this command is `STRONG` — recommended:
-Grok 4.6 high") so the operator can select the matching model in Cursor's picker before proceeding.
-Skills' `model_role:` frontmatter is informational for the same reason — there is no per-Skill
-automatic override on this harness.
+**Evidence and its limits**: this mechanism is based on current official Cursor CLI documentation
+(`agent -p "..." --model "<model>"`, confirmed example syntax, `--output-format json` for structured
+output, `CURSOR_API_KEY` for headless auth) cross-checked across multiple independent sources in this
+session. It was **not** live-round-trip-tested against a running Cursor session — this sandbox has no
+`cursor-agent`/`agent` binary installed and this session's `WebFetch` tool is fully blocked by network
+egress policy (confirmed by testing it against several unrelated hosts, not just Cursor's), so the
+primary docs pages could not be fetched directly, only corroborated via independent search-result
+excerpts that quote the same flag and example syntax. Treat the mechanism as **designed and
+documented as real automation**, not as a claim of a completed live test — verify the exact flag
+names against `cursor.com/docs/cli/reference/parameters` before relying on this in production, and
+report back if the CLI's actual behavior differs from what's documented here.
+
+**Reasoning effort**: no confirmed CLI flag for effort/reasoning-level in headless mode (only an
+interactive slash-menu control was found in current docs). This adapter folds effort into the model
+identifier itself (`config/model-routing.yaml`'s `cursor.STRONG.model: grok-4.6-high` already encodes
+"high" in the string) rather than passing a second flag — if Cursor CLI ships a dedicated effort flag
+later, add it to `resolve-model.sh`'s cursor branch, not to this file.
+
+**What "the operator does nothing" actually requires here, precisely**: `CURSOR_API_KEY` (or
+equivalent headless auth) must be set in the environment for `agent -p` to run non-interactively —
+this is a one-time environment setup, not a per-command action, and is the same requirement Cursor's
+own CI/GitHub Actions integration has. It is not "manual model selection"; it's the auth precondition
+every headless CLI call needs regardless of role/model.
 
 ## Known gaps (do not silently degrade past these — tell the user)
 
 - **No commands/ folder.** Cursor's slash-command mechanism is not repo-shareable the way `.claude/commands/` is. The rule file above tells the agent to read `development-agents/commands/*.md` directly instead of relying on a `/sdd.*` slash-command registration.
-- **`DELEGATE_ISOLATED` is degraded**, not equivalent. Cursor has no synchronous "spawn isolated subagent, get structured result back into this session" primitive — only asynchronous Background/Cloud Agents that run out-of-session. The Validator Independence Protocol (`sdd-validator`) must run as a fresh conversation with a scrubbed prompt when using this adapter; the isolation guarantee is weaker than Claude Code's and must be flagged to the user when it matters (e.g. a `CANNOT_PROCEED` gate).
-- **`ASK_USER` is degraded** to plain conversational text with listed options (always including a free-text "Outros"/"Other" choice) — Cursor's structured clarifying-questions UI is scoped to Plan Mode only, not a general-purpose tool this adapter can call at arbitrary gate points.
-- **Model Routing is manual, not automatic.** No repo-shareable mechanism exists to auto-select a model per command/Skill on this harness (see "Model Routing" above) — the adapter surfaces the recommended role/model to the operator, who selects it in the UI. This is a documented gap, not a silent no-op: never claim the routing "just works" on Cursor.
+- **`DELEGATE_ISOLATED` is degraded**, not equivalent to Claude Code's synchronous in-session subagent — it is now satisfied via the headless `agent -p --model ...` child-CLI mechanism above (real isolation: separate process, fresh context) rather than "open a new conversation tab by hand" (the pre-Model-Routing version of this gap note). The Validator Independence Protocol (`sdd-validator`) runs as that headless child call with a scrubbed prompt; flag to the user when a `CANNOT_PROCEED` verdict comes back, same as before.
+- **`ASK_USER` is degraded** to plain conversational text with listed options (always including a free-text "Outros"/"Other" choice) — Cursor's structured clarifying-questions UI is scoped to Plan Mode only, not a general-purpose tool this adapter can call at arbitrary gate points. This happens in the **interactive parent session**, after a headless child dispatch returns — never inside the headless call itself (see regra 6 above).
+- **Model Routing mechanism is documented `RESOLVED` automation, not yet live-verified in this environment.** The `--model` flag and headless behavior are corroborated from current official-documentation excerpts (see "Model Routing" above for exactly what was and wasn't confirmed), not from a live round-trip in this sandbox. This is a verification gap, not a "falls back to manual" gap — do not reintroduce a manual-picker instruction as a substitute; if the flag turns out to be wrong, fix the flag, not the architecture.

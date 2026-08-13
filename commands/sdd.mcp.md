@@ -94,7 +94,7 @@ Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolat
 
 ### 6. Next steps
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `mcp→next` (match recommended option: spec → forte; start → barato).
+**Model Routing (automatic, informational only)**: the next command (`/sdd.spec` → `STRONG`, or `/sdd.start` → `EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ⛔ INVOKE TOOL (do not print this, CALL the tool) — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 AskUserQuestion(questions=[{

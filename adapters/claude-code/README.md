@@ -12,33 +12,52 @@
 | `.claude/skills/<name>/`   | `development-agents/skills/<name>/` (verbatim copy, including its `model_role:` frontmatter — see "Model Routing")  |
 | `CLAUDE.md` (project root) | Idempotent, section-scoped merge of the `## SDD Kit` block — see `commands/references/project-instructions-sync.md` |
 
-## Model Routing
+## Model Routing — `RESOLVED`
 
-Canonical policy: `framework/_shared/model-routing.md` (`STRONG`/`EXECUTION`, no concrete names).
-This adapter's concrete mapping:
+Canonical policy: `framework/_shared/model-routing.md`. Concrete values: `config/model-routing.yaml`,
+looked up via `framework/tools/resolve-model.sh claude-code <STRONG|EXECUTION>` — this adapter does
+**not** keep its own copy of the mapping.
 
-| Model Role | Claude Code model |
-| --- | --- |
-| `STRONG` | Sonnet 5, effort `high` |
-| `EXECUTION` | Haiku 4.5 |
+**Two real, automatic mechanisms, both `RESOLVED` (zero operator action)**:
 
-**Mechanism**: Claude Code's real, native mechanism for pinning a command's model is the `model:`
-frontmatter key on the installed `.claude/commands/*.md` file — `model_role:` is not a key Claude
-Code itself reads. So this is the one frontmatter field this adapter does **not** copy verbatim: at
-install time, `sdd-installer` translates each command's `model_role: STRONG|EXECUTION|inherit` into
-a concrete `model: sonnet|haiku|inherit` line in the generated `.claude/commands/*.md`, using the
-table above (`inherit` passes through unchanged — it already is a real Claude Code frontmatter
-value, meaning "follow the session's current model"). Skills keep `model_role:` as informational
-metadata in their frontmatter (Claude Code doesn't read a per-Skill model field the way it does for
-commands); when a Skill is dispatched through a fresh-context subagent call (see the capability table
-below), that call's own `model` parameter is set from the same table.
+1. **Command-level (install-time translation).** Claude Code's native mechanism for pinning a
+   command's model is the `model:` frontmatter key on the installed `.claude/commands/*.md` file —
+   `model_role:` is not a key Claude Code itself reads. So this is the one frontmatter field this
+   adapter does **not** copy verbatim: at install time, `sdd-installer` runs
+   `resolve-model.sh claude-code STRONG` / `EXECUTION` for each command and writes the resolved
+   `model:` value into the generated `.claude/commands/*.md` (`inherit` passes through unchanged —
+   see `/sdd.go` below for what it actually does instead of pinning one model). Re-running
+   `/sdd.install` after editing `config/model-routing.yaml` regenerates these files with the new
+   value — this is the one point in the whole pipeline where a config change needs a reinstall to
+   propagate, because command frontmatter is a static file, not resolved live.
+2. **Sub-dispatch (call-time resolution, live-tested this round).** Every `Task()` call that
+   delegates a Skill or a phase — `OFFLOAD_READ`, `OFFLOAD_REASONING`, `INTERACTIVE_OFFLOAD`,
+   `ISOLATED_WORKSPACE`, `VALIDATOR_ISOLATED`, and each `/sdd.go`/`/sdd.hub` phase (see below) — sets
+   its own `model` parameter to the value `resolve-model.sh claude-code <role>` returns for that
+   Skill's/phase's `model_role`, resolved fresh at call time. **Verified live in this session**: a
+   subagent dispatched with `model: "haiku"` reported back as `claude-haiku-4-5-20251001`; a subagent
+   dispatched with `model: "sonnet"` reported back as `Claude Sonnet 5` — the override is real, not
+   documentation-only.
+
+## `/sdd.go` and `/sdd.hub` — real per-phase model switching
+
+A single Claude Code turn cannot change its own model mid-turn — there is no in-turn `/model` the
+agent can call on itself. So `/sdd.go`/`/sdd.hub` do **not** run every phase inline in one continuous
+turn (which is what they did before this round, and which made `model_role: inherit` on those two
+commands true but not automatic). Instead, each phase is dispatched as its own `Task()` call —
+`Task(subagent_type="general-purpose", prompt="Follow development-agents/commands/sdd.<phase>.md for feature <name>, express-mode overrides apply. Read state from sdd/wip/<feature>/, write results back the same way that command already specifies.", model=resolve-model.sh claude-code <phase's model_role>)`
+— so each phase genuinely executes under its own resolved model. This works cleanly with the
+pipeline's existing file-based state (`sdd/wip/<feature>/*.md`, `meta.md`): phases already read/write
+their state to disk rather than relying on shared conversation context, which is exactly what
+isolated dispatch needs. See `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch"
+for the phase-by-phase mapping.
 
 ## How each execution requirement is satisfied
 
 | Capability | Claude Code mechanism (this adapter's choice, not a core dependency) |
 | --- | --- |
 | `OFFLOAD_READ` (`sdd-explorer`, `sdd-layer-analysis`) | Fresh-context subagent invocation with no `Write`/`Edit` in its tool grant, given the Skill's content as its task. `sdd-layer-analysis` historically had no `Bash`; if the subagent type used grants `Bash`, that is a documented permission increase, not silent. |
-| `OFFLOAD_REASONING` (`sdd-debugger`, `sdd-system-design`) | Same shape as `OFFLOAD_READ`, with a per-call `model` override resolved from the Skill's `model_role: STRONG` per the Model Routing table below. |
+| `OFFLOAD_REASONING` (`sdd-debugger`, `sdd-system-design`) | Same shape as `OFFLOAD_READ`, with a per-call `model` override resolved from the Skill's `model_role: STRONG` via `resolve-model.sh`. |
 | `INTERACTIVE_OFFLOAD` (`sdd-project-wizard`, `sdd-mcp-setup`) | Fresh-context subagent invocation with `model` resolved from `model_role: EXECUTION`; runs inline when invoked as a standalone entry point. |
 | `ISOLATED_WORKSPACE` (`sdd-implementation`, `sdd-test-writing`) | Per-call workspace isolation (dedicated git worktree), invoked alongside a fresh-context subagent with `Write`/`Edit`/`Bash` and `model` resolved from that Skill's `model_role` (`EXECUTION` default for implementation, `STRONG` always for test-writing — see `model-routing.md` for escalation). |
 | `VALIDATOR_ISOLATED` (`sdd-validator` isolated mode) | Fresh-context subagent invocation with a caller-built scrubbed prompt (file paths + rules only), no `Write`/`Edit` in its tool grant, and `model` resolved from `model_role: STRONG` (always — isolation and model strength are independent guarantees, see `model-routing.md`). |

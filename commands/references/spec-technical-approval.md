@@ -99,7 +99,7 @@ Update `meta.md` stages.technical:
 
 > **MANDATORY**: Always offer interactive selection after approval.
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `technical→plan`.
+**Model Routing (automatic, informational only)**: `/sdd.plan` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 

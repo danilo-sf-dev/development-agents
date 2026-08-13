@@ -122,7 +122,7 @@ Update `meta.md` stages.functional:
 
 > **MANDATORY**: Always offer interactive selection after approval.
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `functional→technical`.
+**Model Routing (automatic, informational only)**: `/sdd.spec technical` next runs at `model_role: STRONG` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 

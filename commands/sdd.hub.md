@@ -13,6 +13,12 @@ argument-hint: "<action> [args]"
 > Each app has its own `sdd/` directory and works with standard `/sdd.*` commands.
 > This skill adds the cross-app coordination layer on top.
 
+**Model Routing**: like `/sdd.go`, `/sdd.hub` declares `model_role: inherit` and does not pin one
+model for the whole run — each per-app `/sdd.*` command it routes to keeps its own `model_role` and
+is dispatched as its own model-pinned call (same automatic, no-operator-action mechanism as
+`/sdd.go` — see `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch" for the
+concrete `Task()`/child-CLI shape; the same principle applies per app, per sub-command here).
+
 ---
 
 ## Sub-command Routing

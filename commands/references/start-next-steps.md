@@ -6,9 +6,9 @@
 
 > **MANDATORY**: Always offer interactive selection, never just show text.
 
-**Model advisory** (before AskUserQuestion): Read `references/model-suggestion-advisory.md` and show the full box for `phase_key`: `start→spec`.
-
-**Model confirm** (BLOCKING): Run **Critical switch — model confirm** for `start→spec` **before** the next-steps AskUserQuestion below (two-question payload if the host supports it; otherwise model-confirm first).
+**Model Routing (automatic, informational only)**: `/sdd.spec` next runs at `model_role: STRONG` —
+resolved and dispatched automatically, no confirmation needed. Optionally print the one-line
+observability format from `references/model-suggestion-advisory.md` before the AskUserQuestion below.
 
 After displaying success message, use **AskUserQuestion** to offer next actions:
 

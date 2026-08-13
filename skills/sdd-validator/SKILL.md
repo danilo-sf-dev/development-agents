@@ -9,6 +9,14 @@ model_role: STRONG
 > **Two invocation shapes, one Skill.** Quick inline checks (build/test/coverage) run via `INVOKE_PROCEDURE` — `Skill("sdd-validator")` — directly in the calling session. Full independent validation runs under the `VALIDATOR_ISOLATED` execution requirement (see `framework/_shared/harness-capabilities.md`) — same Skill content, executed in a fresh, scrubbed-prompt context. This merged shape replaces the former split between this Skill and a separate `sdd-validator-runner` agent; nothing in this Skill's behavior was removed in the merge — see "Isolated Mode" below for everything that used to live in that agent file.
 >
 > `Skill(...)` is this pack's `INVOKE_PROCEDURE` capability — see `framework/_shared/harness-capabilities.md` for how it translates on non-Claude-Code harnesses. `VALIDATOR_ISOLATED` is a distinct, stricter capability — see that entry in the same file for its 9 mandatory properties and per-harness translation.
+>
+> **Model Role**: `STRONG`, always — not just as a default, as an invariant. This holds even when the
+> implementation it's validating ran at `EXECUTION`, and it never changes based on isolation mode:
+> `VALIDATOR_ISOLATED` (isolation) and `model_role: STRONG` (reasoning capacity) are independent
+> guarantees that are always declared together for this Skill, and neither substitutes for the other
+> — see `framework/_shared/model-routing.md` § "Isolation is not a substitute for Model Role."
+> Resolved and dispatched automatically per `adapters/<harness>/README.md` § Model Routing; the
+> caller never has to remember to request `STRONG` for a validator call.
 
 ---
 

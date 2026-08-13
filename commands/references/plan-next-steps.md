@@ -6,7 +6,7 @@
 
 > **MANDATORY**: Always offer interactive selection after tasks are approved.
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `plan→test`.
+**Model Routing (automatic, informational only)**: `/sdd.test` next runs at `model_role: STRONG` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 

@@ -39,7 +39,7 @@ argument-hint: "[task-id|--next|--all]"
 
 **See also**: `/sdd.help build`. Prerequisites: tasks + tests approved (`stages.tests` approved).
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:build`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: EXECUTION` (validator sub-step always `STRONG`), resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 

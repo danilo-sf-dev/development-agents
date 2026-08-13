@@ -54,6 +54,11 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 - Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish` (canonical: `framework/PIPELINE.md`)
 - Project conventions: `sdd/PROJECT.md`
 - Discovered patterns: `sdd/PATTERNS.md`
+- Model Routing: every command/Skill declares `model_role: STRONG|EXECUTION` — resolve and dispatch
+  automatically per `development-agents/framework/_shared/model-routing.md` and this harness's
+  `adapters/<harness>/README.md` § Model Routing (on Codex specifically: dispatch via a child
+  `codex exec --model <resolved> ...` process, don't just run the command's content inline under
+  whatever model this session happens to be on). Never ask the operator to switch models by hand.
 
 ### Rules
 - Never create files under `sdd/specs/`, `sdd/wip/`, or `sdd/features/` manually

@@ -43,7 +43,7 @@ argument-hint: "[feature-name]"
 
 **See also**: `/sdd.help fix` · flags lazy-loaded at bottom.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:fix`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG` (folds the former Opus/EXTREMO tier — see `framework/_shared/model-routing.md`), resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 

@@ -32,7 +32,7 @@ argument-hint: "[functional|technical] [--approve]"
 
 Context before technical: >50% → `/clear`; >80% → `context-guardian`.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:spec`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -210,7 +210,7 @@ After technical approval + conflicts: run `/sdd.check --compact` if context >40%
 
 ### Step 9: Next Steps (both specs approved)
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `spec→plan`.
+**Model Routing (automatic, informational only)**: `/sdd.plan` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 AskUserQuestion: `/sdd.plan` (recomendado — comando em STRONG) | `/sdd.spec --iterate` | `/sdd.check`.
 

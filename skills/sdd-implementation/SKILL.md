@@ -9,6 +9,19 @@ model_role: EXECUTION
 > **Execution requirement**: `ISOLATED_WORKSPACE` — see `framework/_shared/harness-capabilities.md`. A dedicated filesystem workspace so that concurrent/parallel task executions (present or future) can't clobber each other's uncommitted file edits. This capability translates to `isolation: "worktree"`-equivalent mechanics on Claude Code (Full), async-only on Cursor, and is not currently supported on Codex CLI/Generic (sequential execution instead) — see `adapters/claude-code/README.md` for the concrete mechanism.
 >
 > This Skill shares its `ISOLATED_WORKSPACE` runtime with `sdd-test-writing` (same tool needs: Read/Glob/Grep/Edit/Write/Bash + worktree) — they are kept as **separate Skills** because their behavior/content is genuinely different, even though the runtime they execute in can be the same.
+>
+> **Model Role**: `EXECUTION` by default (this Skill implements an already-approved spec/task —
+> mechanical work). **Escalate to `STRONG` when you hit** ambiguity the approved task doesn't
+> resolve, multiple plausible approaches with materially different consequences, repeated failure on
+> the same fix, a significant cross-module change beyond stated scope, concurrency/transaction
+> complexity, a security-relevant decision, a performance-critical path, high blast radius, or the
+> need to challenge a technical premise in the approved spec — never redesign it silently, surface
+> the concern instead. Escalation must actually execute: dispatch the specific hard sub-decision
+> through the `RESOLVED` mechanism for `STRONG` on the current harness (a `Task()` call with
+> `model` resolved to `STRONG` on Claude Code, a child `agent -p --model ...` on Cursor, a child
+> `codex exec --model ...` on Codex — see `adapters/<harness>/README.md`), get the result, then
+> **de-escalate back to `EXECUTION`** for the remaining mechanical work — do not keep `STRONG` active
+> once the hard part is resolved. Full rules: `framework/_shared/model-routing.md` § Escalation.
 
 You are performing a specialized code-implementation task for the SDD Kit framework. Your role is to write high-quality production code that faithfully implements the technical specifications and tasks.
 

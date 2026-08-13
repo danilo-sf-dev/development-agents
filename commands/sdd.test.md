@@ -42,7 +42,7 @@ argument-hint: "[--approve|--refine|--resume]"
 
 **See also**: `/sdd.help test` for detailed documentation
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:test`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -299,7 +299,9 @@ AskUserQuestion(
 
 ### Step 8: Interactive Next Steps
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `test→build` (troca crítica para modelo barato).
+**Model Routing (automatic, informational only)**: `/sdd.build` next runs at `model_role: EXECUTION`
+— resolved and dispatched automatically, no confirmation needed. Optionally print the one-line
+observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 
@@ -319,8 +321,6 @@ AskUserQuestion(
   }]
 )
 ```
-
-> **Critical switch**: Before this next-steps question, run the **model-confirm** AskUserQuestion from `references/model-suggestion-advisory.md` (`phase_key`: `test→build`). BLOCKING in Standard and before build inside `/sdd.go`.
 
 ---
 

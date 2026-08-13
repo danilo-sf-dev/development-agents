@@ -142,13 +142,20 @@ Substituir conteúdo SDD nesses destinos. Também aplicar `WRITE_PROJECT_INSTRUC
 
 **Tradução obrigatória de `model_role:` → `model:`** (única exceção à cópia verbatim de frontmatter —
 ver `adapters/claude-code/README.md` § Model Routing para o porquê): ao copiar cada
-`commands/sdd.*.md` para `.claude/commands/`, reescrever a linha `model_role: STRONG|EXECUTION|inherit`
-do frontmatter para `model: <valor concreto>|inherit`, usando o mapeamento Role→modelo publicado em
-`adapters/claude-code/README.md` § Model Routing (`inherit` passa sem mudança). Não hardcode o
-mapeamento aqui — se o adapter mudar o modelo mapeado para um role, este passo do instalador deve
-continuar funcionando sem edição. O resto do frontmatter e do corpo do arquivo é copiado sem
-alteração. Não deixar `model_role:` no arquivo instalado em `.claude/commands/` — Claude Code não lê
-essa chave.
+`commands/sdd.*.md` para `.claude/commands/`, resolva o valor concreto rodando
+`bash PACK_DIR/framework/tools/resolve-model.sh claude-code <STRONG|EXECUTION>` (lê
+`PACK_DIR/config/model-routing.yaml` — a única fonte de verdade do mapeamento; este passo nunca
+hardcoda um nome de modelo) e reescreva a linha `model_role: STRONG|EXECUTION|inherit` do frontmatter
+para `model: <valor resolvido>|inherit` (`inherit` passa sem mudança — é o valor usado por `/sdd.go`
+e `/sdd.hub`, que não pinam um modelo único no comando top-level porque despacham cada fase
+individualmente, ver `commands/sdd.go.md`). O resto do frontmatter e do corpo do arquivo é copiado
+sem alteração. Não deixar `model_role:` no arquivo instalado em `.claude/commands/` — Claude Code não
+lê essa chave.
+
+**Idempotência**: rodar `/sdd.install` de novo com `config/model-routing.yaml` alterado regenera
+`.claude/commands/*.md` com os novos valores resolvidos, sem exigir nenhuma outra mudança — este é o
+único ponto do pipeline que precisa de reinstalação para propagar uma mudança de mapping (Cursor e
+Codex resolvem no momento do dispatch, não em arquivo gerado — ver seus respectivos README).
 
 ---
 

@@ -7,7 +7,9 @@
 > **MANDATORY (Standard mode only)**: Offer interactive selection after all tasks complete.
 > **EXPRESS MODE**: Skip this - auto-invoke `/sdd.finish`.
 
-**Model advisory** (Standard mode): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `build→finish`, then **model-confirm** AskUserQuestion (BLOCKING).
+**Model Routing (automatic, informational only)**: `/sdd.finish` next runs at `model_role: STRONG` —
+resolved and dispatched automatically, no confirmation needed. Optionally print the one-line
+observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)** (only in Standard mode):
 
@@ -36,6 +38,6 @@ AskUserQuestion(
 | /sdd.build --layer 3      | `CONTINUE_WORKFLOW("/sdd.build --layer 3")` |
 | Outros                    | User types custom input                     |
 
-**MODE BEHAVIOR**: In Express mode, automatically invoke `/sdd.finish` **after** the model-confirm gate for `build→finish` (still show full box + confirm — do not skip the critical switch). On "Seguir com o modelo do comando", proceed to `/sdd.finish`.
+**MODE BEHAVIOR**: In Express mode this whole section is skipped (see line 8) — `/sdd.finish` is auto-invoked directly, dispatched at its resolved `STRONG` role like any other Express phase (see `commands/sdd.go.md` § Model Routing).
 
 ---

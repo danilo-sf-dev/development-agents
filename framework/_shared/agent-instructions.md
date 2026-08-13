@@ -50,14 +50,18 @@ Every **gate** AskUserQuestion (approve / process failure / anti-gaming / ambigu
 
 ---
 
-## Model suggestion advisory (informative)
+## Model Routing (automatic — informative only, never blocking)
 
-At **phase-boundary** gates (interactive next-steps after approve/promote), show the model advisory **before** `AskUserQuestion`. At **command entry** for spec/plan/test/build/finish/reverse-eng/fix, show the compact line once. For **critical switches** `test→build` and `build→finish`, run the **model-confirm** AskUserQuestion (BLOCKING) from the advisory.
+Model selection is automatic on every supported harness (Claude Code, Cursor, Codex) — see
+`framework/_shared/model-routing.md` and each `adapters/<harness>/README.md` § Model Routing. There
+is no model-confirm gate anywhere in the pipeline; the optional one-line observability format
+(`ℹ️ Model Routing: <role> → <resolved model> (auto)`) may be shown at command entry, never wrapped
+in `AskUserQuestion`, never blocking.
 
-> Read `commands/references/model-suggestion-advisory.md` for `phase_key`, pinned frontmatter policy, templates, and AskUserQuestion shapes.
-> Cost lock = command `model_role:` frontmatter (`STRONG`/`EXECUTION`; see `framework/_shared/model-routing.md` for the canonical policy and `adapters/<harness>/README.md` for the concrete model each role resolves to). Pauses = awareness + escalation escape, not the primary cost control.
-
-Informative only — never block or require the user to confirm a model switch.
+> Read `commands/references/model-suggestion-advisory.md` for the exact observability format and
+> what was removed (the former manual-confirm apparatus).
+> Model resolution = `model_role:` frontmatter (`STRONG`/`EXECUTION`) → `config/model-routing.yaml`
+> via `framework/tools/resolve-model.sh` → dispatched automatically by the adapter's mechanism.
 
 ---
 

@@ -30,13 +30,16 @@ foi copiado para o projeto, mas a instalacao para de ser automatica a partir daq
    etc.) sao pontos onde o agente deve parar e perguntar em texto simples, sempre com uma
    opcao livre alem das sugeridas.
 6. Modelo: cada comando/skill declara model_role (STRONG ou EXECUTION) no frontmatter —
-   ver development-agents/framework/_shared/model-routing.md. Este harness generico nao
-   tem mecanismo conhecido de selecao automatica de modelo. Se o harness so oferece um
-   modelo, use-o para tudo e continue o pipeline normalmente — nunca enfraqueca Gates,
-   test-first, validator ou isolamento por causa disso. Se oferecer mais de um modelo,
-   use STRONG para os passos marcados STRONG e o mais barato disponivel para EXECUTION,
-   por analogia com os outros adapters (ver tabelas de mapeamento em
-   adapters/claude-code|cursor|codex/README.md), documentando a escolha para o operador.
+   ver development-agents/framework/_shared/model-routing.md. Model Routing aqui e
+   RECOMMENDED, nao RESOLVED (ver essa distincao em model-routing.md): este harness
+   generico nao tem mecanismo conhecido de selecao automatica de modelo, entao o
+   framework so informa o role/modelo recomendado — nao executa a troca. Se o harness so
+   oferece um modelo, use-o para tudo e continue o pipeline normalmente — nunca
+   enfraqueca Gates, test-first, validator ou isolamento por causa disso. Se oferecer
+   mais de um modelo, use STRONG para os passos marcados STRONG e o mais barato
+   disponivel para EXECUTION, por analogia com os outros adapters (config/model-routing.yaml
+   + framework/tools/resolve-model.sh nao tem entrada para "generic" de proposito),
+   documentando a escolha para o operador.
 ```
 
 ## Known gaps

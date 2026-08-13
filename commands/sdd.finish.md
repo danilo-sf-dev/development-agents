@@ -38,7 +38,7 @@ model_role: STRONG
 
 **See also**: `/sdd.help finish` for detailed documentation
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:finish`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 

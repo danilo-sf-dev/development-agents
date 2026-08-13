@@ -46,7 +46,7 @@ Use cases:
 
 **See also**: `/sdd.help reverse-eng` · `--focus` / `--audio` lazy-loaded at bottom.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:reverse-eng`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 

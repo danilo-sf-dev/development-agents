@@ -103,6 +103,16 @@ change which Skill runs — only which Model Role that Skill's current step runs
 **Rule**: escalate to the cheapest role that can resolve the responsibility with sufficient
 reliability. Escalation is not a blanket upgrade for the rest of the task — see De-escalation.
 
+**Escalation must actually execute in `STRONG`, not just be written down as a plan.** When an
+`EXECUTION`-role Skill hits one of the triggers above, it does not keep reasoning about the hard part
+itself under `EXECUTION` — it dispatches *that specific sub-decision* through the same `RESOLVED`
+mechanism `VALIDATOR_ISOLATED` and the other offload capabilities already use (a `Task()` call with
+`model` resolved to `STRONG` on Claude Code; a child `agent -p --model <STRONG> ...` invocation on
+Cursor; a child `codex exec --model <STRONG> ...` invocation on Codex — see each
+`adapters/<harness>/README.md`), gets the decision/result back, and only then continues. This is a
+scoped delegation for one hard sub-problem, not a mode switch for the rest of the task — which is
+exactly why De-escalation (below) is real and automatic, not something the operator has to trigger.
+
 ## De-escalation (`STRONG` → `EXECUTION`)
 
 If `STRONG` was invoked only to resolve one hard decision (an architectural question, a root cause,
@@ -139,20 +149,50 @@ Orchestrator commands that delegate to multiple Skills with different roles in t
 (`/sdd.go`, `/sdd.hub`) declare `model_role: inherit` — meaning "resolved per sub-step by whichever
 Skill is delegated to at that point," not a single role for the whole command.
 
+## Resolution — single authoritative source
+
+There is exactly **one** place the Role→model mapping is written down:
+[`config/model-routing.yaml`](../../config/model-routing.yaml). There is exactly **one** place that
+reads it: [`framework/tools/resolve-model.sh <harness> <STRONG|EXECUTION> [--json]`](../tools/resolve-model.sh),
+which prints `model=<value> effort=<value-or-empty>` (or JSON with `--json`). This is the concrete,
+executable form of `resolve_model(harness, model_role)`. Every mechanism that needs a concrete model
+— the installer's frontmatter translation, a Claude Code `Task()` call's `model` parameter, a Cursor
+or Codex child-CLI dispatch — calls this script (or, on Claude Code, reads the YAML directly, since
+the calling agent can parse two levels of flat YAML itself without shelling out) instead of embedding
+its own copy of the table. **No adapter README, Skill, or command file may contain a second copy of
+the Role→model table.** Changing a model means editing `config/model-routing.yaml` in exactly one
+place; every call site that resolves at dispatch time (Cursor, Codex) picks up the change on its next
+invocation, and Claude Code's install-time-baked frontmatter picks it up on the next `/sdd.install`
+run (see `adapters/claude-code/README.md`).
+
 ## Adapter contract
 
-Every `adapters/<harness>/README.md` MUST publish a "Model Routing" section containing:
+Every `adapters/<harness>/README.md` MUST document, instead of a duplicated mapping table:
 
-1. A concrete `STRONG` → `<model + config>` mapping.
-2. A concrete `EXECUTION` → `<model + config>` mapping.
-3. The actual mechanism used to apply that mapping on that harness (a call-time parameter, a
-   generated frontmatter field, a config file, a manual instruction to the operator — whichever is
-   real for that harness).
-4. If the harness cannot select a model programmatically: an explicit statement of that gap and the
-   fallback behavior (see Fallback below) — never a fabricated "it just works."
+1. **The dispatch mechanism**: exactly how a `model_role` gets turned into a real execution running
+   under the resolved model — a call-time parameter, an install-time-generated frontmatter field, a
+   child CLI process invoked with an explicit model flag, or (only for `generic`, and only as an
+   explicitly labeled fallback) a documented gap.
+2. **Whether that mechanism is `RESOLVED` or merely `RECOMMENDED`** (see below) — and if
+   `RECOMMENDED`, why no `RESOLVED` mechanism exists yet, with the specific missing capability named,
+   not just "not supported."
+3. A pointer to `config/model-routing.yaml` / `resolve-model.sh` for the concrete values — never a
+   restated table.
+
+**`RESOLVED` vs `RECOMMENDED`** (this distinction is load-bearing, not decorative):
+
+- **`RESOLVED`**: the framework itself executes the work under the correct model — via a real
+  parameter, flag, or generated config the harness's own automation reads — with zero operator
+  action. This is the required bar for Claude Code, Cursor, and Codex.
+- **`RECOMMENDED`**: the framework tells the operator which model to use and waits for them to switch
+  it by hand. This is **not** a completed Model Routing implementation for any harness that has a
+  `RESOLVED` path available — it is only acceptable for `generic`, where no harness-specific
+  automation exists by definition.
 
 The core (`skills/`, `commands/`, `framework/`) never branches on harness name to resolve a role.
-`if Claude / if Cursor / if Codex` logic for model resolution lives only in the adapter.
+`if Claude / if Cursor / if Codex` logic for model resolution lives only in the adapter, and even
+there it's confined to *which dispatch mechanism* to use — the mapping itself always comes from the
+one YAML file via the one resolver script.
 
 ## Fallback
 

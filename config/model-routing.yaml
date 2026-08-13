@@ -1,0 +1,39 @@
+# Model Routing — single source of truth for Model Role → concrete model resolution.
+#
+# Read by: framework/tools/resolve-model.sh (the one authoritative resolution logic —
+# see framework/_shared/model-routing.md § Resolution). Nothing else may hardcode this
+# mapping. Skills and commands only ever declare `model_role: STRONG|EXECUTION` in their
+# own frontmatter; they never read this file directly by name — the adapter's dispatch
+# mechanism (Task() call construction, generated command frontmatter, child CLI
+# invocation) is what looks this up, via the resolver script.
+#
+# To change a model: edit the value below and re-run /sdd.install (or, on harnesses that
+# resolve live at dispatch time — Cursor, Codex — the new value applies on the very next
+# call, no reinstall needed; Claude Code's per-command frontmatter is baked at install
+# time, so a reinstall is what propagates a change there). No Skill, command, adapter
+# README, or installer file needs to change.
+#
+# `generic` has no entry on purpose — that harness has no known automated selection
+# mechanism; see adapters/generic/README.md for its fallback rule.
+
+version: 1
+
+roles:
+  STRONG:
+    claude-code:
+      model: sonnet-5
+      effort: high
+    cursor:
+      model: grok-4.6-high
+    codex:
+      model: sol-5.6
+      effort: high
+
+  EXECUTION:
+    claude-code:
+      model: haiku-4.5
+    cursor:
+      model: compose-2.5-fast
+    codex:
+      model: luna-5.6
+      effort: extra-high

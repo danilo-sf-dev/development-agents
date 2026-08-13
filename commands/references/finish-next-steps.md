@@ -15,7 +15,7 @@ After `/sdd.finish` completes successfully:
 > **MANDATORY (Standard mode only)**: Offer interactive selection after archiving.
 > **EXPRESS MODE**: Skip this - show brief completion message only.
 
-**Model advisory** (Standard mode): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `finish→pr` (user may pick `/sdd.start` → use `finish→start` row if they choose start).
+**Model Routing (automatic, informational only)**: the next command (`/sdd.pr` or `/sdd.start`, both `model_role: EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)** (only in Standard mode):
 
