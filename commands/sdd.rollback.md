@@ -1,7 +1,7 @@
 ---
 name: sdd.rollback
 description: Rollback feature to a previous workflow phase, preserving git history. Use when user needs to redo a phase.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[feature-name] [target-phase]"
 ---
 

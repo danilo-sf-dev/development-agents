@@ -56,8 +56,30 @@ usuario disser "/sdd.spec" ou equivalente.
    degrada para texto simples com opcoes)
 ```
 
+## Model Routing
+
+Canonical policy: `development-agents/framework/_shared/model-routing.md` (`STRONG`/`EXECUTION`, no
+concrete names). This adapter's concrete mapping:
+
+| Model Role | Cursor model |
+| --- | --- |
+| `STRONG` | Grok 4.6, high |
+| `EXECUTION` | Compose 2.5, fast |
+
+**Mechanism (gap, not automation):** Cursor has no repo-shareable, per-command programmatic model
+pin — since there is no `.cursor/commands/` folder (see gap below), there is no installed file for
+this adapter to write a translated model field into, unlike Claude Code's `.claude/commands/*.md`.
+Model selection on Cursor is a UI/session choice made by the operator. This adapter does **not**
+fake automatic per-command switching here. Instead: when reading a `development-agents/commands/*.md`
+file directly (per the "Como os comandos funcionam" rule above), the agent should surface that
+command's `model_role:` frontmatter value to the user (e.g. "this command is `STRONG` — recommended:
+Grok 4.6 high") so the operator can select the matching model in Cursor's picker before proceeding.
+Skills' `model_role:` frontmatter is informational for the same reason — there is no per-Skill
+automatic override on this harness.
+
 ## Known gaps (do not silently degrade past these — tell the user)
 
 - **No commands/ folder.** Cursor's slash-command mechanism is not repo-shareable the way `.claude/commands/` is. The rule file above tells the agent to read `development-agents/commands/*.md` directly instead of relying on a `/sdd.*` slash-command registration.
 - **`DELEGATE_ISOLATED` is degraded**, not equivalent. Cursor has no synchronous "spawn isolated subagent, get structured result back into this session" primitive — only asynchronous Background/Cloud Agents that run out-of-session. The Validator Independence Protocol (`sdd-validator`) must run as a fresh conversation with a scrubbed prompt when using this adapter; the isolation guarantee is weaker than Claude Code's and must be flagged to the user when it matters (e.g. a `CANNOT_PROCEED` gate).
 - **`ASK_USER` is degraded** to plain conversational text with listed options (always including a free-text "Outros"/"Other" choice) — Cursor's structured clarifying-questions UI is scoped to Plan Mode only, not a general-purpose tool this adapter can call at arbitrary gate points.
+- **Model Routing is manual, not automatic.** No repo-shareable mechanism exists to auto-select a model per command/Skill on this harness (see "Model Routing" above) — the adapter surfaces the recommended role/model to the operator, who selects it in the UI. This is a documented gap, not a silent no-op: never claim the routing "just works" on Cursor.

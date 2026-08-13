@@ -85,6 +85,7 @@ sdd/backlog.md
 - **Potential Impact**: [Performance, UX, Maintainability, etc.]
 - **Notes**: [Additional context]
 
+model_role: EXECUTION
 ---
 
 ## ✅ Resolved Items

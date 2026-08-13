@@ -1,7 +1,7 @@
 ---
 name: sdd.fix
 description: Fix validation errors and horizontal consistency issues across spec layers. Use when /sdd.check reports errors, specs are misaligned, or tasks don't match the technical spec.
-model: opus
+model_role: STRONG
 argument-hint: "[feature-name]"
 ---
 

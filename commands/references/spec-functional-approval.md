@@ -132,7 +132,7 @@ AskUserQuestion(
     "question": "Spec funcional aprovada. Qual o próximo passo?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.spec technical (Recomendado)", "description": "Criar a especificação técnica — comando em sonnet"},
+      {"label": "/sdd.spec technical (Recomendado)", "description": "Criar a especificação técnica — comando em STRONG"},
       {"label": "/sdd.spec --iterate", "description": "Refinar a spec funcional antes"},
       {"label": "/sdd.check", "description": "Ver status atual"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

@@ -377,6 +377,7 @@ grep -E "\"@sdd/|platform|messagequeue" package.json 2>/dev/null
 | "S3 storage"      | Object Storage imports          |
 | "REST API"        | Actual endpoint annotations     |
 
+model_role: EXECUTION
 ---
 
 ## Quick Scan Protocol

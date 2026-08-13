@@ -618,9 +618,13 @@ Read `framework/_shared/harness-capabilities.md` to see exactly how `DELEGATE_IS
 Task(
     subagent_type="sdd-validator",
     prompt="Validate files: [list]. Run: build, tests, security, performance.",
-    model="sonnet"
+    model=<resolve model_role="STRONG" via adapters/<harness>/README.md>
 )
 ```
+
+`sdd-validator` always declares `model_role: STRONG` (see `framework/_shared/model-routing.md`),
+independently of the `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` isolation guarantee above — isolation
+and model strength are separate axes, neither substitutes for the other.
 
 On other harnesses, use the translation in that file's `DELEGATE_ISOLATED` row (e.g. Cursor's degraded fresh-conversation fallback, Codex CLI's depth-capped subagent, or Generic's manual "open a new session with only the files and rules" instruction) — never simulate isolation that a harness doesn't actually provide.
 

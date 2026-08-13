@@ -223,6 +223,7 @@ Run smoke test only. If MCP unavailable → STOP with steps to run full `/sdd.mc
 - Pack remains usable without MCP (manual paste fallback unchanged)
 - No secrets committed; `.mcp.json` may be project-local and gitignored per team policy
 
+model_role: EXECUTION
 ---
 
 ## Out of scope (v1)

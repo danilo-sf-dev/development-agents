@@ -1,7 +1,7 @@
 ---
 name: sdd.cancel
 description: Gracefully cancel a feature in progress, preserving work for potential future resumption. Use when user wants to abandon or pause a feature.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[feature-name] [reason]"
 ---
 

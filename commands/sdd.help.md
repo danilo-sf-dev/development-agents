@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.help
 description: Show help and documentation for SDD Kit commands and workflow. Use when user asks about available commands or how to use the framework.
-model: haiku
+model_role: EXECUTION
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.

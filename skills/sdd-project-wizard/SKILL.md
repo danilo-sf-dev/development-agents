@@ -288,6 +288,7 @@ These are used when properties are NOT in PROJECT.md:
 | pr.max_lines                   | 400     | coding-standards.md |
 | language.specs                 | en      | coding-standards.md |
 
+model_role: EXECUTION
 ---
 
 ## Vision Wizard

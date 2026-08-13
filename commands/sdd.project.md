@@ -1,7 +1,7 @@
 ---
 name: sdd.project
 description: Initialize or manage PROJECT.md configuration file. Use when user needs to set up project conventions or edit project settings.
-model: sonnet
+model_role: EXECUTION
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.

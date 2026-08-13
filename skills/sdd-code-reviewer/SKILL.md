@@ -164,6 +164,7 @@ If MCP not available, use this checklist:
 5. **Blocking Gate**: NEVER approve with critical issues
 6. **ALL findings must be fixed**: Minor issues are NOT optional
 
+model_role: STRONG
 ---
 
 ## Verdict Output (MANDATORY)

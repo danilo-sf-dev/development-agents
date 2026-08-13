@@ -55,7 +55,7 @@ Every **gate** AskUserQuestion (approve / process failure / anti-gaming / ambigu
 At **phase-boundary** gates (interactive next-steps after approve/promote), show the model advisory **before** `AskUserQuestion`. At **command entry** for spec/plan/test/build/finish/reverse-eng/fix, show the compact line once. For **critical switches** `test→build` and `build→finish`, run the **model-confirm** AskUserQuestion (BLOCKING) from the advisory.
 
 > Read `commands/references/model-suggestion-advisory.md` for `phase_key`, pinned frontmatter policy, templates, and AskUserQuestion shapes.
-> Cost lock = command `model:` frontmatter (haiku/sonnet; opus only on `/sdd.fix`). Pauses = awareness + extremo escape, not the primary cost control.
+> Cost lock = command `model_role:` frontmatter (`STRONG`/`EXECUTION`; see `framework/_shared/model-routing.md` for the canonical policy and `adapters/<harness>/README.md` for the concrete model each role resolves to). Pauses = awareness + escalation escape, not the primary cost control.
 
 Informative only — never block or require the user to confirm a model switch.
 

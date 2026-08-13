@@ -1,6 +1,7 @@
 ---
 name: sdd-implementation
 description: Code implementation specialist for SDD Kit. Use during /sdd.build to write production code from technical specs and tasks. Translates architectural decisions into working code, follows coding standards, and integrates with project services declared in the technical spec and PROJECT.md.
+model_role: EXECUTION
 ---
 
 # SDD Implementation — Code Implementation Specialist

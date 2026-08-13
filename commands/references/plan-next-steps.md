@@ -16,8 +16,8 @@ AskUserQuestion(
     "question": "Tasks prontas. Escrever os testes primeiro?",
     "header": "Próximo",
     "options": [
-      {"label": "/clear + /sdd.test (Recomendado)", "description": "Contexto limpo para o gate tests-first — comando em sonnet"},
-      {"label": "/sdd.test", "description": "Escrever testes que falham antes da implementação — comando em sonnet"},
+      {"label": "/clear + /sdd.test (Recomendado)", "description": "Contexto limpo para o gate tests-first — comando em STRONG"},
+      {"label": "/sdd.test", "description": "Escrever testes que falham antes da implementação — comando em STRONG"},
       {"label": "/sdd.test --refine", "description": "Só refinar se os testes já existirem"},
       {"label": "/sdd.check", "description": "Revisar a estrutura das tasks"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

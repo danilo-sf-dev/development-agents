@@ -242,6 +242,7 @@ grep -rn "\.findAll()" --include="*.java"
 4. **Analyze memory usage**: Unbounded collections, leaks
 5. **Check I/O patterns**: Blocking calls, missing pooling
 
+model_role: STRONG
 ---
 
 ## Verdict Output (MANDATORY)

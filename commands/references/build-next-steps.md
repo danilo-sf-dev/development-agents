@@ -17,7 +17,7 @@ AskUserQuestion(
     "question": "Todas as tasks concluídas e validadas. Pronto para finalizar?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.finish (Recomendado)", "description": "Arquivar a feature e concluir — comando em sonnet (code review final)"},
+      {"label": "/sdd.finish (Recomendado)", "description": "Arquivar a feature e concluir — comando em STRONG (code review final)"},
       {"label": "/sdd.check --sync", "description": "Checagem final de consistência"},
       {"label": "/sdd.build --layer 3", "description": "Rodar de novo os quality checks"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

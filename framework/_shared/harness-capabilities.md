@@ -5,6 +5,12 @@
 **Read this file when**: you see one of the capability names below (`DELEGATE_ISOLATED`, `DELEGATE_OFFLOAD`, `ISOLATED_WORKSPACE`, `ASK_USER`, `CONTINUE_WORKFLOW`, `INVOKE_PROCEDURE`, `WRITE_PROJECT_INSTRUCTIONS`, `OFFLOAD_READ`, `OFFLOAD_REASONING`, `INTERACTIVE_OFFLOAD`, `VALIDATOR_ISOLATED`) used in a Skill or command file and need to know what it actually does on the harness currently installed.
 
 > **No dedicated Agent files remain in `agents/` as of this capability set's introduction.** All 12 former agent roles are now Skills under `skills/`, each declaring which of these capabilities its heavy-execution path requires. "Dedicated Agents in the core: 0" is a statement about *this pack's core*, not a universal claim — a given harness adapter may still materialize a capability through a named agent, a dedicated session, or another harness-specific mechanism where that harness has no lighter-weight equivalent. Read `adapters/<harness>/README.md` for what each harness actually does.
+>
+> **Model Role is a separate, independent axis from every capability below.** A Skill's execution
+> requirement (this file) says *where/how isolated* it runs; its `model_role:` (`STRONG`/`EXECUTION`,
+> see `framework/_shared/model-routing.md`) says *how much reasoning capacity* it needs. Neither
+> implies the other — `VALIDATOR_ISOLATED` in particular always pairs with `model_role: STRONG`, but
+> that pairing is declared explicitly, not inferred from the isolation requirement.
 
 ---
 

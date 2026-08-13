@@ -64,12 +64,16 @@ See `commands/sdd.start.md` and `commands/references/reopen-workflow.md` for the
 
 ## Roles
 
-| Role                              | Where                                                                                   |
-| --------------------------------- | ----------------------------------------------------------------------------------------- |
-| Spec Writer                       | `/sdd.spec` (+ Skill `sdd-explorer`, `OFFLOAD_READ`)                                    |
-| Architect                         | Skill `sdd-system-design` (`OFFLOAD_REASONING`) + `/sdd.plan`                          |
-| Developer                         | Skill `sdd-implementation` (`ISOLATED_WORKSPACE`)                                       |
-| Test Writer                       | `/sdd.test` + Skill `sdd-test-writing` (`ISOLATED_WORKSPACE`; absorbs E2E as a lazy-loaded branch) |
-| Code Reviewer / Process Validator | Skill `sdd-code-reviewer` + Skill `sdd-validator` (quality + Process Compliance; isolated mode requires `VALIDATOR_ISOLATED`) |
-| Orchestrator                      | commands `/sdd.go`, `/sdd.start` + Skill `sdd-kit-expert`                               |
-| Installer                         | command `/sdd.install` + Skill `sdd-installer` (bootstrap, runs inline)                 |
+| Role                              | Where                                                                                   | Model Role |
+| --------------------------------- | ----------------------------------------------------------------------------------------- | --- |
+| Spec Writer                       | `/sdd.spec` (+ Skill `sdd-explorer`, `OFFLOAD_READ`)                                    | `STRONG` (`sdd-explorer` sub-step: `EXECUTION`) |
+| Architect                         | Skill `sdd-system-design` (`OFFLOAD_REASONING`) + `/sdd.plan`                          | `STRONG` (`/sdd.plan` itself: `EXECUTION`) |
+| Developer                         | Skill `sdd-implementation` (`ISOLATED_WORKSPACE`)                                       | `EXECUTION` (escalates to `STRONG` — see `model-routing.md`) |
+| Test Writer                       | `/sdd.test` + Skill `sdd-test-writing` (`ISOLATED_WORKSPACE`; absorbs E2E as a lazy-loaded branch) | `STRONG` (default, not downgraded) |
+| Code Reviewer / Process Validator | Skill `sdd-code-reviewer` + Skill `sdd-validator` (quality + Process Compliance; isolated mode requires `VALIDATOR_ISOLATED`) | `STRONG` (always, independent of isolation) |
+| Orchestrator                      | commands `/sdd.go`, `/sdd.start` + Skill `sdd-kit-expert`                               | `inherit` (`/sdd.go`) / `EXECUTION` (`/sdd.start`, `sdd-kit-expert`) |
+| Installer                         | command `/sdd.install` + Skill `sdd-installer` (bootstrap, runs inline)                 | `EXECUTION` |
+
+Model Role (`STRONG`/`EXECUTION`) is a separate axis from execution requirement, resolved per
+`framework/_shared/model-routing.md` — see that file for the full per-Skill table, escalation, and
+per-harness concrete mapping.

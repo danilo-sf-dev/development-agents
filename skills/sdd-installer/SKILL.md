@@ -135,10 +135,20 @@ Criar/atualizar:
 
 | Destino                  | Origem                    |
 | --------------------------- | ---------------------------- |
-| `.claude/commands/`      | `PACK_DIR/commands/*.md`  |
-| `.claude/skills/<nome>/` | `PACK_DIR/skills/<nome>/` |
+| `.claude/commands/`      | `PACK_DIR/commands/*.md`, com uma tradução de frontmatter (ver abaixo) |
+| `.claude/skills/<nome>/` | `PACK_DIR/skills/<nome>/` (cópia verbatim, `model_role:` incluído como metadado) |
 
 Substituir conteúdo SDD nesses destinos. Também aplicar `WRITE_PROJECT_INSTRUCTIONS` pra `CLAUDE.md` na raiz — ver `commands/references/project-instructions-sync.md` (merge idempotente, seção `## SDD Kit`).
+
+**Tradução obrigatória de `model_role:` → `model:`** (única exceção à cópia verbatim de frontmatter —
+ver `adapters/claude-code/README.md` § Model Routing para o porquê): ao copiar cada
+`commands/sdd.*.md` para `.claude/commands/`, reescrever a linha `model_role: STRONG|EXECUTION|inherit`
+do frontmatter para `model: <valor concreto>|inherit`, usando o mapeamento Role→modelo publicado em
+`adapters/claude-code/README.md` § Model Routing (`inherit` passa sem mudança). Não hardcode o
+mapeamento aqui — se o adapter mudar o modelo mapeado para um role, este passo do instalador deve
+continuar funcionando sem edição. O resto do frontmatter e do corpo do arquivo é copiado sem
+alteração. Não deixar `model_role:` no arquivo instalado em `.claude/commands/` — Claude Code não lê
+essa chave.
 
 ---
 
@@ -276,6 +286,7 @@ Proximos passos:
 
 Se `codex` ou `generic` foram instalados, imprimir também as seções "Known gaps" de `adapters/codex/README.md` / `adapters/generic/README.md` — o usuário precisa saber exatamente onde a automação para.
 
+model_role: EXECUTION
 ---
 
 ## Cenários comuns

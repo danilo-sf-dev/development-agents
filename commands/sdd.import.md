@@ -1,7 +1,7 @@
 ---
 name: sdd.import
 description: Import external specifications or existing code into the SDD workflow. Use when user has existing specs or wants to onboard existing code.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[source]"
 ---
 

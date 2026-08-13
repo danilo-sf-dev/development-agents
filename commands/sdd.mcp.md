@@ -1,7 +1,7 @@
 ---
 name: sdd.mcp
 description: Configure optional MCP integrations (Atlassian Jira/Confluence read-only first) in a host-agnostic way. Detects IDE/assistant, guides native or generic setup, smoke-tests from a URL. Use when /sdd.spec --include needs Jira or when atlassian_mcp_enabled is desired.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[--status|--test <url>|--disable]"
 ---
 

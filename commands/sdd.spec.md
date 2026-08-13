@@ -1,7 +1,7 @@
 ---
 name: sdd.spec
 description: Create and approve functional and technical specifications. Use when user needs to define requirements (functional) or design architecture (technical). Supports --approve, --iterate, --summary, and --audio flags.
-model: sonnet
+model_role: STRONG
 argument-hint: "[functional|technical] [--approve]"
 ---
 
@@ -212,7 +212,7 @@ After technical approval + conflicts: run `/sdd.check --compact` if context >40%
 
 **Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `spec→plan`.
 
-AskUserQuestion: `/sdd.plan` (recomendado — comando em sonnet) | `/sdd.spec --iterate` | `/sdd.check`.
+AskUserQuestion: `/sdd.plan` (recomendado — comando em STRONG) | `/sdd.spec --iterate` | `/sdd.check`.
 
 ## Key Rules
 

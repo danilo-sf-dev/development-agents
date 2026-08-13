@@ -1,7 +1,7 @@
 ---
 name: sdd.backlog
 description: Manage technical backlog with TODO, DEBT, and IDEA categories. Use when user wants to track, add, or manage backlog items.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[action] [item]"
 ---
 

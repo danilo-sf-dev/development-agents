@@ -4,6 +4,7 @@ description: >-
   Fluxo agnóstico para preparar commits com formatação, testes, validação,
   Conventional Commits e uma opção de fluxo personalizado. Use quando o
   usuário pedir commit, git commit ou concluir uma tarefa que exige commit.
+model_role: EXECUTION
 ---
 
 # Commit Workflow

@@ -1,6 +1,7 @@
 ---
 name: sdd-layer-analysis
 description: Cross-layer consistency and analysis specialist for SDD Kit. Use for validating alignment between functional specs, technical specs, tasks, and implementation. Detects drift, extracts evidence, and proposes synchronized fixes. Use during /sdd.check --sync, /sdd.fix, and /sdd.finish.
+model_role: EXECUTION
 ---
 
 # SDD Layer Analysis — Cross-Layer Consistency & Analysis

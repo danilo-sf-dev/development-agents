@@ -1,7 +1,7 @@
 ---
 name: sdd.reverse-eng
 description: Reverse engineer existing codebase to generate SDD specifications. Use when user wants to create specs from existing code.
-model: sonnet
+model_role: STRONG
 argument-hint: "[scope]"
 ---
 

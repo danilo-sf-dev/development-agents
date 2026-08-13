@@ -287,6 +287,7 @@ The calling command presents via `ASK_USER` with markdown previews.
 6. **Team Context**: Consider who will maintain this
 7. **Reversibility**: Prefer reversible decisions when uncertain
 
+model_role: STRONG
 ---
 
 ## Project Services / Platform Services

@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.install
 description: Instala development-agents no projeto via agente — único caminho de instalação, sem scripts .sh/.ps1. Detecta ou pergunta o harness (Claude Code / Cursor / Codex CLI / Genérico) e instala o adapter correspondente, cria sdd/ e atualiza .gitignore para o repo do app subir limpo.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[--harness claude|cursor|codex|generic[,...]] [--target <path>] [--from <pack-path>]"
 ---
 

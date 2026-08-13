@@ -1,6 +1,7 @@
 ﻿---
 name: sdd-validator
 description: Build, compliance, and independent-verdict validator for SDD Kit. Covers two modes — quick inline checks (build/test/coverage/compliance) and full isolated validation (VALIDATOR_ISOLATED — unbiased, process-compliance, structured verdict). Use during /sdd.build and /sdd.finish. **TRIGGER ON** build validation, test execution, coverage, code compliance, CI pipeline, unbiased validation, process compliance, independent verdict.
+model_role: STRONG
 ---
 
 # SDD Validator

@@ -1,6 +1,7 @@
 ---
 name: sdd-test-writing
 description: Test-writing specialist for SDD Kit. Use during /sdd.test to write local unit/integration tests (and, conditionally, E2E tests) from specs and tasks before production code exists. Creates comprehensive tests, mocks, fixtures, and ensures high code coverage. Focuses on edge cases and error scenarios.
+model_role: STRONG
 ---
 
 # SDD Test Writing — Unit, Integration & (conditional) E2E Test Specialist

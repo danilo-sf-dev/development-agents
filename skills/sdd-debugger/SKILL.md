@@ -102,6 +102,7 @@ You are performing a specialized debugging task for the SDD Kit framework. Your 
 
 **Verdict**: CONFIRMED | REJECTED | INCONCLUSIVE
 
+model_role: STRONG
 ---
 
 ### Hypothesis 2: [Description]

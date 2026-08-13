@@ -1,7 +1,7 @@
 ---
 name: sdd.finish
 description: Complete feature implementation, run final validations, and archive. Use when all tasks are done, CI passes, and you're ready to move the feature from wip/ to features/.
-model: sonnet
+model_role: STRONG
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.

@@ -93,6 +93,7 @@ sdd/
 **✅ CORRECT**: Each command does ONE phase, then waits for next command
 **✅ ALSO CORRECT**: `/sdd.go` orchestrates all phases in express mode
 
+model_role: EXECUTION
 ---
 
 ## Framework Overview

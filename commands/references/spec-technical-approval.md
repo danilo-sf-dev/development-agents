@@ -109,7 +109,7 @@ AskUserQuestion(
     "question": "Spec técnica aprovada. Qual o próximo passo?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.plan (Recomendado)", "description": "Gerar as tasks de implementação — comando em sonnet"},
+      {"label": "/sdd.plan (Recomendado)", "description": "Gerar as tasks de implementação — comando em STRONG"},
       {"label": "/sdd.spec --iterate", "description": "Refinar as specs antes de planejar"},
       {"label": "/sdd.check", "description": "Ver status atual"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

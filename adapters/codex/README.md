@@ -12,12 +12,34 @@
 
 No `.codex/` subfolder is created — Codex CLI's real convention is a root-level `AGENTS.md`, not a subfolder. (An earlier version of this pack incorrectly referenced `.codex/AGENTS.md`; that was a documentation bug, not a real Codex convention, and has been corrected.)
 
+## Model Routing
+
+Canonical policy: `development-agents/framework/_shared/model-routing.md` (`STRONG`/`EXECUTION`, no
+concrete names). This adapter's concrete mapping:
+
+| Model Role | Codex CLI model |
+| --- | --- |
+| `STRONG` | Sol 5.6, high |
+| `EXECUTION` | Luna 5.6, extra high |
+
+**Mechanism (gap, not automation):** like commands generally on this adapter (see "No repo-shareable
+command surface" below), there is no installed per-command file for this adapter to write a
+translated model field into, so there is no automatic per-command model switch. The operator reads a
+command's `model_role:` frontmatter and switches models manually via Codex CLI's own
+model-selection mechanism (`--model` at invocation, or the in-session equivalent). The one place a
+model **can** be pinned programmatically is the optional, unverified `~/.codex/agents/*.toml`
+custom-agent shortcut already described below for `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` — if an
+operator hand-authors that TOML, its own `model` field can be set to the Sol 5.6 mapping for
+`STRONG`, carrying the same "unverified convenience, not a supported feature" status as the rest of
+that shortcut.
+
 ## Known gaps (do not silently degrade past these — tell the user)
 
 - **No repo-shareable command surface.** Codex's `~/.codex/prompts/*.md` mechanism is explicitly user-local, not something this installer can populate on a teammate's behalf. The `/sdd.*` command surface is delivered as **skills** instead (Codex discovers `.agents/skills/` automatically), and `AGENTS.md` tells the operator to read `development-agents/commands/*.md` directly for the full command definitions.
 - **No dedicated agent-role folder needed.** The pack has no `agents/` folder anymore — all 12 former agent roles are Skills, and Skills already install natively to `.agents/skills/` (row above), the real `agentskills.io` discovery path Codex CLI reads. Where a Skill's execution requirement (`OFFLOAD_READ`, `OFFLOAD_REASONING`, `INTERACTIVE_OFFLOAD`, `VALIDATOR_ISOLATED`, `ISOLATED_WORKSPACE`) calls for a fresh-context worker, Codex CLI's own subagent mechanism (`/agent`, `~/.codex/agents/*.toml`) is an optional, faster path this adapter does not yet auto-generate — see the `DELEGATE_ISOLATED` procedure below for the manual default and the optional shortcut.
 - **`ASK_USER` has no structured-tool equivalent.** Codex CLI only exposes binary command-approval dialogs. Every gate (`AskUserQuestion` in the canonical files) degrades to plain conversational text with listed options, always including a free-text choice.
 - **`ISOLATED_WORKSPACE` is not supported.** Codex subagents inherit the parent's sandbox policy; there is no per-subagent git-worktree equivalent. The (currently roadmap, not yet shipped) parallel-task execution mode described in `skills/sdd-implementation/SKILL.md` cannot run on this adapter — sequential execution only.
+- **Model Routing is manual, not automatic**, for the same reason there's no repo-shareable command surface — see "Model Routing" above. Only the optional, unverified TOML custom-agent shortcut can pin a model programmatically, and only for the `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` path.
 
 ## `DELEGATE_ISOLATED` on this adapter — the concrete, end-to-end procedure (not just a capability claim)
 

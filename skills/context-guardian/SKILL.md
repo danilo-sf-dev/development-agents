@@ -265,6 +265,7 @@ Natural language phrases that should invoke this skill:
 - **Manual state summarization**: When CRITICAL, summarize `sdd/wip/[feature]` into a short state note (current phase, key decisions, remaining tasks) — the only compaction path in this pack
 - **Context Budget Protocol**: Monitor token usage and trigger compaction when needed
 
+model_role: EXECUTION
 ---
 
 ## Version History

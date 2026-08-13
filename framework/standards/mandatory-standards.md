@@ -155,9 +155,12 @@ On Claude Code, `DELEGATE_ISOLATED` resolves to exactly this call:
 Task(
     subagent_type="sdd-validator",
     prompt="Validate files: [list]. Run: build, tests...",
-    model="sonnet"
+    model=<resolve model_role="STRONG" via adapters/claude-code/README.md>
 )
 ```
+
+`sdd-validator` always declares `model_role: STRONG` (see `framework/_shared/model-routing.md`),
+independently of isolation — the two are separate guarantees, neither substitutes for the other.
 
 ### Verdict Rules
 

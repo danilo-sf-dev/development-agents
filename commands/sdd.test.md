@@ -1,7 +1,7 @@
 ---
 name: sdd.test
 description: Write and approve tests before implementation (tests-first gate). Use after tasks are approved and before /sdd.build. Tests must fail first — production code comes later.
-model: sonnet
+model_role: STRONG
 argument-hint: "[--approve|--refine|--resume]"
 ---
 
@@ -309,8 +309,8 @@ AskUserQuestion(
     "question": "Testes aprovados. Iniciar implementação?",
     "header": "Próximo",
     "options": [
-      {"label": "/clear + /sdd.build (Recomendado)", "description": "Contexto limpo para implementar — comando em haiku"},
-      {"label": "/sdd.build", "description": "Implementar no contexto atual — comando em haiku"},
+      {"label": "/clear + /sdd.build (Recomendado)", "description": "Contexto limpo para implementar — comando em EXECUTION"},
+      {"label": "/sdd.build", "description": "Implementar no contexto atual — comando em EXECUTION"},
       {"label": "/sdd.test --refine", "description": "Ajustar testes antes de codar"},
       {"label": "/sdd.check", "description": "Revisar estrutura da feature"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

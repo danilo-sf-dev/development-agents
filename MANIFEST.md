@@ -4,26 +4,26 @@ Pack canônico de SDD language-/platform-agnostic.
 Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 
 ## Incluído
-### skills/ (16) — comportamento + procedimento (não há mais pasta `agents/`; ver `framework/_shared/harness-capabilities.md` para as execution requirements de cada uma)
+### skills/ (16) — comportamento + procedimento (não há mais pasta `agents/`; ver `framework/_shared/harness-capabilities.md` para as execution requirements e `framework/_shared/model-routing.md` para os model roles de cada uma)
 
-| Skill                    | Papel no time                                                  | Execution requirement (se pesada) |
-| ------------------------ | -------------------------------------------------------------- | --- |
-| `sdd-installer`          | Instala pack em projetos (bootstrap, roda inline)               | — |
-| `sdd-system-design`      | Arquiteto (spec técnica)                                        | `OFFLOAD_REASONING` |
-| `sdd-explorer`           | Descoberta read-only (brownfield)                                | `OFFLOAD_READ` |
-| `sdd-implementation`     | Developer                                                        | `ISOLATED_WORKSPACE` |
-| `sdd-test-writing`       | Test Writer (unit/integration + E2E como branch lazy-loaded)     | `ISOLATED_WORKSPACE` |
-| `sdd-validator`          | Gate automático pós-código; modo isolado = `VALIDATOR_ISOLATED`  | `VALIDATOR_ISOLATED` (isolado) |
-| `sdd-layer-analysis`     | Consistência spec ↔ code                                         | `OFFLOAD_READ` |
-| `sdd-debugger`           | RCA / bugs profundos                                             | `OFFLOAD_REASONING` |
-| `sdd-backlog`            | Ops de backlog (`sdd/backlog.md`)                                | `DELEGATE_OFFLOAD` (backlog grande) |
-| `sdd-project-wizard`     | Setup `sdd/PROJECT.md`                                           | `INTERACTIVE_OFFLOAD` |
-| `sdd-mcp-setup`          | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`)   | `INTERACTIVE_OFFLOAD` |
-| `sdd-kit-expert`         | Manual do workflow                                               | — |
-| `sdd-code-reviewer`      | Code review bloqueante                                           | — |
-| `sdd-performance-expert` | Review de performance                                            | — |
-| `context-guardian`       | Controle de contexto/tokens                                      | — |
-| `commit-workflow`        | Formatação, validação e commit agnósticos                        | — |
+| Skill                    | Papel no time                                                  | Execution requirement (se pesada) | Model Role |
+| ------------------------ | -------------------------------------------------------------- | --- | --- |
+| `sdd-installer`          | Instala pack em projetos (bootstrap, roda inline)               | — | `EXECUTION` |
+| `sdd-system-design`      | Arquiteto (spec técnica)                                        | `OFFLOAD_REASONING` | `STRONG` |
+| `sdd-explorer`           | Descoberta read-only (brownfield)                                | `OFFLOAD_READ` | `EXECUTION` |
+| `sdd-implementation`     | Developer                                                        | `ISOLATED_WORKSPACE` | `EXECUTION` (escala p/ `STRONG`) |
+| `sdd-test-writing`       | Test Writer (unit/integration + E2E como branch lazy-loaded)     | `ISOLATED_WORKSPACE` | `STRONG` (default) |
+| `sdd-validator`          | Gate automático pós-código; modo isolado = `VALIDATOR_ISOLATED`  | `VALIDATOR_ISOLATED` (isolado) | `STRONG` (sempre) |
+| `sdd-layer-analysis`     | Consistência spec ↔ code                                         | `OFFLOAD_READ` | `EXECUTION` |
+| `sdd-debugger`           | RCA / bugs profundos                                             | `OFFLOAD_REASONING` | `STRONG` |
+| `sdd-backlog`            | Ops de backlog (`sdd/backlog.md`)                                | `DELEGATE_OFFLOAD` (backlog grande) | `EXECUTION` |
+| `sdd-project-wizard`     | Setup `sdd/PROJECT.md`                                           | `INTERACTIVE_OFFLOAD` | `EXECUTION` |
+| `sdd-mcp-setup`          | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`)   | `INTERACTIVE_OFFLOAD` | `EXECUTION` |
+| `sdd-kit-expert`         | Manual do workflow                                               | — | `EXECUTION` |
+| `sdd-code-reviewer`      | Code review bloqueante                                           | — | `STRONG` |
+| `sdd-performance-expert` | Review de performance                                            | — | `STRONG` |
+| `context-guardian`       | Controle de contexto/tokens                                      | — | `EXECUTION` |
+| `commit-workflow`        | Formatação, validação e commit agnósticos                        | — | `EXECUTION` |
 
 ### commands/ (22) — orquestração `/sdd.*`
 

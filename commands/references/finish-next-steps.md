@@ -25,8 +25,8 @@ AskUserQuestion(
     "question": "Feature arquivada! Qual o próximo passo?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.pr (Recomendado)", "description": "Rascunhar o PR a partir dos artefatos SDD → você aprova → publicar — comando em haiku"},
-      {"label": "/sdd.start", "description": "Começar uma nova feature — comando em haiku (sonnet de novo no spec)"},
+      {"label": "/sdd.pr (Recomendado)", "description": "Rascunhar o PR a partir dos artefatos SDD → você aprova → publicar — comando em EXECUTION"},
+      {"label": "/sdd.start", "description": "Começar uma nova feature — comando em EXECUTION (STRONG de novo no spec)"},
       {"label": "/sdd.start --reopen", "description": "Reabrir esta feature depois para iterar"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],

@@ -1,6 +1,7 @@
 ﻿---
 name: sdd.hub
 description: Orchestrate multi-app hub features across apps. Coordinates specs, planning, and build across member apps. Use when working in a hub repo with multiple collaborating apps.
+model_role: inherit
 argument-hint: "<action> [args]"
 ---
 
