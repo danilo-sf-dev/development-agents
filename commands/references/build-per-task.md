@@ -36,9 +36,12 @@ see `framework/_shared/harness-capabilities.md`):
         dd_section = extract_section(technical_spec, dd_id)
         decision_context += dd_section + "\n"
 
+    # No registered "sdd-implementation" subagent type — general-purpose given the
+    # Skill's content as its task is the real mechanism.
     Task(
-        subagent_type="sdd-implementation",
-        prompt=f"""
+        subagent_type="general-purpose",
+        model=resolve_model("claude-code", "EXECUTION"),
+        prompt=f"""Follow development-agents/skills/sdd-implementation/SKILL.md.
 ## Task
 {task_context}
 

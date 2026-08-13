@@ -1,6 +1,7 @@
 ---
 name: sdd-debugger
 description: Deep debugging and root cause analysis specialist for SDD Kit. Use for complex bug investigation during /sdd.fix including concurrency issues, race conditions, performance problems, memory leaks, and subtle logic errors that require deep reasoning to identify and resolve.
+model_role: STRONG
 ---
 
 # SDD Debugger — Root Cause Analysis Specialist
@@ -101,9 +102,6 @@ You are performing a specialized debugging task for the SDD Kit framework. Your 
 - [Contradicting evidence]
 
 **Verdict**: CONFIRMED | REJECTED | INCONCLUSIVE
-
-model_role: STRONG
----
 
 ### Hypothesis 2: [Description]
 [Same structure...]

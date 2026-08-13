@@ -152,9 +152,12 @@ Write Code → code review tool → Fix ALL Findings → Repeat until ZERO findi
 On Claude Code, `DELEGATE_ISOLATED` resolves to exactly this call:
 
 ```python
+# No registered "sdd-validator" subagent type — general-purpose given the Skill's
+# isolated-mode content as its task is the real mechanism. Prompt is scrubbed
+# (file paths + rules only, never the implementer's rationale) per VALIDATOR_ISOLATED.
 Task(
-    subagent_type="sdd-validator",
-    prompt="Validate files: [list]. Run: build, tests...",
+    subagent_type="general-purpose",
+    prompt="Follow development-agents/skills/sdd-validator/SKILL.md (isolated mode). Validate files: [list]. Run: build, tests...",
     model=<resolve model_role="STRONG" via adapters/claude-code/README.md>
 )
 ```

@@ -56,8 +56,12 @@ requirement here, unlike the Validator Independence Protocol; see
 `framework/_shared/harness-capabilities.md`):
 
 ```
-Task(subagent_type="sdd-debugger", prompt="Analyze: [error details]")
-Task(subagent_type="sdd-layer-analysis", prompt="Check: [feature name]")
+Task(subagent_type="general-purpose", prompt="Follow skills/sdd-debugger/SKILL.md — Analyze: [error details]", model=resolve-model.sh claude-code STRONG)
+Task(subagent_type="general-purpose", prompt="Follow skills/sdd-layer-analysis/SKILL.md — Check: [feature name]", model=resolve-model.sh claude-code EXECUTION)
 ```
+
+There is no registered `sdd-debugger`/`sdd-layer-analysis` subagent type — both are Skills, dispatched
+via a `general-purpose` worker given the Skill's content as its task (see
+`docs/adr/0001-agent-skill-execution-architecture.md`).
 
 ---

@@ -1,6 +1,7 @@
 ---
 name: sdd-system-design
 description: Software architecture specialist for SDD Kit. Use for critical architectural decisions during /sdd.spec technical including system design, technology selection, pattern choices, trade-off analysis, and project service architecture. Provides deep reasoning for complex design decisions.
+model_role: STRONG
 ---
 
 # SDD System Design — System Design Specialist
@@ -286,9 +287,6 @@ The calling command presents via `ASK_USER` with markdown previews.
 5. **Security by Design**: Not an afterthought
 6. **Team Context**: Consider who will maintain this
 7. **Reversibility**: Prefer reversible decisions when uncertain
-
-model_role: STRONG
----
 
 ## Project Services / Platform Services
 

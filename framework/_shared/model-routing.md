@@ -165,6 +165,53 @@ place; every call site that resolves at dispatch time (Cursor, Codex) picks up t
 invocation, and Claude Code's install-time-baked frontmatter picks it up on the next `/sdd.install`
 run (see `adapters/claude-code/README.md`).
 
+## Interactive dispatch — a headless/isolated child cannot answer a Gate itself
+
+Every `RESOLVED` mechanism on every harness dispatches the substantive work of a `model_role`-bearing
+command/Skill as a **separate execution context** from the interactive session the human is talking
+to — a `Task()`-dispatched subagent on Claude Code, a headless `agent -p` child process on Cursor, a
+headless `codex exec` child process on Codex. **None of these three can ask the human a question and
+wait for an answer from inside that dispatch.** This was verified directly, not assumed: a Claude Code
+subagent invoked via `Task()` and instructed to call `AskUserQuestion` receives an immediate tool
+error (`AskUserQuestion is not available inside subagents`) — it does not pause, degrade, or forward
+the question; the call simply fails. Cursor's `agent -p` and Codex's `codex exec` are headless by
+design (no `stdin` prompt loop) and have the same limitation for the same structural reason. This is
+true **on all three harnesses**, not just the two that dispatch via an external CLI — do not assume
+Claude Code is exempt because its dispatch mechanism looks more "native."
+
+**The rule this forces**: any dispatched execution that reaches a point requiring human input — a
+Gate (1, 2, 2.5, 3), the tests-immutability `AskUserQuestion` in `/sdd.build`, a next-steps prompt, or
+any other `ASK_USER` point — must **stop there and return a structured request**, never fabricate an
+answer, never silently auto-approve, and never attempt to call an interactive tool that isn't
+available to it. The shape is the same on every harness (only the transport differs):
+
+```json
+{"status": "NEEDS_USER_INPUT", "resume_token": "<mechanism-specific: subagent has none, Cursor uses a thread id, Codex uses --last>", "gate": "<gate name>", "questions": [...]}
+```
+
+The **calling/interactive session** — which does have the real interactive tool (`AskUserQuestion` on
+Claude Code, plain-text prompts elsewhere) — is the only place a Gate is ever actually answered. After
+it gets the human's answer, it persists that answer to the state the phase already expects
+(`sdd/wip/<feature>/meta.md` or wherever that Gate normally writes its result — no new state format),
+then **resumes** the dispatched work under the *same resolved model* it was already running under:
+
+- **Claude Code**: there is no session/thread to resume — a `Task()` call is stateless per invocation.
+  "Resume" means the calling session issues a **new** `Task()` call for the remainder of that
+  phase/Skill (same `model=` resolution as before), instructing it to continue from the state file
+  now that the Gate's answer is recorded there. This is why the pipeline's file-based state handoff
+  (`sdd/wip/<feature>/*.md`) is load-bearing for Model Routing, not incidental: it's what makes a
+  second, independent `Task()` call able to pick up exactly where the first one stopped.
+- **Cursor**: `agent -p --resume "<thread-id>" --model "<same resolved model>" [--force if this was a
+  write dispatch] "<human's answer>"` — see `adapters/cursor/README.md` § "Interactive handoff".
+- **Codex**: `codex exec resume --last "<human's answer>"` — see `adapters/codex/README.md` §
+  "Interactive handoff" for the documented `--json`/session-ID limitation this works around.
+
+**This does not change what a Gate is or when it fires** — Gate 1/2/2.5/3 and every methodological
+`AskUserQuestion` still fire at exactly the same points in the pipeline they always did, asking
+exactly the same questions. What changed is *which execution context answers them*: always the
+interactive parent, never a dispatched worker — because on every harness tested, a dispatched worker
+structurally cannot.
+
 ## Adapter contract
 
 Every `adapters/<harness>/README.md` MUST document, instead of a duplicated mapping table:

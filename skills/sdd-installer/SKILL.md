@@ -1,6 +1,7 @@
 ---
 name: sdd-installer
 description: Instala o pack development-agents em um projeto alvo. Único caminho de instalação do pack — sem scripts .sh/.ps1. Detecta ou pergunta o harness (Claude Code / Cursor / Codex CLI / Genérico), instala o(s) adapter(s) correspondente(s) em adapters/<harness>/, cria sdd/ e atualiza .gitignore para repo limpo. Invocado via /sdd.install.
+model_role: EXECUTION
 ---
 
 # development-agents Installer — Bootstrap Skill
@@ -292,9 +293,6 @@ Proximos passos:
 ```
 
 Se `codex` ou `generic` foram instalados, imprimir também as seções "Known gaps" de `adapters/codex/README.md` / `adapters/generic/README.md` — o usuário precisa saber exatamente onde a automação para.
-
-model_role: EXECUTION
----
 
 ## Cenários comuns
 

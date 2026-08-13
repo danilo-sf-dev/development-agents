@@ -38,6 +38,18 @@ looked up via `framework/tools/resolve-model.sh claude-code <STRONG|EXECUTION>` 
    subagent dispatched with `model: "haiku"` reported back as `claude-haiku-4-5-20251001`; a subagent
    dispatched with `model: "sonnet"` reported back as `Claude Sonnet 5` — the override is real, not
    documentation-only.
+   **Effort is not part of this**: the `Task()` call's parameters expose `model` only — there is no
+   call-time `effort` parameter (verified against this tool's own schema, not assumed). `effort:
+   high` in `config/model-routing.yaml`'s `claude-code.STRONG` entry only takes effect through
+   mechanism 1 above (baked into `.claude/commands/*.md` frontmatter at install time, where a static
+   subagent/command definition genuinely can declare `effort:`); a `/sdd.go`/`/sdd.hub` per-phase
+   `Task()` dispatch gets the right **model** but runs at that model's default effort, not the
+   `effort:` value from the YAML. This is a real, narrow gap in this mechanism, not a documentation
+   omission — track it if Claude Code's `Task` tool ever exposes a call-time effort parameter.
+   **`AskUserQuestion` is not available inside a dispatched subagent either** (verified: a subagent
+   instructed to call it receives an immediate tool error, it does not pause or forward the
+   question) — see "`/sdd.go` and `/sdd.hub`" below and `framework/_shared/model-routing.md` §
+   "Interactive dispatch" for how Gates are handled around this.
 
 ## `/sdd.go` and `/sdd.hub` — real per-phase model switching
 
@@ -49,8 +61,17 @@ commands true but not automatic). Instead, each phase is dispatched as its own `
 — so each phase genuinely executes under its own resolved model. This works cleanly with the
 pipeline's existing file-based state (`sdd/wip/<feature>/*.md`, `meta.md`): phases already read/write
 their state to disk rather than relying on shared conversation context, which is exactly what
-isolated dispatch needs. See `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch"
-for the phase-by-phase mapping.
+isolated dispatch needs.
+
+**A dispatched phase cannot itself answer a Gate.** `AskUserQuestion` is unavailable inside a
+`Task()`-dispatched subagent (verified: calling it from inside one errors immediately rather than
+pausing). So a phase that reaches Gate 1/2/2.5/3 or any other `AskUserQuestion` point stops there and
+returns `{"status": "NEEDS_USER_INPUT", ...}` instead of asking; the orchestrator session running
+`/sdd.go` asks it, persists the answer to the same state file, and issues a **new** `Task()` call
+(same resolved `model=`) to continue that phase past the gate — see
+`framework/_shared/model-routing.md` § "Interactive dispatch" for the full protocol and
+`commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch" for the phase-by-phase mapping
+and worked-through gate-handling detail.
 
 ## How each execution requirement is satisfied
 

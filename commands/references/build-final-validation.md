@@ -19,11 +19,17 @@ optimization: `sdd-validator` (isolated mode) must not see the implementer's rea
 benefit, not the reason this runs isolated:
 
 ```python
-# Single agent call replaces 3 skill calls, saves ~5700 tokens
+# Single agent call replaces 3 skill calls, saves ~5700 tokens.
+# No registered "sdd-validator" subagent type — general-purpose given the Skill's
+# isolated-mode content as its task is the real mechanism (see
+# docs/adr/0001-agent-skill-execution-architecture.md). Prompt is scrubbed (file
+# paths + rules only, no implementer rationale) per VALIDATOR_ISOLATED property 2.
 Task(
-    subagent_type="sdd-validator",
+    subagent_type="general-purpose",
+    model=resolve-model.sh claude-code STRONG,  # VALIDATOR_ISOLATED always runs STRONG
     prompt="""
-    Final validation for all modified files.
+    Follow development-agents/skills/sdd-validator/SKILL.md (isolated mode).
+    Final validation for all modified files (file list below — no implementation rationale).
     Run Layer 3 quality gates: performance, security, code-review
     Return unified JSON verdict.
     """

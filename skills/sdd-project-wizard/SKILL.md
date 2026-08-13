@@ -1,6 +1,7 @@
 ---
 name: sdd-project-wizard
 description: Creates PROJECT.md via interactive wizard. Use when /sdd.start detects missing PROJECT.md, or via /sdd.project directly.
+model_role: EXECUTION
 ---
 
 # SDD Project Wizard — PROJECT.md Creation Specialist
@@ -287,9 +288,6 @@ These are used when properties are NOT in PROJECT.md:
 | testing.ratio_unit_integration | "4:1"   | coding-standards.md |
 | pr.max_lines                   | 400     | coding-standards.md |
 | language.specs                 | en      | coding-standards.md |
-
-model_role: EXECUTION
----
 
 ## Vision Wizard
 

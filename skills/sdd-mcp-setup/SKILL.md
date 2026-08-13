@@ -1,6 +1,7 @@
 ---
 name: sdd-mcp-setup
 description: Configura integrações MCP de forma agnóstica ao IDE (detecta host, guia plugin nativo ou wizard genérico, smoke test read-only). Use via /sdd.mcp para Jira/Confluence Atlassian e futuras integrações. Não assume Cursor, VS Code ou IntelliJ.
+model_role: EXECUTION
 ---
 
 # SDD MCP Setup — Integration Specialist
@@ -222,9 +223,6 @@ Run smoke test only. If MCP unavailable → STOP with steps to run full `/sdd.mc
 - Human can paste a Jira URL into `/sdd.spec --include` and read the card without copy-paste
 - Pack remains usable without MCP (manual paste fallback unchanged)
 - No secrets committed; `.mcp.json` may be project-local and gitignored per team policy
-
-model_role: EXECUTION
----
 
 ## Out of scope (v1)
 

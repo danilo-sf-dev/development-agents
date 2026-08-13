@@ -69,7 +69,7 @@ On selection:
 3. Platform compliance (conditional - see below)
 4. Services
 
-⛔ INVOKE TOOL (do not print this, CALL the tool — backend projects only) — `sdd-system-design` is a **Skill**, delegate via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`):
-Task(subagent_type="sdd-system-design", ...)
+⛔ INVOKE TOOL (do not print this, CALL the tool — backend projects only) — `sdd-system-design` is a **Skill**, delegate via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`; no registered `sdd-system-design` subagent type):
+Task(subagent_type="general-purpose", prompt="Follow skills/sdd-system-design/SKILL.md ...", model=resolve-model.sh claude-code STRONG)
 
 After the agent responds, if a project-provided CLI-discovery skill (commonly `project-cli-expert`) is available, run it for live instance discovery (existing vs new) — **this skill is not bundled with the pack or created by `/sdd.install`; see the status note in `spec-project-services.md`. If absent, skip live discovery and rely on the technical spec / PROJECT.md for service inventory instead.** 5. Dependencies (MUST verify from docs - NEVER invent) 6. Design Decisions (with rationale) 7. Data Model 8. REST API Contracts 9. Testing Strategy (unit + integration only; E2E is external) 10. Security (MUST include Secrets Management) 11. Performance 12. Deployment

@@ -52,7 +52,7 @@ If not → return to `/sdd.build`. Finish is a double-check + archive. See `stan
 ## Validation Delegation (MANDATORY)
 
 Use skills (all tools): `sdd-validator` → `sdd-code-reviewer` (security + final review).
-Claude Code optional: `Task(sdd-layer-analysis)` for final consistency.
+Claude Code optional: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-layer-analysis/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)` (`OFFLOAD_READ`; no registered `sdd-layer-analysis` subagent type) for final consistency.
 Do not invent a parallel validation path.
 
 ## Context Advisory (short)

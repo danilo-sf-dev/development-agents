@@ -98,7 +98,10 @@ AskUserQuestion(
 ┌─────────────────────────────────────────────────────────────────────┐
 │  MANDATORY SUBAGENT: sdd-explorer                                   │
 │                                                                      │
-│  Use Task(subagent_type="sdd-explorer") for: Phase 0-3             │
+│  Task(subagent_type="general-purpose", prompt="Follow                │
+│  skills/sdd-explorer/SKILL.md ...", model=resolve-model.sh           │
+│  claude-code EXECUTION) for: Phase 0-3 (no registered                │
+│  sdd-explorer subagent type)                                         │
 │                                                                      │
 │  WHY: Reduces tokens 30-40%, isolates read-only operations,          │
 │       preserves main context for synthesis.                          │

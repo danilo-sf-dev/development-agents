@@ -544,7 +544,7 @@ After exiting Plan Mode, **ALWAYS**:
 
 ### Detection
 
-`sdd-implementation` is a **Skill** (`skills/sdd-implementation/SKILL.md`) — invoke it via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`; on Claude Code, `Task(subagent_type="sdd-implementation", ...)`). When reading a snippet file it returns, check for this marker at the top:
+`sdd-implementation` is a **Skill** (`skills/sdd-implementation/SKILL.md`) — invoke it via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`; on Claude Code, `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-implementation/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)` — there is no registered `sdd-implementation` subagent type). When reading a snippet file it returns, check for this marker at the top:
 
 ```markdown
 > **🔒 EXPERT-VALIDATED** | Reviewed: YYYY-MM-DD | Author: reviewer_name | Commit: xxxxxxx
@@ -594,7 +594,7 @@ Expert-validated snippets are managed via the `sdd-implementation` Skill. It is 
 
 ### Reglas
 
-1. **SIEMPRE** empezar delegando a `sdd-implementation` (`DELEGATE_OFFLOAD` — en Claude Code: `Task(subagent_type="sdd-implementation", ...)`)
+1. **SIEMPRE** empezar delegando a `sdd-implementation` (`DELEGATE_OFFLOAD` — en Claude Code: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-implementation/SKILL.md ...", model=resolve-model.sh claude-code EXECUTION)`, sin subagent type `sdd-implementation` registrado)
 2. **NUNCA** usar WebSearch para documentación de servicios internos
 3. Si el plugin no cubre → return PARTIAL y sugerir documentación oficial
 
@@ -615,9 +615,12 @@ Same agent writes code AND validates it → can rationalize failures → "OK" de
 Read `framework/_shared/harness-capabilities.md` to see exactly how `DELEGATE_ISOLATED` resolves on the currently-installed harness. On **Claude Code** it resolves 1:1 to:
 
 ```python
+# No registered "sdd-validator" subagent type — general-purpose given the Skill's
+# isolated-mode content as its task is the real mechanism. Prompt is scrubbed
+# (file paths + rules only, never the implementer's rationale) per VALIDATOR_ISOLATED.
 Task(
-    subagent_type="sdd-validator",
-    prompt="Validate files: [list]. Run: build, tests, security, performance.",
+    subagent_type="general-purpose",
+    prompt="Follow development-agents/skills/sdd-validator/SKILL.md (isolated mode). Validate files: [list]. Run: build, tests, security, performance.",
     model=<resolve model_role="STRONG" via adapters/<harness>/README.md>
 )
 ```

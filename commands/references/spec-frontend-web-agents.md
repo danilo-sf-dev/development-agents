@@ -6,7 +6,9 @@
 
 ## Skill routing
 
-> `sdd-system-design` requires `OFFLOAD_REASONING` — see `framework/_shared/harness-capabilities.md`. On Claude Code: `Task(subagent_type="sdd-system-design", ...)`.
+> `sdd-system-design` requires `OFFLOAD_REASONING` — see `framework/_shared/harness-capabilities.md`. On
+> Claude Code: `Task(subagent_type="general-purpose", prompt="Follow skills/sdd-system-design/SKILL.md ...", model=resolve-model.sh claude-code STRONG)`
+> (no registered `sdd-system-design` subagent type).
 
 ```
 sdd-system-design → All frontend architecture decisions

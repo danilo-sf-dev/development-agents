@@ -108,7 +108,7 @@ than reading/rewriting a big file directly in this session.
   token-budget one, so on a harness without real subagent delegation the
   honest fallback is simply to run the operation inline (same result as not
   delegating at all).
-- **On Claude Code**: `Task(subagent_type="sdd-backlog", prompt="<action + item details>")`.
+- **On Claude Code**: `Task(subagent_type="general-purpose", prompt="Follow development-agents/skills/sdd-backlog/SKILL.md — <action + item details>", model=resolve-model.sh claude-code EXECUTION)` — there is no registered `sdd-backlog` subagent type; `general-purpose` given the Skill's own content as its task is the real mechanism (see `docs/adr/0001-agent-skill-execution-architecture.md`).
 - **On harnesses without a delegate primitive** (Cursor, Codex CLI degraded
   cases, Generic): fall back to inline handling per the "Full (via inline
   fallback)" row for `DELEGATE_OFFLOAD` in `harness-capabilities.md` — do not

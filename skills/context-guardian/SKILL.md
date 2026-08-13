@@ -1,6 +1,7 @@
 ﻿---
 name: context-guardian
 description: Context monitoring skill to prevent token exhaustion. Monitors context usage and recommends actions.
+model_role: EXECUTION
 ---
 
 # Context Guardian - Context Monitoring Skill
@@ -264,9 +265,6 @@ Natural language phrases that should invoke this skill:
 
 - **Manual state summarization**: When CRITICAL, summarize `sdd/wip/[feature]` into a short state note (current phase, key decisions, remaining tasks) — the only compaction path in this pack
 - **Context Budget Protocol**: Monitor token usage and trigger compaction when needed
-
-model_role: EXECUTION
----
 
 ## Version History
 

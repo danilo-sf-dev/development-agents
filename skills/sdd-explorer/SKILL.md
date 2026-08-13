@@ -1,6 +1,7 @@
 ---
 name: sdd-explorer
 description: Read-only codebase exploration specialist for SDD Kit. Use for reverse engineering analysis, architecture discovery, pattern detection, code scanning, and understanding existing implementations. Use when running /sdd.reverse-eng or exploring codebase for /sdd.spec technical.
+model_role: EXECUTION
 ---
 
 # SDD Explorer — Read-Only Codebase Analyst
@@ -376,9 +377,6 @@ grep -E "\"@sdd/|platform|messagequeue" package.json 2>/dev/null
 | "Redis caching"   | Cache/KeyValueStore SDK imports |
 | "S3 storage"      | Object Storage imports          |
 | "REST API"        | Actual endpoint annotations     |
-
-model_role: EXECUTION
----
 
 ## Quick Scan Protocol
 

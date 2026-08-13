@@ -18,17 +18,31 @@ Canonical policy: `development-agents/framework/_shared/model-routing.md`. Concr
 `config/model-routing.yaml`, resolved via `framework/tools/resolve-model.sh codex <STRONG|EXECUTION>`
 — this adapter does **not** keep its own copy of the mapping.
 
-**Real mechanism (child CLI invocation, confirmed via current Codex CLI documentation)**: Codex CLI's
-non-interactive `codex exec "<prompt>"` mode (`codex e` short form) is built for automation, and
-supports selecting a model per invocation directly: `codex exec --model <model>
---model-reasoning-effort <level> "<prompt>"` (flags `-m`/`--model`; `model_reasoning_effort` accepts
-`minimal|low|medium|high|xhigh`). This is a real per-call flag, not an interactive picker — exactly
-the "CLI --model" / "child codex invocation" mechanism this pack's architecture allows an adapter to
-use in place of switching the running session's own model. Before dispatching any command/Skill
-content that declares a `model_role`, the calling session resolves it
-(`resolve-model.sh codex STRONG` → e.g. `model=sol-5.6 effort=high`) and runs
-`codex exec --model sol-5.6 --model-reasoning-effort high "<task>"` as a child process, rather than
-executing that content inline under whatever model the parent session happens to be running.
+**Real mechanism (child CLI invocation, confirmed via current Codex CLI documentation — flags
+corrected this round)**: Codex CLI's non-interactive `codex exec "<prompt>"` mode (`codex e` short
+form) is built for automation, and supports selecting a model per invocation directly via `-m`/
+`--model`. **There is no `--model-reasoning-effort` flag** — an earlier version of this adapter
+assumed one existed by analogy with `--model` and never verified it against the actual CLI surface.
+The real mechanism for reasoning effort is the generic config-override flag `-c key=value`
+(`codex -c model_reasoning_effort=high "<prompt>"`, confirmed in current official docs and
+independently in multiple third-party references), which applies to `codex exec` the same way it
+applies to `codex`. `model_reasoning_effort` accepts `minimal|low|medium|high|xhigh` — **not**
+`extra-high`, which was this pack's own invented value and never a real accepted one; corrected to
+`xhigh` in `config/model-routing.yaml`. This is a real per-call mechanism, not an interactive picker —
+exactly the "CLI --model" / "child codex invocation" mechanism this pack's architecture allows an
+adapter to use in place of switching the running session's own model. Before dispatching any
+command/Skill content that declares a `model_role`, the calling session resolves it
+(`resolve-model.sh codex STRONG` → `model=gpt-5.6-sol effort=high`) and runs
+
+```bash
+codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' "<task>"
+```
+
+as a child process, rather than executing that content inline under whatever model the parent session
+happens to be running. Note the value is quoted inside the `-c` argument (`-c
+'model_reasoning_effort="high"'`) — `-c` takes a raw TOML-style value, so a string needs its own
+quotes; a bare `-c model_reasoning_effort=high` has been reported to work in most shells too, but the
+quoted form is the one shown in official examples and is what this adapter uses.
 
 **This upgrades `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` from manual to automatic.** The previous
 version of this adapter (before Model Routing) described the isolation procedure as "the operator
@@ -40,9 +54,11 @@ has shell access) with no operator action. The Validator Independence Protocol n
 1. The main Codex session does **not** validate its own work — same rule as before.
 2. It builds the scrubbed prompt (file list + rule tables from `skills/sdd-validator/SKILL.md`, never
    the implementation rationale — identical scrubbing rule to the Claude Code `Task()` call).
-3. It resolves `STRONG` → `codex exec codex STRONG` output, then runs
-   `codex exec --model sol-5.6 --model-reasoning-effort high "<scrubbed prompt>"` itself, as a child
-   process — a genuinely fresh process/context, not a continuation of its own conversation.
+3. It resolves `STRONG` → `resolve-model.sh codex STRONG` → `model=gpt-5.6-sol effort=high`, then runs
+   `codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' "<scrubbed prompt>"` itself, as
+   a child process — a genuinely fresh process/context, not a continuation of its own conversation,
+   and **without** any file-editing instruction in the prompt (validator dispatches are read-only by
+   role — see `VALIDATOR_ISOLATED` property 3).
 4. That child process follows `skills/sdd-validator/SKILL.md` directly and returns the JSON verdict
    per `framework/_shared/verdict-protocol.md` on stdout, which the parent session captures.
 5. The parent session writes it to `sdd/wip/<feature>/verdicts/` as usual.
@@ -50,19 +66,57 @@ has shell access) with no operator action. The Validator Independence Protocol n
 The **optional** `~/.codex/<profile>.config.toml` + `--profile <name>` mechanism (bundling `model`
 and `model_reasoning_effort` together, so a call site only needs `--profile sdd-strong` instead of
 two flags) remains available as an equivalent, slightly more convenient alternative — either form is
-`RESOLVED`-class automation; this adapter defaults to the direct `--model`/`--model-reasoning-effort`
-flags because they need no generated file and always match `config/model-routing.yaml` live, with
-nothing to regenerate after an edit.
+`RESOLVED`-class automation; this adapter defaults to the direct `--model`/`-c
+model_reasoning_effort=...` flags because they need no generated file and always match
+`config/model-routing.yaml` live, with nothing to regenerate after an edit.
 
-**Evidence and its limits**: `codex exec`, `-m`/`--model`, `--model-reasoning-effort`, and
-`--profile` are corroborated from current official Codex documentation
-(`developers.openai.com/codex/config-advanced`) cross-checked against multiple independent
-third-party references in this session, all showing matching flag names and example syntax. It was
-**not** live-round-trip-tested against a running Codex CLI session — this sandbox has no `codex`
-binary installed and this session's `WebFetch` tool is fully blocked by network egress policy
+**Interactive handoff (`NEEDS_USER_INPUT` / `codex exec resume`)**: `codex exec` is headless — it
+cannot pause mid-run to ask a human anything, so a dispatched command that reaches a Gate
+(1/2/2.5/3) or any other `AskUserQuestion` point cannot answer it itself and must not guess. The
+child process stops at that point instead and prints a structured final line:
+
+```json
+{"status": "NEEDS_USER_INPUT", "gate": "<gate name>", "questions": [...]}
+```
+
+The **interactive parent session** (never the child) presents `questions` via `AskUserQuestion`
+(degraded to plain text per `ASK_USER` in `harness-capabilities.md`), writes the human's answer to
+the state the phase expects (`sdd/wip/<feature>/meta.md` or wherever that gate normally persists its
+result), and resumes: `codex exec resume --last "<human's answer, verbatim>"` — `codex exec resume`
+(with `--last`, or an explicit session ID) is a real, documented Codex CLI mechanism for continuing a
+previous `codex exec` run non-interactively. **Known limitation, not silently glossed over**: current
+Codex CLI has an open, acknowledged bug (`openai/codex` issue #3817) where `codex exec --json` does
+not return a session ID in its output, so `codex exec resume <explicit-session-id>` cannot reliably
+be scripted purely from a prior call's JSON output today. This adapter works around it by using
+`codex exec resume --last` (resume the most recent `exec` session in the current working directory)
+instead of resume-by-explicit-ID — which is sufficient because the pipeline already dispatches Codex
+child processes **sequentially, one at a time** (the same constraint `ISOLATED_WORKSPACE` already
+documents as "not supported" for this harness), so "the most recent session in this directory" is
+unambiguous. If a future Codex CLI release fixes #3817, resume-by-explicit-ID becomes preferable and
+removes the ordering assumption — track that issue before changing this.
+
+**Evidence and its limits**: `codex exec`, `-m`/`--model`, `-c key=value` overrides (including
+`model_reasoning_effort`), `--profile`, and `codex exec resume --last` are corroborated from current
+official Codex documentation (`developers.openai.com/codex/config-advanced`,
+`developers.openai.com/codex/cli/reference`) cross-checked against multiple independent third-party
+references in this session, all showing matching flag names and example syntax. The `--json`/resume
+session-ID limitation is corroborated directly from the upstream GitHub issue tracker, not inferred.
+It was **not** live-round-trip-tested against a running Codex CLI session — this sandbox has no
+`codex` binary installed and this session's `WebFetch` tool is fully blocked by network egress policy
 (confirmed against several unrelated hosts, not just OpenAI's), so only search-result excerpts could
 be checked, not the primary page directly. Treat the mechanism as **designed and documented as real
-automation**, not a claim of a completed live test.
+automation**, not a claim of a completed live test — before relying on this in production, run:
+
+```bash
+# READ dispatch — no file-editing instruction in the prompt
+codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' "List the files in the current directory and suggest one naming improvement, but do not change anything."
+
+# WRITE dispatch
+codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' "Append a comment line to README.md confirming this test ran."
+
+# Resume
+codex exec resume --last "Looks good, proceed."
+```
 
 ## Known gaps (do not silently degrade past these — tell the user)
 

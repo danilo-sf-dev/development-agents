@@ -2,6 +2,7 @@
 name: sdd-code-reviewer
 stack: core
 description: Code review specialist for SDD Kit. This is a SKILL (invoke via Skill tool, NOT Task/subagent). Use after implementing code during /sdd.build to run quality checks. BLOCKING gate - feature cannot proceed until code review passes. **TRIGGER ON** code review, quality gate, implementation review, PR review.
+model_role: STRONG
 ---
 
 # SDD Code Reviewer
@@ -163,9 +164,6 @@ If MCP not available, use this checklist:
 4. **Be Constructive**: Focus on improvement, not criticism
 5. **Blocking Gate**: NEVER approve with critical issues
 6. **ALL findings must be fixed**: Minor issues are NOT optional
-
-model_role: STRONG
----
 
 ## Verdict Output (MANDATORY)
 

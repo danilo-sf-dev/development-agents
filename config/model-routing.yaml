@@ -16,24 +16,48 @@
 # `generic` has no entry on purpose — that harness has no known automated selection
 # mechanism; see adapters/generic/README.md for its fallback rule.
 
+# Runtime-identifier notes (2026-08 verification pass — see adapters/<harness>/README.md
+# "Model Routing" section for full evidence per value):
+#
+# - claude-code: `sonnet`/`haiku` are the bare model aliases, live-verified this round via a
+#   real Task() dispatch (model:"haiku" reported back as claude-haiku-4-5-20251001;
+#   model:"sonnet" reported back as Claude Sonnet 5). `effort: high` is a real accepted value
+#   for Sonnet in *static* subagent frontmatter (`.claude/agents/*.md`), but the Task() tool's
+#   call-time parameters only expose `model`, not `effort` — so `effort` here only takes
+#   effect through install-time-generated command frontmatter, not through the ad-hoc
+#   `/sdd.go` per-phase Task() dispatch. See adapters/claude-code/README.md for this gap.
+# - codex: `gpt-5.6-sol`/`gpt-5.6-luna` are the documented OpenAI API/Codex model IDs for the
+#   GPT-5.6 family (Sol = flagship/most capable, Luna = fastest/cheapest tier). `sol-5.6`/
+#   `luna-5.6` were marketing shorthand, not real identifiers — corrected. `effort` values are
+#   the `model_reasoning_effort` enum: minimal|low|medium|high|xhigh (NOT "extra-high").
+# - cursor: exact model-ID strings are account/plan-dependent and change as Cursor's catalog
+#   evolves — "grok-4.6-high" and "composer-2.5-fast" below are NOT independently confirmed
+#   against a live catalog (no CLI binary or working WebFetch in this environment; see
+#   adapters/cursor/README.md). Before relying on these in production, run `agent models` (or
+#   `agent --list-models`) once and correct the two values below if they differ — that command
+#   is the actual source of truth for this harness's catalog, this file is not guessing beyond
+#   what could be verified.
+
 version: 1
 
 roles:
   STRONG:
     claude-code:
-      model: sonnet-5
+      model: sonnet
       effort: high
     cursor:
+      # UNCONFIRMED catalog string — verify via `agent models`, see note above.
       model: grok-4.6-high
     codex:
-      model: sol-5.6
+      model: gpt-5.6-sol
       effort: high
 
   EXECUTION:
     claude-code:
-      model: haiku-4.5
+      model: haiku
     cursor:
-      model: compose-2.5-fast
+      # UNCONFIRMED catalog string — verify via `agent models`, see note above.
+      model: composer-2.5-fast
     codex:
-      model: luna-5.6
-      effort: extra-high
+      model: gpt-5.6-luna
+      effort: xhigh

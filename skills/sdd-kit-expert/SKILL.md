@@ -1,6 +1,7 @@
 ﻿---
 name: sdd-kit-expert
 description: Expert on SDD Kit framework for Spec-Driven Development. This is a SKILL (invoke via Skill tool, NOT Task/subagent). Use when user invokes /sdd.* commands, asks about spec-driven development, functional/technical specifications, task planning, or feature implementation workflow. **TRIGGER ON** project, spec, functional spec, technical spec, SDD, feature workflow.
+model_role: EXECUTION
 ---
 
 # SDD Kit Expert
@@ -92,9 +93,6 @@ sdd/
 **❌ WRONG**: Doing everything in `/sdd.start` (start only creates folder + branch)
 **✅ CORRECT**: Each command does ONE phase, then waits for next command
 **✅ ALSO CORRECT**: `/sdd.go` orchestrates all phases in express mode
-
-model_role: EXECUTION
----
 
 ## Framework Overview
 

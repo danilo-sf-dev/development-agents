@@ -82,6 +82,23 @@ can't spawn a model-pinned child call either, the equivalent per-harness mechani
 process on Codex, an `agent -p --model ...` child process on Cursor) — same dispatch-per-phase
 principle, different concrete call.
 
+**Gates inside a dispatched phase — `NEEDS_USER_INPUT`, not silent pass-through.** A dispatched
+`Task()` **cannot** call `AskUserQuestion` — this was verified directly: a subagent that attempts it
+gets an immediate tool error (`AskUserQuestion is not available inside subagents`), it does not pause
+or forward the question. This is true for every phase below that can reach a Gate (1/2/2.5/3, the
+tests-immutability check in `/sdd.build`, next-steps prompts), which in practice is most of them. So a
+dispatched phase does not "surface its own gates" — it **stops at the gate and returns**
+`{"status": "NEEDS_USER_INPUT", "gate": "<name>", "questions": [...]}` instead of attempting to ask.
+This orchestrator (the session actually running `/sdd.go`, which does have `AskUserQuestion`) then:
+asks the question itself, writes the answer to `sdd/wip/<feature>/meta.md` (or wherever that Gate
+already persists its result), and issues a **new** `Task()` call for the same phase with the same
+resolved `model=`, instructing it to continue from the state file now that the answer is recorded —
+this is the "resume" primitive on Claude Code, since a `Task()` call has no session to reconnect to.
+A phase may therefore take more than one `Task()` dispatch (one per Gate it contains, plus one final
+call) — this is expected, not an error. See `framework/_shared/model-routing.md` § "Interactive
+dispatch" for the full, harness-general statement of this rule, and `adapters/claude-code/README.md`
+for how this composes with the per-phase table below.
+
 **Phase-by-phase resolution** (`framework/tools/resolve-model.sh <harness> <role>` is the actual
 lookup — values below are the current Claude Code resolution, shown as a concrete example, not a
 second copy of the mapping):
@@ -101,10 +118,12 @@ The concrete model each of these resolves to today lives only in `config/model-r
 copied here on purpose, so this table never goes stale when that file changes.
 
 Gates that need a human answer (the 3-5 consolidated Express questions, any `AskUserQuestion`) are
-asked by whichever phase-dispatch call is currently running — the `Task()` call surfaces its tool
-calls (including `AskUserQuestion`) back to the user exactly like any other subagent call already
-does for `ISOLATED_WORKSPACE`/`DELEGATE_ISOLATED` work; nothing about model routing changes how gates
-reach the user, it only changes which model answers/executes each phase.
+**never** answered by the phase-dispatch call itself — a `Task()`-dispatched subagent cannot call
+`AskUserQuestion` at all (verified: the tool errors immediately from inside a subagent). The
+orchestrator session running `/sdd.go` asks them, after the current phase-dispatch call returns
+`NEEDS_USER_INPUT` instead of a final result — see "Model Routing" above for the full mechanism.
+Nothing about model routing changes *which* gates fire or *what* they ask; it changes which model
+executes each phase and which execution context (always the orchestrator) answers a gate along the way.
 
 **Express Rules**:
 

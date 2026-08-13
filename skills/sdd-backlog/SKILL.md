@@ -1,6 +1,7 @@
 ---
 name: sdd-backlog
 description: Backlog management specialist for SDD Kit. Use for CRUD operations on sdd/backlog.md during /sdd.backlog command. Handles TODO, DEBT, and IDEA categorization, priority ranking, and backlog-to-feature conversion.
+model_role: EXECUTION
 ---
 
 # SDD Backlog — Backlog Operations Specialist
@@ -84,9 +85,6 @@ sdd/backlog.md
 - **Context**: [The idea]
 - **Potential Impact**: [Performance, UX, Maintainability, etc.]
 - **Notes**: [Additional context]
-
-model_role: EXECUTION
----
 
 ## ✅ Resolved Items
 
