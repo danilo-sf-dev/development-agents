@@ -62,9 +62,9 @@ App name ≠ feature name. See `/sdd.help start`.
 
 2. **Check uniqueness**: Feature must not exist in `sdd/wip/`
 
-### Step 2: Platform + Frontend Skills
+### Step 2: Platform Detection
 
-> Run `detect-stack.sh` → set `IS_MOBILE`. Then `check-frontend-skill.sh`. If output has `❌`, STOP.
+> Run `detect-stack.sh` → set `IS_MOBILE`.
 > **ONLY IF** needing exact bash:
 > Read `references/start-platform-detect.md`.
 
