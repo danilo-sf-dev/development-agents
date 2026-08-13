@@ -74,7 +74,7 @@ if [ $? -eq 0 ]; then
     verdict=$(echo "$layers_result" | grep -o '"verdict":"[^"]*"' | cut -d'"' -f4)
     echo "📊 Cross-layer analysis: $verdict"
 else
-    echo "🤖 Delegating to sdd-layer-analyzer for deep analysis..."
+    echo "🤖 Delegating to sdd-layer-analysis for deep analysis..."
     # Use subagent for complex analysis
 fi
 ```

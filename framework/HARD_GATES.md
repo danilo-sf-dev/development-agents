@@ -4,7 +4,7 @@
 > removed. Corporate Windows fleets often lack a reliable shell/`jq` path; blocking the pipeline
 > on those tools made the pack less portable.
 >
-> Enforcement of SDD process rules is now **agent-based**: `sdd-validator-runner` runs a
+> Enforcement of SDD process rules is now **agent-based**: `sdd-validator` runs a
 > **Process Compliance** check (isolated context), and the orchestrating command **must** pause
 > with AskUserQuestion (always including **Outros**) when a process rule fails or is ambiguous.
 
@@ -13,14 +13,14 @@
 | Layer | Mechanism | Enforces | Bypass |
 |-------|-----------|----------|--------|
 | **Soft convention** | Command/skill markdown | Agent behavior | Human review |
-| **Process validator** | `agents/sdd-validator-runner.md` → Check: Process Compliance | Pipeline integrity | User authorizes via AskUserQuestion (incl. Outros) |
+| **Process validator** | `skills/sdd-validator/SKILL.md` → Check: Process Compliance | Pipeline integrity | User authorizes via AskUserQuestion (incl. Outros) |
 | **Optional local tooling** | Project’s own CI / hooks | Whatever the team installs | Outside this pack |
 
 This pack does **not** install pre-commit hooks or require `jq`/`bash` for gate enforcement.
 
 ## What the validator checks (process)
 
-See `agents/sdd-validator-runner.md` → **Check 6: Process Compliance**:
+See `skills/sdd-validator/SKILL.md` → **Check 6: Process Compliance**:
 
 1. Approved artifact immutability (tests / specs / tasks while `status: approved`)
 2. Phase order (e.g. build only after tests approved)
@@ -51,4 +51,4 @@ Template: `commands/references/ask-user-question-outros.md`
 - `framework/PIPELINE.md` — gate table
 - `commands/sdd.build.md` — anti-gaming (soft + validator)
 - `commands/sdd.test.md` — approval gate
-- `agents/sdd-validator-runner.md` — process + quality checks
+- `skills/sdd-validator/SKILL.md` — process + quality checks

@@ -20,7 +20,7 @@ fi
 ```
 
 **If missing**:
-→ Use AskUserQuestion: 1. Create PROJECT.md now (delegate to `sdd-project-wizard` subagent) 2. Continue with framework defaults 3. What is PROJECT.md?
+→ Use AskUserQuestion: 1. Create PROJECT.md now (delegate to `sdd-project-wizard` Skill) 2. Continue with framework defaults 3. What is PROJECT.md?
 
 #### Step 6.1: Doctor Tip (Non-blocking, ⭐ v1.7.3)
 

@@ -16,7 +16,7 @@ Every command in this framework — install included — is run the same way: **
 /sdd.plan                       # In your IDE's chat window
 ```
 
-There is no separate CLI tool to install or invoke from a terminal — `/sdd.install` runs the `development-agents-installer` agent, which uses its own Read/Write/Bash tool calls internally.
+There is no separate CLI tool to install or invoke from a terminal — `/sdd.install` runs the `sdd-installer` Skill, which uses its own Read/Write/Bash tool calls internally.
 
 ---
 
@@ -28,7 +28,7 @@ There is no separate CLI tool to install or invoke from a terminal — `/sdd.ins
 | ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | **Working Directory**         | `pwd` must NOT contain `development-agents` (the pack folder itself)                    | `cd ..` to project root                                                               |
 | **Docker base image**         | Use the prefix/registry declared in `sdd/PROJECT.md` (if your org mandates one)         | Build/CI will likely fail org policy checks                                           |
-| **Internal services/plugins** | Check `sdd/PROJECT.md` for org-specific skills/services before designing a new solution | Invoke the project's designated skill (e.g. `sdd-system-designer`, `sdd-implementer`) |
+| **Internal services/plugins** | Check `sdd/PROJECT.md` for org-specific skills/services before designing a new solution | Invoke the project's designated skill (e.g. `sdd-system-design`, `sdd-implementation`) |
 | **App/project registration**  | If your platform requires app registration, it must exist before `/sdd.start`           | Register it per your org's onboarding docs (see `sdd/PROJECT.md`)                     |
 
 > Docker base images, mandatory internal services, and other org-specific policies are **not hardcoded** in this framework — declare them once in `sdd/PROJECT.md` and agents will enforce what's declared there.

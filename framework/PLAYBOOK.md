@@ -24,7 +24,7 @@ O pack **não** commita sozinho. Pastas `development-agents/`, `.cursor/`, `.cla
 /sdd.install
 ```
 
-O agente `development-agents-installer` cria as pastas do pack usando as próprias ferramentas do harness (sem script, sem `.sh`/`.ps1`). Funciona em qualquer harness compatível com agentes/skills Markdown, não só Claude Code.
+O agente `sdd-installer` cria as pastas do pack usando as próprias ferramentas do harness (sem script, sem `.sh`/`.ps1`). Funciona em qualquer harness compatível com agentes/skills Markdown, não só Claude Code.
 
 Verificar: pastas `development-agents/`, `.cursor/` ou `.claude/`, `sdd/wip`, `sdd/features`.
 
@@ -126,7 +126,7 @@ Gera `tasks.json`. Aprovar antes de testes.
 - Implementa até testes aprovados passarem (green)
 - **Não** cria testes unitários novos (salvo E2E deferido)
 - **Não** altera testes aprovados — se errado, escalar `/sdd.test --refine`
-- Validação via `sdd-validator-runner` (qualidade + Process Compliance)
+- Validação via `sdd-validator` (qualidade + Process Compliance)
 
 Commits: skill `commit-workflow` (4 opções; sempre **Outros** disponível).
 
@@ -214,4 +214,4 @@ Atalho express (features simples): `/sdd.go "descrição"` — inclui test gate 
 | ----------------------------- | ----------------------------------------------------------------- |
 | Profiles de stack             | **Não usar** — evita confusão; stack via detection + `PROJECT.md` |
 | PR automático sem revisão     | **Não** — `/sdd.pr` sempre pausa para aprovação                   |
-| Hard gates OS (bash/jq/hooks) | **Não** — Process Compliance via `sdd-validator-runner`           |
+| Hard gates OS (bash/jq/hooks) | **Não** — Process Compliance via `sdd-validator`           |

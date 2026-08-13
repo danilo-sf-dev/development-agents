@@ -25,7 +25,7 @@ foi copiado para o projeto, mas a instalacao para de ser automatica a partir daq
    reutilizaveis — leia o arquivo quando o fluxo indicar "invoque a skill X".
 4. Delegacao isolada (validacao, revisao): abra uma nova sessao/conversa contendo so os
    arquivos relevantes (sem o raciocinio de quem implementou), rode o procedimento descrito
-   em agents/sdd-validator-runner.md manualmente, e traga o veredito de volta.
+   em skills/sdd-validator/SKILL.md manualmente, e traga o veredito de volta.
 5. Perguntas ao usuario: os gates do pipeline (aprovar spec, aprovar plano, aprovar testes,
    etc.) sao pontos onde o agente deve parar e perguntar em texto simples, sempre com uma
    opcao livre alem das sugeridas.

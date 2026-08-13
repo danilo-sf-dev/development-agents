@@ -16,7 +16,7 @@ Document that captures an important architectural decision along with its contex
 
 ### Agent
 
-AI-powered assistant that performs specific tasks within the framework. Examples: sdd-system-designer, sdd-implementer.
+AI-powered assistant that performs specific tasks within the framework. Examples: sdd-system-design, sdd-implementation.
 
 ### dependency security scanner
 
@@ -136,7 +136,7 @@ The layer (`adapters/<name>/`) that translates the harness-agnostic core's conce
 
 ### Harness-agnostic core
 
-The property that the pack's workflow, gates, rules, and agent responsibilities (`agents/`, `skills/`, `commands/`, `framework/`) do not depend on which harness runs them — they're expressed via the capability vocabulary in `framework/_shared/harness-capabilities.md` rather than a specific harness's literal syntax. Distinct from **Stack-agnostic** (see entry under S) — a pack can be one without the other.
+The property that the pack's workflow, gates, rules, and agent responsibilities (`skills/`, `commands/`, `framework/`) do not depend on which harness runs them — they're expressed via the capability vocabulary in `framework/_shared/harness-capabilities.md` rather than a specific harness's literal syntax. Distinct from **Stack-agnostic** (see entry under S) — a pack can be one without the other.
 
 ### Hook
 
@@ -305,7 +305,7 @@ Sequence of phases and commands in SDD development.
 
 This framework does not hardcode a catalog of internal platform services — every org has
 different ones. Document your org's actual services (message queue, cache, key-value store,
-object storage, etc.) in `sdd/PROJECT.md`, and the `sdd-system-designer` skill will use that
+object storage, etc.) in `sdd/PROJECT.md`, and the `sdd-system-design` skill will use that
 list when recommending services during `/sdd.spec technical`.
 
 ---

@@ -43,7 +43,7 @@ graph LR
 | ---- | ------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | 1    | `/sdd.spec`   | Functional + technical spec                                | Soft (`meta.md`) + process check when relevant                                               |
 | 2    | `/sdd.plan`   | Task breakdown & implementation strategy                   | Soft (`tasks.json`) + process check when relevant                                            |
-| 2.5  | `/sdd.test`   | Failing tests (red phase) — approved BEFORE implementation | Soft approval + **Process Compliance** via `sdd-validator-runner` during build (no OS hooks) |
+| 2.5  | `/sdd.test`   | Failing tests (red phase) — approved BEFORE implementation | Soft approval + **Process Compliance** via `sdd-validator` during build (no OS hooks) |
 | 3    | `/sdd.finish` | Final validation & archive                                 | Soft + validator                                                                             |
 
 > Process gates (LLM, portable): [`framework/HARD_GATES.md`](./HARD_GATES.md)
@@ -65,11 +65,11 @@ See `commands/sdd.start.md` and `commands/references/reopen-workflow.md` for the
 ## Roles
 
 | Role                              | Where                                                                                   |
-| --------------------------------- | --------------------------------------------------------------------------------------- |
-| Spec Writer                       | `/sdd.spec` (+ agent `sdd-explorer`)                                                    |
-| Architect                         | agent `sdd-system-designer` + `/sdd.plan`                                               |
-| Developer                         | agent `sdd-implementer`                                                                 |
-| Test Writer                       | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E optional)    |
-| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (quality + Process Compliance) |
-| Orchestrator                      | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert`                               |
-| Installer                         | command `/sdd.install` + agent `development-agents-installer`                           |
+| --------------------------------- | ----------------------------------------------------------------------------------------- |
+| Spec Writer                       | `/sdd.spec` (+ Skill `sdd-explorer`, `OFFLOAD_READ`)                                    |
+| Architect                         | Skill `sdd-system-design` (`OFFLOAD_REASONING`) + `/sdd.plan`                          |
+| Developer                         | Skill `sdd-implementation` (`ISOLATED_WORKSPACE`)                                       |
+| Test Writer                       | `/sdd.test` + Skill `sdd-test-writing` (`ISOLATED_WORKSPACE`; absorbs E2E as a lazy-loaded branch) |
+| Code Reviewer / Process Validator | Skill `sdd-code-reviewer` + Skill `sdd-validator` (quality + Process Compliance; isolated mode requires `VALIDATOR_ISOLATED`) |
+| Orchestrator                      | commands `/sdd.go`, `/sdd.start` + Skill `sdd-kit-expert`                               |
+| Installer                         | command `/sdd.install` + Skill `sdd-installer` (bootstrap, runs inline)                 |

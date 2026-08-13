@@ -23,7 +23,7 @@
 │      └── NO ──► Q2: Is this about SPEC/CODE INCONSISTENCY?                  │
 │                     (e.g., code does X but spec says Y)                      │
 │                     │                                                        │
-│                     ├── YES ──► Use sdd-layer-analyzer                      │
+│                     ├── YES ──► Use sdd-layer-analysis                      │
 │                     │           Purpose: Detect drift, align layers          │
 │                     │                                                        │
 │                     └── NO ──► Q3: Is this a DEEP TECHNICAL BUG?            │
@@ -45,9 +45,9 @@
 | **sdd-debugger**       | Memory leaks               | "OOM after running for 2 hours"          |
 | **sdd-debugger**       | Performance regressions    | "API now takes 10s instead of 100ms"     |
 | **sdd-debugger**       | Subtle logic errors        | "Wrong result only for edge case X"      |
-| **sdd-layer-analyzer** | Spec/code mismatch         | "Code returns 400 but spec says 422"     |
-| **sdd-layer-analyzer** | Undocumented features      | "This API parameter isn't in specs"      |
-| **sdd-layer-analyzer** | Missing tasks              | "This code exists but no task covers it" |
+| **sdd-layer-analysis** | Spec/code mismatch         | "Code returns 400 but spec says 422"     |
+| **sdd-layer-analysis** | Undocumented features      | "This API parameter isn't in specs"      |
+| **sdd-layer-analysis** | Missing tasks              | "This code exists but no task covers it" |
 
 ### Invocation
 
@@ -57,7 +57,7 @@ requirement here, unlike the Validator Independence Protocol; see
 
 ```
 Task(subagent_type="sdd-debugger", prompt="Analyze: [error details]")
-Task(subagent_type="sdd-layer-analyzer", prompt="Check: [feature name]")
+Task(subagent_type="sdd-layer-analysis", prompt="Check: [feature name]")
 ```
 
 ---

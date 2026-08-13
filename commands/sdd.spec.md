@@ -26,7 +26,7 @@ argument-hint: "[functional|technical] [--approve]"
 | Need                      | Use                                                                      |
 | ------------------------- | ------------------------------------------------------------------------ |
 | Gaps after description    | Inline gap detection: scan for async/persist/calc/API/concurrent signals |
-| Architecture / services   | `sdd-system-designer` then `sdd-implementer`                             |
+| Architecture / services   | `sdd-system-design` then `sdd-implementation`                             |
 | Service discovery         | `sdd-explorer`                                                           |
 | Conflicts after technical | `validate-spec-conflicts.sh`, agent resolves conflicts found             |
 
@@ -149,13 +149,13 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 #### Backend/Web Technical Spec (platform = backend | web | "")
 
 > **BLOCKING — Architect-First**: before ANY DD / service / dependency / diagram, invoke
-> `Task(sdd-system-designer)` with functional summary + capabilities. Do not invent services from pre-training.
+> `Task(sdd-system-design)` with functional summary + capabilities. Do not invent services from pre-training.
 > Single recommendation → use it. 2–3 options → Architecture Options ref below.
-> Then for each selected service: `Task(sdd-implementer)` for live SDK details.
+> Then for each selected service: `Task(sdd-implementation)` for live SDK details.
 
 #### Architecture Options (lazy-loaded)
 
-> **ONLY IF** `sdd-system-designer` returns 2–3 viable approaches AND profile is `technical` AND Standard mode:
+> **ONLY IF** `sdd-system-design` returns 2–3 viable approaches AND profile is `technical` AND Standard mode:
 > Read `references/spec-architecture-options.md`.
 > Otherwise auto-select the recommended approach and continue.
 
@@ -192,7 +192,7 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 
 ### Step 6: Technical Approval Gate
 
-> **BLOCKING**: (1) Architect self-check (`sdd-system-designer` before DD/Services; `sdd-implementer` per service).
+> **BLOCKING**: (1) Architect self-check (`sdd-system-design` before DD/Services; `sdd-implementation` per service).
 > (2) `validate-technical.sh` then `validate-security.sh` (security always mandatory).
 > (3) Short summary + ASCII diagram (shapes: `references/spec-architecture-diagram.md`).
 > (4) AskUserQuestion Approve / View full / Request changes.

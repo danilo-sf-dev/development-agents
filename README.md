@@ -24,7 +24,6 @@ development-agents/          ← raiz do git (clone = pack pronto)
 ├── MANIFEST.md
 ├── FLUXOS-FEATURE-E-FIX.md  ← guia: fluxo Feature vs fluxo Fix (bug)
 ├── SUGESTAO-MODELOS.md      ← dica de modelo forte/barato (+ planilha Claude Code)
-├── agents/
 ├── skills/
 ├── commands/
 └── framework/
@@ -32,7 +31,7 @@ development-agents/          ← raiz do git (clone = pack pronto)
 
 ## Instalar em um projeto alvo
 
-Instalação é feita pelo agente `development-agents-installer` (via `/sdd.install`) — sem script, sem depender de permissão pra rodar `.sh`/`.ps1`, e funciona igual em qualquer harness de IA que suporte agentes/skills em Markdown (não é exclusivo do Claude Code).
+Instalação é feita pela Skill `sdd-installer` (via `/sdd.install`) — sem script, sem depender de permissão pra rodar `.sh`/`.ps1`, e funciona igual em qualquer harness de IA que suporte Skills em Markdown (não é exclusivo do Claude Code).
 
 1. Clone ou copie este repo para o projeto (ou rode `/sdd.install` a partir do clone).
 2. Abra o projeto alvo no Cursor, Claude Code, ou outro harness compatível.
@@ -44,7 +43,7 @@ Instalação é feita pelo agente `development-agents-installer` (via `/sdd.inst
 /sdd.install --target E:\Projects\meu-app
 ```
 
-O agente `development-agents-installer` cria as pastas do pack (`development-agents/`, adapters, `sdd/`) usando as próprias ferramentas de leitura/escrita do harness — nunca executa scripts de shell.
+A Skill `sdd-installer` cria as pastas do pack (`development-agents/`, adapters, `sdd/`) usando as próprias ferramentas de leitura/escrita do harness — nunca executa scripts de shell.
 
 **Primeira vez (bootstrap):** se ainda não tem `.cursor/` nem `.claude/`, use no chat:
 

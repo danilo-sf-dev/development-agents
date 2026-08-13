@@ -15,7 +15,7 @@
 | Start of **any** `/sdd.*` command                                                                        | Scan the **decision tree** below (mandatory)          |
 | Before **Shell** that deletes, migrates, deploys, or changes git remotes                                 | Read full **⚠️ Ask First** and **🚫 Never Do** tables |
 | Before **commit/push**                                                                                   | Read **Git & commits** + **Secrets**                  |
-| Delegating to **sdd-implementer**, **sdd-explorer**, **development-agents-installer**, **sdd-mcp-setup** | Include relevant section in the prompt                |
+| Delegating to **sdd-implementation**, **sdd-explorer**, **sdd-installer**, **sdd-mcp-setup** | Include relevant section in the prompt                |
 | **Express mode**                                                                                         | Same rules — ⚠️ and 🚫 are **never** auto-waived      |
 
 ---
@@ -125,7 +125,7 @@ Quick index — full rules are in the tables above.
 
 - ⚠️ `gh pr create` only after human approves PR draft in this command
 
-### `development-agents-installer`
+### `sdd-installer`
 
 - 🚫 B-02, B-15, B-14; never commit/push unless user explicitly asks
 - ✅ B-16 permits writing `AGENTS.md`/`CLAUDE.md` root section via idempotent merge only — see `commands/references/project-instructions-sync.md`

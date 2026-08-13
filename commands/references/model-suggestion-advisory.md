@@ -17,10 +17,10 @@
 |------|-------------------|--------|
 | **BARATO** | `haiku` | `/sdd.start`, `/sdd.build`, `/sdd.check`, `/sdd.pr`, `/sdd.mcp` |
 | **FORTE** | `sonnet` | `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.finish`, `/sdd.reverse-eng` |
-| **EXTREMO** | `opus` | **Only** `/sdd.fix` + agent `sdd-debugger` |
+| **EXTREMO** | `opus` | **Only** `/sdd.fix` + Skill `sdd-debugger` |
 | **Express** | `inherit` on `/sdd.go` | Prefer Standard if you want every phase pause; when go delegates a skill, that skill’s own `model:` applies |
 
-Executor / discovery subagents (`sdd-implementer`, `sdd-small-test-writer`, `sdd-explorer`, `sdd-system-designer`) use `model: inherit` so they follow the parent command’s pinned model.
+Executor / discovery subagents (`sdd-implementation`, `sdd-test-writing`, `sdd-explorer`, `sdd-system-design`) use `model: inherit` so they follow the parent command’s pinned model.
 
 ---
 

@@ -92,7 +92,7 @@ AskUserQuestion(
 ## Subagent Delegation (MANDATORY)
 
 > **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
-> This command MUST delegate exploration work to the `sdd-explorer` subagent.
+> This command MUST delegate exploration work to the `sdd-explorer` Skill.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -236,7 +236,7 @@ sdd/
 | **ADR/RFC**         | `docs/adr/`, `docs/rfc/`                                                                            | 🟡 Medium  |
 | **Plain Docs**      | `ARCHITECTURE.md`, `DESIGN.md`                                                                      | 🟡 Medium  |
 
-> **Reference**: See `sdd-explorer` agent for complete detection commands.
+> **Reference**: See `sdd-explorer` Skill for complete detection commands.
 
 **Optimization Strategies** (based on detected frameworks):
 
@@ -393,7 +393,7 @@ Telemetry is captured **automatically by hooks** during reverse-engineering. No 
 
 ## References
 
-- **Detection commands**: `sdd-explorer` agent
+- **Detection commands**: `sdd-explorer` Skill
 - **Spec templates**: `templates/reverse-eng/`
 - **Anti-Invention Protocol**: Never invent APIs, endpoints, or config
 - **Consistency validation**: `standards/spec-consistency.md`

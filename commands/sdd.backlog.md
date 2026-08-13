@@ -86,15 +86,15 @@ Canonical file: `sdd/backlog.md` (TODO / DEBT / IDEA / Resolved sections).
 
 > Read `references/backlog-file-format.md` when creating or rewriting the file.
 
-## Delegating to `sdd-backlog-manager` (optional, context-saving)
+## Delegating to `sdd-backlog` (optional, context-saving)
 
 The steps above (list/add/pick/resolve via lazy-loaded `references/backlog-*.md`)
 remain the default path for normal-sized backlogs — nothing here replaces that.
 For a **large** `sdd/backlog.md` (roughly 50+ items, or the file itself is a
 large read) or when context usage is already elevated, prefer offloading the
-CRUD operation to the `sdd-backlog-manager` agent instead of doing it inline:
+CRUD operation to the `sdd-backlog` Skill instead of doing it inline:
 it owns the same schema (see `commands/references/backlog-file-format.md`,
-also the schema `sdd-backlog-manager` itself documents) and is cheaper to run
+also the schema `sdd-backlog` itself documents) and is cheaper to run
 than reading/rewriting a big file directly in this session.
 
 - **When to delegate**: use the same trigger logic as `context-guardian`'s
@@ -108,7 +108,7 @@ than reading/rewriting a big file directly in this session.
   token-budget one, so on a harness without real subagent delegation the
   honest fallback is simply to run the operation inline (same result as not
   delegating at all).
-- **On Claude Code**: `Task(subagent_type="sdd-backlog-manager", prompt="<action + item details>")`.
+- **On Claude Code**: `Task(subagent_type="sdd-backlog", prompt="<action + item details>")`.
 - **On harnesses without a delegate primitive** (Cursor, Codex CLI degraded
   cases, Generic): fall back to inline handling per the "Full (via inline
   fallback)" row for `DELEGATE_OFFLOAD` in `harness-capabilities.md` — do not
@@ -120,7 +120,7 @@ than reading/rewriting a big file directly in this session.
 2. Never invent IDs; append with next sequential TODO/DEBT/IDEA number.
 3. `pick` creates a feature (start flow); does not implement code.
 4. During build, offer capture only when criteria in `backlog-auto-capture.md` match.
-5. For large backlogs or elevated context, prefer delegating to `sdd-backlog-manager` (see "Delegating to `sdd-backlog-manager`" above) instead of handling the operation inline.
+5. For large backlogs or elevated context, prefer delegating to `sdd-backlog` (see "Delegating to `sdd-backlog`" above) instead of handling the operation inline.
 
 ## Related Commands
 

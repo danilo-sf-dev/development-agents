@@ -4,7 +4,7 @@
 
 ### Step 4: Per-Task Implementation
 
-> **Tests-first**: Tests were written and approved in `/sdd.test`. **Do NOT spawn `sdd-small-test-writer` for new unit/integration tests** — only run existing tests and implement production code until they pass (green).
+> **Tests-first**: Tests were written and approved in `/sdd.test`. **Do NOT spawn `sdd-test-writing` for new unit/integration tests** — only run existing tests and implement production code until they pass (green).
 > ⚠️ **Never edit the approved test files themselves to force a pass** — see "Approved Tests Are Immutable" above. Fix the code, not the contract.
 
 > **Platform routing**: Read `platform.type` in `PROJECT.md` before dispatching.
@@ -15,10 +15,10 @@ For each task, delegate to subagents based on platform:
 
 | Task Type                            | Subagent                                      | Notes                                                            |
 | ------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------- |
-| Production code                      | `sdd-implementer`                             | Follow detected stack + technical spec; make approved tests pass |
+| Production code                      | `sdd-implementation`                             | Follow detected stack + technical spec; make approved tests pass |
 | Run tests (verify)                   | `sdd-validator` skill or project test command | Re-run after each task — no new test files                       |
-| E2E tests (if not done in /sdd.test) | `sdd-large-test-writer`                       | Only if E2E was deferred and `testing.e2e.enabled`               |
-| Validation                           | `sdd-validator-runner`                        | Independent context                                              |
+| E2E tests (if not done in /sdd.test) | `sdd-test-writing`                       | Only if E2E was deferred and `testing.e2e.enabled`               |
+| Validation                           | `sdd-validator`                        | Independent context                                              |
 
 **Optional mobile / design-system preamble** — when `platform.type` is android/ios:
 
@@ -37,7 +37,7 @@ see `framework/_shared/harness-capabilities.md`):
         decision_context += dd_section + "\n"
 
     Task(
-        subagent_type="sdd-implementer",
+        subagent_type="sdd-implementation",
         prompt=f"""
 ## Task
 {task_context}

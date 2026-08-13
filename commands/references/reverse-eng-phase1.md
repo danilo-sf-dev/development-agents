@@ -41,7 +41,7 @@ APP_NAME=$(grep "^application_name:" .platform-config | sed 's/application_name:
 4.  Services Extraction - SDK usage, integrations
 5. **Actor Discovery** - System consumers and integrations
 
-> **Reference**: See `sdd-explorer` agent for stack-specific extraction commands.
+> **Reference**: See `sdd-explorer` Skill for stack-specific extraction commands.
 
 ---
 

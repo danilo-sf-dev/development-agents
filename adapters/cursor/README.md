@@ -1,12 +1,13 @@
 # Adapter: Cursor
 
-**Declared support level: Supported (adapter, with documented capability gaps).** `INVOKE_PROCEDURE` and `WRITE_PROJECT_INSTRUCTIONS` are Full (Cursor's native `SKILL.md` format and rules files match the pack directly). `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD` and `ASK_USER` degrade — see `framework/_shared/harness-capabilities.md` for exact translations. Never claim parity with Claude Code for those two.
+**Declared support level: Supported (adapter, with documented capability gaps).** `INVOKE_PROCEDURE` and `WRITE_PROJECT_INSTRUCTIONS` are Full (Cursor's native `SKILL.md` format and rules files match the pack directly). `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD`/`VALIDATOR_ISOLATED`/`OFFLOAD_READ`/`OFFLOAD_REASONING`/`INTERACTIVE_OFFLOAD` and `ASK_USER` degrade — see `framework/_shared/harness-capabilities.md` for exact translations. Never claim parity with Claude Code for those.
+
+**No `agents/` folder exists in this pack anymore** — all 12 former agent roles are Skills under `skills/`, installed the same way as any other Skill (row below).
 
 ## What this adapter installs
 
 | Destination                                     | Source                                                                                                             |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `.cursor/agents/`                               | `development-agents/agents/*.md` (verbatim copy)                                                                   |
 | `.cursor/skills/<name>/`                        | `development-agents/skills/<name>/` (verbatim copy — same `SKILL.md` format as Claude Code, no translation needed) |
 | `.cursor/rules/sdd-workflow.mdc`                | Fixed content, see below                                                                                           |
 | _(no `.cursor/commands/` populated by default)_ | See gap note below                                                                                                 |
@@ -41,7 +42,6 @@ usuario disser "/sdd.spec" ou equivalente.
 - Pack: development-agents/AGENTS.md
 - Commands (leia diretamente, nao ha pasta .cursor/commands/): development-agents/commands/
 - Skills: .cursor/skills/
-- Agents: .cursor/agents/
 - Framework: development-agents/framework/
 - Traducao de capacidades (Task/AskUserQuestion -> equivalente Cursor): development-agents/framework/_shared/harness-capabilities.md
 
@@ -59,5 +59,5 @@ usuario disser "/sdd.spec" ou equivalente.
 ## Known gaps (do not silently degrade past these — tell the user)
 
 - **No commands/ folder.** Cursor's slash-command mechanism is not repo-shareable the way `.claude/commands/` is. The rule file above tells the agent to read `development-agents/commands/*.md` directly instead of relying on a `/sdd.*` slash-command registration.
-- **`DELEGATE_ISOLATED` is degraded**, not equivalent. Cursor has no synchronous "spawn isolated subagent, get structured result back into this session" primitive — only asynchronous Background/Cloud Agents that run out-of-session. The Validator Independence Protocol (`sdd-validator-runner`) must run as a fresh conversation with a scrubbed prompt when using this adapter; the isolation guarantee is weaker than Claude Code's and must be flagged to the user when it matters (e.g. a `CANNOT_PROCEED` gate).
+- **`DELEGATE_ISOLATED` is degraded**, not equivalent. Cursor has no synchronous "spawn isolated subagent, get structured result back into this session" primitive — only asynchronous Background/Cloud Agents that run out-of-session. The Validator Independence Protocol (`sdd-validator`) must run as a fresh conversation with a scrubbed prompt when using this adapter; the isolation guarantee is weaker than Claude Code's and must be flagged to the user when it matters (e.g. a `CANNOT_PROCEED` gate).
 - **`ASK_USER` is degraded** to plain conversational text with listed options (always including a free-text "Outros"/"Other" choice) — Cursor's structured clarifying-questions UI is scoped to Plan Mode only, not a general-purpose tool this adapter can call at arbitrary gate points.

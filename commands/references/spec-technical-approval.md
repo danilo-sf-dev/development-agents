@@ -8,8 +8,8 @@
 
 **Step 6a.0: Architect-First Self-Check (BLOCKING backend/web)**
 
-> Before summary: confirm you invoked `sdd-system-designer` **before** writing DD/Services/Dependencies,
-> and `sdd-implementer` per selected service. If not → STOP, invoke, regenerate, then continue. No retroactive ratification.
+> Before summary: confirm you invoked `sdd-system-design` **before** writing DD/Services/Dependencies,
+> and `sdd-implementation` per selected service. If not → STOP, invoke, regenerate, then continue. No retroactive ratification.
 
 **Step 6a: Validate technical spec**
 

@@ -1,6 +1,6 @@
 # Reference: Project Instructions Sync (`WRITE_PROJECT_INSTRUCTIONS`)
 
-**Used by**: `/sdd.start` Step 9.5, `/sdd.project` after a language change, and the installer agent (`agents/development-agents-installer.md`) Passos 3/4b. Implements the `WRITE_PROJECT_INSTRUCTIONS` capability from `framework/_shared/harness-capabilities.md` — read that file first if you haven't already.
+**Used by**: `/sdd.start` Step 9.5, `/sdd.project` after a language change, and the installer agent (`skills/sdd-installer/SKILL.md`) Passos 3/4b. Implements the `WRITE_PROJECT_INSTRUCTIONS` capability from `framework/_shared/harness-capabilities.md` — read that file first if you haven't already.
 
 Replaces the old harness-specific `start-claude-md.md` (Claude Code only) and `project-claude-sync.md` (Claude Code only) references, which duplicated ~90% of this logic and had no Codex/Cursor equivalent. One procedure now, parameterized by which file each adapter owns.
 
@@ -69,4 +69,4 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 
 - `/sdd.start` Step 9.5, first time a project is bootstrapped.
 - `/sdd.project` after any write to `PROJECT.md` that includes `language.specs` (wizard, prompt inference, or `--edit`).
-- `agents/development-agents-installer.md` Passo 3 (Claude Code adapter) / Passo 4b (Codex adapter), on install or reinstall.
+- `skills/sdd-installer/SKILL.md` Passo 3 (Claude Code adapter) / Passo 4b (Codex adapter), on install or reinstall.

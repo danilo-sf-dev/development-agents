@@ -47,7 +47,7 @@ This is a TOOL CALL you must execute, not content to display.
 /sdd.mcp --disable
 ```
 
-**See also**: `framework/MCP_SETUP_GUIDE.md` · agent `sdd-mcp-setup` · `/sdd.spec --include`
+**See also**: `framework/MCP_SETUP_GUIDE.md` · Skill `sdd-mcp-setup` · `/sdd.spec --include`
 
 ---
 
@@ -57,8 +57,8 @@ This is a TOOL CALL you must execute, not content to display.
 
 Siga **integralmente** as instruções em (primeiro caminho que existir):
 
-- `agents/sdd-mcp-setup.md` (hub / pack na raiz)
-- `development-agents/agents/sdd-mcp-setup.md` (pack em subpasta no projeto)
+- `skills/sdd-mcp-setup/SKILL.md` (hub / pack na raiz)
+- `development-agents/skills/sdd-mcp-setup/SKILL.md` (pack em subpasta no projeto)
 
 Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolated subagent when the host supports Task/subagents (`sdd-mcp-setup`); otherwise run the agent instructions in this session. This is `DELEGATE_OFFLOAD` (context-saving only, no isolation-integrity requirement — see `framework/_shared/harness-capabilities.md`), so the inline fallback is a complete substitute, not a degraded one.
 

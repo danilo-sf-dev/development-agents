@@ -11,9 +11,9 @@ LAYER 1 (Local) - Parallel Execution
 ├─ Skill(skill="sdd-code-reviewer") → Build mode (load security rules + SDKs) [MANDATORY]
 ├─ Analyze task dependencies → identify independent tasks
 ├─ For each independent task group:
-│   ├─ IF platform == "android" → Spawn sdd-implementer (isolation: "worktree")
-│   ├─ IF platform == "ios"     → Spawn sdd-implementer     (isolation: "worktree")
-│   ├─ ELSE                     → Spawn sdd-implementer          (isolation: "worktree")
+│   ├─ IF platform == "android" → Spawn sdd-implementation (isolation: "worktree")
+│   ├─ IF platform == "ios"     → Spawn sdd-implementation     (isolation: "worktree")
+│   ├─ ELSE                     → Spawn sdd-implementation          (isolation: "worktree")
 │   └─ Each instance works on its own worktree
 ├─ After all complete:
 │   ├─ Merge worktree changes to main branch
@@ -83,9 +83,9 @@ When Layer 1 has multiple independent tasks, use worktree-isolated agents for pa
 
 1. **Dependency analysis**: Identify tasks with no inter-dependencies (no shared files, no data flow between them)
 2. **Parallel dispatch**: Spawn the platform-correct implementer (with `isolation: "worktree"`) for each independent task or task group:
-   - `platform == "android"` → `sdd-implementer` — optional mobile docs/skills from PROJECT.md
-   - `platform == "ios"` → `sdd-implementer` — optional mobile docs/skills from PROJECT.md
-   - backend/web → `sdd-implementer`
+   - `platform == "android"` → `sdd-implementation` — optional mobile docs/skills from PROJECT.md
+   - `platform == "ios"` → `sdd-implementation` — optional mobile docs/skills from PROJECT.md
+   - backend/web → `sdd-implementation`
 3. **Merge**: After all instances complete, merge worktree changes back to the main branch and resolve conflicts
 4. **Validate**: Run build + local tests on the merged result
 

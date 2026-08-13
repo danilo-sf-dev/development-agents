@@ -174,7 +174,7 @@ Use the template at `references/semantic-prompt.md`. Key invariants:
 ### Cost & parallelism
 
 - Default: ~3-5 files × 1 sonnet call each. Total ≤ 30s.
-- For large projects (many `.claude/commands/`), if combined comparator + user files exceeds ~30k tokens, delegate semantic analysis to the `general-purpose` subagent so its context stays isolated. Pattern is the same as `/sdd.check --sync` delegating to `sdd-layer-analyzer`.
+- For large projects (many `.claude/commands/`), if combined comparator + user files exceeds ~30k tokens, delegate semantic analysis to the `general-purpose` subagent so its context stays isolated. Pattern is the same as `/sdd.check --sync` delegating to `sdd-layer-analysis`.
 
 ---
 

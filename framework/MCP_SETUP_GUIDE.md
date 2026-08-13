@@ -112,7 +112,7 @@ E2E frameworks, dependency scanners, service catalogs, etc. are **not** shipped 
 
 ## Related
 
-- Agent: `agents/sdd-mcp-setup.md`
+- Skill: `skills/sdd-mcp-setup/SKILL.md`
 - Command: `commands/sdd.mcp.md`
 - Spec consumption: `commands/references/spec-include-context.md`
 - Start Step 6.5: `commands/references/start-local-mcps.md` (delegates to `/sdd.mcp`)

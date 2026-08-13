@@ -13,7 +13,7 @@ AskUserQuestion(questions=[{...}])
 
 This is a **tool call** you must execute, not content to display.
 
-> **Capability note (applies to every `AskUserQuestion(...)` block in `commands/`, `agents/`,
+> **Capability note (applies to every `AskUserQuestion(...)` block in `commands/`,
 > `skills/`, and `framework/`, whether or not the specific block repeats this pointer)**: this is
 > the conceptual `ASK_USER` capability — structured multi-choice + mandatory free-text "Outros" —
 > not a Claude-Code-only primitive. `AskUserQuestion(...)` is the correct, literal Claude Code

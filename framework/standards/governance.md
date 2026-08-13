@@ -141,7 +141,7 @@ This document establishes the governance principles, development standards, and 
 **Principle**: prefer your org's internal/approved platform services over building from scratch.
 
 **What this means**:
-- Check `sdd/PROJECT.md` for internal services/plugins before designing a new solution — invoke the project's designated architecture skill (e.g. `sdd-system-designer`) to discover them
+- Check `sdd/PROJECT.md` for internal services/plugins before designing a new solution — invoke the project's designated architecture skill (e.g. `sdd-system-design`) to discover them
 - Use existing project services (IAM, messaging, data store, etc.) for standard needs when available
 - Document all project services used in technical specs
 - Follow your org's coding/review standards (validated via code review tooling, if configured)

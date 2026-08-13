@@ -1,6 +1,6 @@
 # Reference: tests-manifest case contract
 
-**Used by**: `/sdd.test`, `sdd-small-test-writer`, `sdd-validator-runner` (Process Compliance), `--refine`.
+**Used by**: `/sdd.test`, `sdd-test-writing`, `sdd-validator` (Process Compliance), `--refine`.
 
 ## Why
 

@@ -4,34 +4,26 @@ Pack canônico de SDD language-/platform-agnostic.
 Objetivo: hub limpo para editar o time; stack e paths vêm do **projeto alvo**.
 
 ## Incluído
+### skills/ (16) — comportamento + procedimento (não há mais pasta `agents/`; ver `framework/_shared/harness-capabilities.md` para as execution requirements de cada uma)
 
-### agents/ (12)
-
-| Agent                          | Papel no time                                                  |
-| ------------------------------ | -------------------------------------------------------------- |
-| `development-agents-installer` | Instala pack em projetos (alternativa ao script)               |
-| `sdd-system-designer`          | Arquiteto (spec técnica)                                       |
-| `sdd-explorer`                 | Descoberta read-only (brownfield)                              |
-| `sdd-implementer`              | Developer                                                      |
-| `sdd-small-test-writer`        | Test Writer (unit/integration)                                 |
-| `sdd-large-test-writer`        | Test Writer (E2E opcional)                                     |
-| `sdd-validator-runner`         | Gate automático pós-código                                     |
-| `sdd-layer-analyzer`           | Consistência spec ↔ code                                       |
-| `sdd-debugger`                 | RCA / bugs profundos                                           |
-| `sdd-backlog-manager`          | Ops de backlog (`sdd/backlog.md`)                              |
-| `sdd-project-wizard`           | Setup `sdd/PROJECT.md`                                         |
-| `sdd-mcp-setup`                | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`) |
-
-### skills/ (6) — núcleo de processo
-
-| Skill                    | Função                                    |
-| ------------------------ | ----------------------------------------- |
-| `sdd-kit-expert`         | Manual do workflow                        |
-| `sdd-code-reviewer`      | Code review bloqueante                    |
-| `sdd-validator`          | Build/compliance (genérico)               |
-| `sdd-performance-expert` | Review de performance                     |
-| `context-guardian`       | Controle de contexto/tokens               |
-| `commit-workflow`        | Formatação, validação e commit agnósticos |
+| Skill                    | Papel no time                                                  | Execution requirement (se pesada) |
+| ------------------------ | -------------------------------------------------------------- | --- |
+| `sdd-installer`          | Instala pack em projetos (bootstrap, roda inline)               | — |
+| `sdd-system-design`      | Arquiteto (spec técnica)                                        | `OFFLOAD_REASONING` |
+| `sdd-explorer`           | Descoberta read-only (brownfield)                                | `OFFLOAD_READ` |
+| `sdd-implementation`     | Developer                                                        | `ISOLATED_WORKSPACE` |
+| `sdd-test-writing`       | Test Writer (unit/integration + E2E como branch lazy-loaded)     | `ISOLATED_WORKSPACE` |
+| `sdd-validator`          | Gate automático pós-código; modo isolado = `VALIDATOR_ISOLATED`  | `VALIDATOR_ISOLATED` (isolado) |
+| `sdd-layer-analysis`     | Consistência spec ↔ code                                         | `OFFLOAD_READ` |
+| `sdd-debugger`           | RCA / bugs profundos                                             | `OFFLOAD_REASONING` |
+| `sdd-backlog`            | Ops de backlog (`sdd/backlog.md`)                                | `DELEGATE_OFFLOAD` (backlog grande) |
+| `sdd-project-wizard`     | Setup `sdd/PROJECT.md`                                           | `INTERACTIVE_OFFLOAD` |
+| `sdd-mcp-setup`          | Setup MCP agnóstico (Jira/Confluence read-only via `/sdd.mcp`)   | `INTERACTIVE_OFFLOAD` |
+| `sdd-kit-expert`         | Manual do workflow                                               | — |
+| `sdd-code-reviewer`      | Code review bloqueante                                           | — |
+| `sdd-performance-expert` | Review de performance                                            | — |
+| `context-guardian`       | Controle de contexto/tokens                                      | — |
+| `commit-workflow`        | Formatação, validação e commit agnósticos                        | — |
 
 ### commands/ (22) — orquestração `/sdd.*`
 
@@ -62,7 +54,7 @@ Templates, standards, tools e docs do SDD (necessário para os commands).
 
 Paths do pack:
 
-- **Hub (este repo):** raiz — `agents/`, `commands/`, `framework/`
+- **Hub (este repo):** raiz — `skills/`, `commands/`, `framework/`
 - **Projeto alvo:** `development-agents/` (criado pelo instalador)
 
 ---
@@ -100,7 +92,7 @@ Uma segunda varredura (além do Cleanup v1) encontrou **resíduo de find-and-rep
 | Labels/frases vazias (`****`, `in  X`, `for  Y`)                                                             | Texto genérico correto gramaticalmente                                                                                                                                                                                            |
 | Regra de Dockerfile hardcoded (`your-registry/base-image`)                                                   | Condicional a `sdd/PROJECT.md` (só valida se o projeto declarar um prefixo)                                                                                                                                                       |
 | Catálogo de serviços internos proprietário (`GLOSSARY.md`, `FAQ.md`)                                         | Removido — serviços vêm de `sdd/PROJECT.md`                                                                                                                                                                                       |
-| `Skill("project-services-architect")` / `project-snippets-expert` / `project-infra-operations` (não existem) | Delegação (`DELEGATE_OFFLOAD`) para `sdd-system-designer` / `sdd-implementer` (agentes reais — corrigido nesta rodada de "skills reais", que estava errado: nenhum dos dois é uma skill) ou lógica condicional a `sdd/PROJECT.md` |
+| `Skill("project-services-architect")` / `project-snippets-expert` / `project-infra-operations` (não existem) | Delegação (`DELEGATE_OFFLOAD`) para `sdd-system-design` / `sdd-implementation` (Skills reais, sob `skills/`) ou lógica condicional a `sdd/PROJECT.md` |
 | Auth `TIGER_TOKEN` + `mcp-remote-proxy` hardcoded (`CONFIGURATION.md`)                                       | Instrução genérica — configure o que seu MCP exigir                                                                                                                                                                               |
 | Diagrama de pipeline duplicado em 5+ docs                                                                    | `framework/PIPELINE.md` (fonte canônica) + demais docs linkam                                                                                                                                                                     |
 | `WORKFLOW.md` exemplo "Standard Feature" sem `/sdd.test`                                                     | Corrigido (bug real causado pela duplicação)                                                                                                                                                                                      |
@@ -131,7 +123,7 @@ O `commit-workflow` foi reescrito para o hub:
 
 ## Instalador
 
-- `/sdd.install` — agente (`development-agents-installer`), único caminho de instalação. Sem scripts `.sh`/`.ps1`: usa as ferramentas de leitura/escrita do próprio harness, funciona em qualquer harness compatível com agentes/skills Markdown (Claude Code, Cursor, etc.).
+- `/sdd.install` — agente (`sdd-installer`), único caminho de instalação. Sem scripts `.sh`/`.ps1`: usa as ferramentas de leitura/escrita do próprio harness, funciona em qualquer harness compatível com agentes/skills Markdown (Claude Code, Cursor, etc.).
 
 Repositório hub: https://github.com/danilo-sf-dev/development-agents
 

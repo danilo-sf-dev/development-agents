@@ -69,7 +69,7 @@ argument-hint: "[feature-name] [--sync]"
 result=$(bash development-agents/framework/tools/extraction/analyze-layers.sh sdd/wip/[feature] --json)
 ```
 
-Always delegate the full `--sync` analysis to the `sdd-layer-analyzer` subagent — the deterministic check above is advisory input, not a replacement.
+Always delegate the full `--sync` analysis to the `sdd-layer-analysis` Skill — the deterministic check above is advisory input, not a replacement.
 
 **Skill for --compliance**:
 

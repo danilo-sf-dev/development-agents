@@ -51,7 +51,7 @@
   - Context Guardian skill for monitoring usage
   - Context Compactor subagent for state compression
   - Lazy-loading standards (pre-execution-checks, mandatory-standards, core-principles)
-  - Validator runs in isolated context (sdd-validator-runner)
+  - Validator runs in isolated context (sdd-validator)
   - New subagents: sdd-project-wizard,
 - **v2.3.4** (2026-01-09): Smart Questioning Protocol enhancements
 - **v2.3.3** (2026-01-08): When to ask vs. infer guidelines
@@ -544,7 +544,7 @@ After exiting Plan Mode, **ALWAYS**:
 
 ### Detection
 
-`sdd-implementer` is an **agent** (`agents/sdd-implementer.md`), not a skill — delegate to it via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`; on Claude Code, `Task(subagent_type="sdd-implementer", ...)`). When reading a snippet file it returns, check for this marker at the top:
+`sdd-implementation` is a **Skill** (`skills/sdd-implementation/SKILL.md`) — invoke it via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`; on Claude Code, `Task(subagent_type="sdd-implementation", ...)`). When reading a snippet file it returns, check for this marker at the top:
 
 ```markdown
 > **🔒 EXPERT-VALIDATED** | Reviewed: YYYY-MM-DD | Author: reviewer_name | Commit: xxxxxxx
@@ -573,28 +573,28 @@ Validation markers themselves can be added/updated without confirmation (meta-op
 
 ### Validation Registry
 
-Expert-validated snippets are managed via the `sdd-implementer` agent. It is the source of truth — no local sync check is required.
+Expert-validated snippets are managed via the `sdd-implementation` Skill. It is the source of truth — no local sync check is required.
 
 ---
 
 ## 📚 Service Documentation Priority
 
-> **REGLA**: `sdd-implementer` (agente, no skill) es la única fuente de docs de SDKs de servicios del proyecto — delegar via `DELEGATE_OFFLOAD` (ver `framework/_shared/harness-capabilities.md`).
+> **REGLA**: `sdd-implementation` (Skill) es la única fuente de docs de SDKs de servicios del proyecto — delegar via `DELEGATE_OFFLOAD` (ver `framework/_shared/harness-capabilities.md`).
 
 ### Orden de Prioridad
 
 | Paso | Fuente                  | Cuándo                                                             |
 | ---- | ----------------------- | ------------------------------------------------------------------ |
-| 1️⃣   | `sdd-implementer` agent | **SIEMPRE primero** - cubre TODOS los servicios con docs oficiales |
+| 1️⃣   | `sdd-implementation` Skill | **SIEMPRE primero** - cubre TODOS los servicios con docs oficiales |
 | 2️⃣   | Return PARTIAL          | Si no cubre el servicio o el snippet es insuficiente               |
 
 ### Rationale
 
-- **sdd-implementer**: Tiene snippets para TODOS los servicios del proyecto, con documentación oficial actualizada.
+- **sdd-implementation**: Tiene snippets para TODOS los servicios del proyecto, con documentación oficial actualizada.
 
 ### Reglas
 
-1. **SIEMPRE** empezar delegando a `sdd-implementer` (`DELEGATE_OFFLOAD` — en Claude Code: `Task(subagent_type="sdd-implementer", ...)`)
+1. **SIEMPRE** empezar delegando a `sdd-implementation` (`DELEGATE_OFFLOAD` — en Claude Code: `Task(subagent_type="sdd-implementation", ...)`)
 2. **NUNCA** usar WebSearch para documentación de servicios internos
 3. Si el plugin no cubre → return PARTIAL y sugerir documentación oficial
 
@@ -616,7 +616,7 @@ Read `framework/_shared/harness-capabilities.md` to see exactly how `DELEGATE_IS
 
 ```python
 Task(
-    subagent_type="sdd-validator-runner",
+    subagent_type="sdd-validator",
     prompt="Validate files: [list]. Run: build, tests, security, performance.",
     model="sonnet"
 )
@@ -683,7 +683,7 @@ No compaction script ships with this pack. When context is `CRITICAL`, manually 
 
 ### How quality gates are enforced today
 
-- `agents/sdd-validator-runner.md` runs in an **isolated context** during/after `/sdd.build` and performs Security, Performance, Quality, and **Process Compliance** checks (see `HARD_GATES.md` → "What the validator checks").
+- `skills/sdd-validator/SKILL.md` runs in an **isolated context** during/after `/sdd.build` and performs Security, Performance, Quality, and **Process Compliance** checks (see `HARD_GATES.md` → "What the validator checks").
 - The orchestrating command (e.g. `/sdd.build`) **must** obey the validator's verdict without reinterpreting it. On `CANNOT_PROCEED`, it pauses with `AskUserQuestion` (always including **Outros**) rather than silently continuing.
 - Nothing is installed into IDE/editor settings and no PreToolUse/PostToolUse hook is registered by this pack — enforcement lives entirely in the agent instructions, so it works the same way regardless of harness or OS.
 
@@ -940,7 +940,7 @@ Automatic via hooks. No manual logging required.
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | "check context"                                | `Skill(skill="context-guardian")`                                                                        |
 | "compact context"                              | Manually summarize the relevant `sdd/wip/[feature]` files into a short state note (see Compaction above) |
-| Org-specific internal service/plugin mentioned | Check `sdd/PROJECT.md`, then invoke the project's designated skill (e.g. `sdd-implementer`) first        |
+| Org-specific internal service/plugin mentioned | Check `sdd/PROJECT.md`, then invoke the project's designated skill (e.g. `sdd-implementation`) first        |
 
 ---
 

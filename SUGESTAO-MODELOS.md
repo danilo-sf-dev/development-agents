@@ -67,9 +67,9 @@ Na pausa entre comandos `/sdd.*`, o kit **já aplica** o modelo certo via frontm
 |------|-------|------|
 | Barato | **haiku** | `/sdd.start`, `/sdd.build`, `/sdd.check`, `/sdd.pr`, `/sdd.mcp` |
 | Forte | **sonnet** | `/sdd.spec`, `/sdd.plan`, `/sdd.test`, `/sdd.finish`, `/sdd.reverse-eng` |
-| Extremo | **opus** | **Só** `/sdd.fix` + agent `sdd-debugger` |
+| Extremo | **opus** | **Só** `/sdd.fix` + Skill `sdd-debugger` |
 
-Subagents de execução/descoberta (`sdd-implementer`, `sdd-small-test-writer`, `sdd-explorer`, `sdd-system-designer`) usam `model: inherit` → seguem o modelo do comando pai.
+Subagents de execução/descoberta (`sdd-implementation`, `sdd-test-writing`, `sdd-explorer`, `sdd-system-design`) usam `model: inherit` → seguem o modelo do comando pai.
 
 **Garantia de não pagar Opus sem querer:** no Claude Code, o `model:` do frontmatter do `/sdd.*` sobrescreve o modelo da sessão **naquele turno**. Esquecer `/model` **não** faz o build rodar em Opus — o comando já está pinado em Haiku.
 

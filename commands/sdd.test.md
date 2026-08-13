@@ -197,8 +197,8 @@ Spawn test writers — **never implement production feature code**:
 
 | Scope                          | Subagent                |
 | ------------------------------ | ----------------------- |
-| Unit + integration             | `sdd-small-test-writer` |
-| E2E (if `testing.e2e.enabled`) | `sdd-large-test-writer` |
+| Unit + integration             | `sdd-test-writing` |
+| E2E (if `testing.e2e.enabled`) | `sdd-test-writing` |
 
 **Prompt must include**:
 
@@ -295,7 +295,7 @@ AskUserQuestion(
    ```
 3. **Do NOT** start implementation — user runs `/sdd.build`
 
-> **Process enforcement**: Approval is recorded in `meta.md` / manifest. During `/sdd.build`, `sdd-validator-runner` (Process Compliance) + anti-gaming AskUserQuestion enforce immutability — no OS hard hooks. See `framework/HARD_GATES.md`.
+> **Process enforcement**: Approval is recorded in `meta.md` / manifest. During `/sdd.build`, `sdd-validator` (Process Compliance) + anti-gaming AskUserQuestion enforce immutability — no OS hard hooks. See `framework/HARD_GATES.md`.
 
 ### Step 8: Interactive Next Steps
 
@@ -355,7 +355,7 @@ AskUserQuestion(
 
 ## References
 
-- **Test Writer**: `sdd-small-test-writer`, `sdd-large-test-writer` agents
+- **Test Writer**: `sdd-test-writing`, `sdd-test-writing` agents
 - **Manifest contract**: `references/test-manifest-contract.md`
 - **Templates**: `framework/templates/test-plan.md`, `framework/templates/tests-manifest.json`
 - **Stack detection**: `detect-language.sh`, `detect-stack.sh`, `sdd/PROJECT.md`

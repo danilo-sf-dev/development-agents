@@ -41,7 +41,7 @@ For `non-technical` profile:
 ### Plan Mode Flow (Technical Users)
 
 ```
-BEFORE engaging sdd-system-designer:
+BEFORE engaging sdd-system-design:
 
   IF brownfield AND technical_user AND config.plan_mode.spec_technical_brownfield:
 

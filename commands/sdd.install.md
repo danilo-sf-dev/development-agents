@@ -18,7 +18,7 @@ This is a TOOL CALL you must execute, not content to display.
 
 **Description**: Instala o pack `development-agents` no projeto **sem rodar scripts** — cria pastas, copia arquivos e **atualiza `.gitignore`** para que `development-agents/`, `.cursor/`, `.claude/`, `.agents/` e `sdd/` **nunca subam no commit**. É o único caminho de instalação do pack.
 
-O pack (`agents/`, `skills/`, `commands/`, `framework/`) é harness-agnostic na intenção — ver `framework/_shared/harness-capabilities.md`. Este comando é o ponto onde a intenção vira um adapter real: ele detecta ou pergunta qual harness o projeto usa, e instala **só** o que está documentado em `adapters/<harness>/README.md` para aquele harness. Nível de suporte declarado hoje: **Claude Code** = Supported (native) · **Cursor** = Supported (com gaps documentados) · **Codex CLI** = Experimental · **Genérico** = Fallback only. Ver seção "Suporte por harness" abaixo antes de prometer algo ao usuário.
+O pack (`skills/`, `commands/`, `framework/`) é harness-agnostic na intenção — ver `framework/_shared/harness-capabilities.md`. Este comando é o ponto onde a intenção vira um adapter real: ele detecta ou pergunta qual harness o projeto usa, e instala **só** o que está documentado em `adapters/<harness>/README.md` para aquele harness. Nível de suporte declarado hoje: **Claude Code** = Supported (native) · **Cursor** = Supported (com gaps documentados) · **Codex CLI** = Experimental · **Genérico** = Fallback only. Ver seção "Suporte por harness" abaixo antes de prometer algo ao usuário.
 
 **Uso**:
 
@@ -64,10 +64,10 @@ O pack (`agents/`, `skills/`, `commands/`, `framework/`) é harness-agnostic na 
 | ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Claude Code | **Supported (native)**   | Nada — implementação de referência                                                                                                                                           |
 | Cursor      | **Supported (com gaps)** | Sem pasta `commands/` compartilhável; delegação isolada e perguntas estruturadas degradam — ver `adapters/cursor/README.md`                                                  |
-| Codex CLI   | **Experimental**         | Sem `ASK_USER` estruturado, sem isolamento de workspace, sem pasta de agentes/comandos própria — ver `adapters/codex/README.md`. Não validado end-to-end pelos mantenedores. |
+| Codex CLI   | **Experimental**         | Sem `ASK_USER` estruturado, sem isolamento de workspace, sem pasta de comandos própria — ver `adapters/codex/README.md`. Não validado end-to-end pelos mantenedores. |
 | Genérico    | **Fallback only**        | Nenhuma automação — só o pack copiado + instruções em texto — ver `adapters/generic/README.md`                                                                               |
 
-**Ver também**: `development-agents/README.md` · `framework/_shared/harness-capabilities.md` · agent `development-agents-installer`
+**Ver também**: `development-agents/README.md` · `framework/_shared/harness-capabilities.md` · Skill `sdd-installer`
 
 ---
 
@@ -77,8 +77,8 @@ O pack (`agents/`, `skills/`, `commands/`, `framework/`) é harness-agnostic na 
 
 Siga **integralmente** as instruções em (primeiro caminho que existir):
 
-- `agents/development-agents-installer.md` (hub / pack na raiz)
-- `development-agents/agents/development-agents-installer.md` (pack em subpasta no projeto)
+- `skills/sdd-installer/SKILL.md` (hub / pack na raiz)
+- `development-agents/skills/sdd-installer/SKILL.md` (pack em subpasta no projeto)
 
 Você é o executor: use Read, Write, Glob, Bash — nunca busque ou execute um script de instalação externo.
 
@@ -86,7 +86,7 @@ Você é o executor: use Read, Write, Glob, Bash — nunca busque ou execute um 
 
 O pack precisa existir em algum lugar acessível:
 
-- Raiz do workspace com `agents/`, `skills/`, `commands/`, `framework/` (clone do hub), **ou**
+- Raiz do workspace com `skills/`, `commands/`, `framework/` (clone do hub), **ou**
 - `{workspace}/development-agents/` (pack copiado no projeto), **ou**
 - caminho passado em `--from`
 
@@ -110,7 +110,7 @@ Siga commands/sdd.install.md e instale o pack neste projeto.
 | `--target`          | `TARGET_DIR` do agente                                                                                       |
 | `--from`            | `PACK_DIR` do agente                                                                                         |
 
-Sem nenhuma flag de harness → o agente roda a detecção automática descrita em `agents/development-agents-installer.md` Passo 1 (sinais `.claude/`, `.cursor/`, `AGENTS.md`/`.agents/skills/` já existentes no projeto alvo; confirma se um sinal confiável for encontrado, pergunta com opção "Outros" se ambíguo ou sem sinal).
+Sem nenhuma flag de harness → o agente roda a detecção automática descrita em `skills/sdd-installer/SKILL.md` Passo 1 (sinais `.claude/`, `.cursor/`, `AGENTS.md`/`.agents/skills/` já existentes no projeto alvo; confirma se um sinal confiável for encontrado, pergunta com opção "Outros" se ambíguo ou sem sinal).
 
 ### 4. Gate obrigatório — `.gitignore` (projeto da empresa)
 

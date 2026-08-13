@@ -20,7 +20,7 @@
 > [ ] No gap question exposed implementation jargon to the user
 >     (no "at-least-once delivery", "TTL", "consumer", "producer", "topic", "container").
 > [ ] If any architectural classification was needed (async vs sync, storage type, etc.),
->     I delegated to `sdd-system-designer` (agent — `DELEGATE_OFFLOAD`, see `framework/_shared/harness-capabilities.md`) to inform candidate selection — and
+>     I delegated to `sdd-system-design` (Skill — `DELEGATE_OFFLOAD`, see `framework/_shared/harness-capabilities.md`) to inform candidate selection — and
 >     surfaced the candidates as "tentative — to be confirmed in technical spec",
 >     NOT as final dependencies.
 > ```
@@ -52,7 +52,7 @@ bash development-agents/framework/tools/validation/validate-functional.sh sdd/wi
 ### Scope: In/Out
 ### Dependencies (capabilities): [list of capabilities, NOT project service names]
   e.g. "async event processing, key-value storage, immutable audit trail"
-  Concrete services chosen in technical spec via the sdd-system-designer skill.
+  Concrete services chosen in technical spec via the sdd-system-design skill.
 ```
 
 **Step 3c: Context Check Before Approval**
