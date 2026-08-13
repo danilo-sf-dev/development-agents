@@ -44,6 +44,23 @@ happens to be running. Note the value is quoted inside the `-c` argument (`-c
 quotes; a bare `-c model_reasoning_effort=high` has been reported to work in most shells too, but the
 quoted form is the one shown in official examples and is what this adapter uses.
 
+**Sandbox — read vs. write dispatch, confirmed via current docs, corrected this round**:
+`codex exec` is **read-only by default** (no network access, no writes outside temp — confirmed in
+current official docs: "codex exec is read-only by default"). An earlier version of this adapter
+dispatched every Skill through the same bare `codex exec --model ...` call with no sandbox override,
+which would have made every "write" dispatch (implementation, test-writing) silently do nothing to the
+filesystem while still returning a result — the same class of bug the Cursor adapter had with
+`--force`. Fixed the same way: this adapter grants write access only to dispatches whose Skill/phase
+actually writes files, and withholds it from everything else:
+
+| Dispatch is...                                                                                    | Command                                                                                       | Why                                                                 |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Read-only / analysis (`sdd-explorer`, `sdd-layer-analysis`, `sdd-system-design`, `sdd-debugger`, `sdd-validator` isolated mode) | `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' "<task>"` (default sandbox, no override) | Default `codex exec` is already read-only — nothing extra needed, and nothing here should mutate the working tree (`sdd-validator` must not, per `VALIDATOR_ISOLATED` property 3). |
+| Write-capable (`sdd-implementation`, `sdd-test-writing`, `/sdd.build`, `/sdd.plan` writing `tasks.json`, any phase that creates/edits files) | `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' --sandbox workspace-write --ask-for-approval never "<task>"` | Without `--sandbox workspace-write`, the call is read-only and would silently do nothing to the filesystem while still reporting a result; `--ask-for-approval never` is required alongside it so the headless call doesn't block waiting for an approval prompt that will never come. |
+
+`--sandbox workspace-write --ask-for-approval never` is granted per-dispatch based on what that
+specific Skill/phase does, never blanket-applied to every call.
+
 **This upgrades `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` from manual to automatic.** The previous
 version of this adapter (before Model Routing) described the isolation procedure as "the operator
 opens a fresh Codex CLI session by hand" — that was written without having verified `codex exec`'s
@@ -55,10 +72,12 @@ has shell access) with no operator action. The Validator Independence Protocol n
 2. It builds the scrubbed prompt (file list + rule tables from `skills/sdd-validator/SKILL.md`, never
    the implementation rationale — identical scrubbing rule to the Claude Code `Task()` call).
 3. It resolves `STRONG` → `resolve-model.sh codex STRONG` → `model=gpt-5.6-sol effort=high`, then runs
-   `codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' "<scrubbed prompt>"` itself, as
-   a child process — a genuinely fresh process/context, not a continuation of its own conversation,
-   and **without** any file-editing instruction in the prompt (validator dispatches are read-only by
-   role — see `VALIDATOR_ISOLATED` property 3).
+   `codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' "<scrubbed prompt>"` itself
+   (default read-only sandbox — no `--sandbox workspace-write`, see "Sandbox" above), as a child
+   process — a genuinely fresh process/context, not a continuation of its own conversation, and
+   **without** any file-editing instruction in the prompt (validator dispatches are read-only by
+   role — see `VALIDATOR_ISOLATED` property 3). The read-only default sandbox is a second, independent
+   enforcement of the same guarantee, not just the prompt's wording.
 4. That child process follows `skills/sdd-validator/SKILL.md` directly and returns the JSON verdict
    per `framework/_shared/verdict-protocol.md` on stdout, which the parent session captures.
 5. The parent session writes it to `sdd/wip/<feature>/verdicts/` as usual.
@@ -96,23 +115,27 @@ unambiguous. If a future Codex CLI release fixes #3817, resume-by-explicit-ID be
 removes the ordering assumption — track that issue before changing this.
 
 **Evidence and its limits**: `codex exec`, `-m`/`--model`, `-c key=value` overrides (including
-`model_reasoning_effort`), `--profile`, and `codex exec resume --last` are corroborated from current
-official Codex documentation (`developers.openai.com/codex/config-advanced`,
-`developers.openai.com/codex/cli/reference`) cross-checked against multiple independent third-party
-references in this session, all showing matching flag names and example syntax. The `--json`/resume
-session-ID limitation is corroborated directly from the upstream GitHub issue tracker, not inferred.
-It was **not** live-round-trip-tested against a running Codex CLI session — this sandbox has no
-`codex` binary installed and this session's `WebFetch` tool is fully blocked by network egress policy
-(confirmed against several unrelated hosts, not just OpenAI's), so only search-result excerpts could
-be checked, not the primary page directly. Treat the mechanism as **designed and documented as real
-automation**, not a claim of a completed live test — before relying on this in production, run:
+`model_reasoning_effort`), `--profile`, `--sandbox`/`--ask-for-approval`, and `codex exec resume
+--last` are corroborated from current official Codex documentation
+(`developers.openai.com/codex/config-advanced`, `developers.openai.com/codex/cli/reference`,
+`developers.openai.com/codex/agent-approvals-security`, `developers.openai.com/codex/concepts/sandboxing`)
+cross-checked against multiple independent third-party references in this session, all showing
+matching flag names and example syntax. The `--json`/resume session-ID limitation is corroborated
+directly from the upstream GitHub issue tracker, not inferred. It was **not**
+live-round-trip-tested against a running Codex CLI session — this sandbox has no `codex` binary
+installed and this session's `WebFetch` tool is fully blocked by network egress policy (confirmed
+against several unrelated hosts, not just OpenAI's), so only search-result excerpts could be checked,
+not the primary page directly. Treat the mechanism as **designed and documented as real automation**,
+not a claim of a completed live test — before relying on this in production, run:
 
 ```bash
-# READ dispatch — no file-editing instruction in the prompt
-codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' "List the files in the current directory and suggest one naming improvement, but do not change anything."
+# READ dispatch — default sandbox (read-only), no file-editing instruction in the prompt
+codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' "List the files in the current directory and suggest one naming improvement, but do not change anything." --output-last-message /dev/stdout
+# Expect: no change to any file on disk.
 
-# WRITE dispatch
-codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' "Append a comment line to README.md confirming this test ran."
+# WRITE dispatch — explicit workspace-write sandbox + no-prompt approval
+codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' --sandbox workspace-write --ask-for-approval never "Append a comment line to README.md confirming this test ran."
+# Expect: README.md actually modified.
 
 # Resume
 codex exec resume --last "Looks good, proceed."
@@ -124,4 +147,10 @@ codex exec resume --last "Looks good, proceed."
 - **No dedicated agent-role folder needed.** The pack has no `agents/` folder anymore — all 12 former agent roles are Skills, and Skills already install natively to `.agents/skills/` (row above), the real `agentskills.io` discovery path Codex CLI reads.
 - **`ASK_USER` has no structured-tool equivalent.** Codex CLI only exposes binary command-approval dialogs. Every gate (`AskUserQuestion` in the canonical files) degrades to plain conversational text with listed options, always including a free-text choice — handled by the **interactive parent session**, after a `codex exec` child dispatch returns (headless `exec` mode cannot pause mid-run to ask the human anything, so gates never live inside the child call).
 - **`ISOLATED_WORKSPACE` is not supported.** Codex subagents/child processes inherit the parent's sandbox policy; there is no per-subagent git-worktree equivalent. The (currently roadmap, not yet shipped) parallel-task execution mode described in `skills/sdd-implementation/SKILL.md` cannot run on this adapter — sequential execution only. Model Routing does not change this: each `codex exec` dispatch still runs sequentially, just under the correct model.
+- **`--sandbox workspace-write --ask-for-approval never` must never be granted blanket-wide.** A
+  dispatch's read/write status comes from the Skill's/phase's own nature (see the table under "Model
+  Routing" § "Sandbox" above), not from a shortcut of "always allow writes to be safe" — that would
+  let a read-only Skill like `sdd-validator` or `sdd-explorer` mutate files it has no business
+  touching. Default `codex exec` (no sandbox override) is already read-only; that default is the
+  correct choice for every non-write dispatch, not an oversight to "fix" by adding the flag everywhere.
 - **Model Routing mechanism is documented `RESOLVED` automation, not yet live-verified in this environment** — see "Model Routing" above for exactly what was and wasn't confirmed. This is a verification gap, not a "falls back to manual" gap.
