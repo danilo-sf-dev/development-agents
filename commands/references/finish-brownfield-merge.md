@@ -16,7 +16,7 @@ project_mode=$(grep "project_mode:" sdd/wip/[feature]/meta.md | cut -d: -f2 | tr
 
 if [ "$project_mode" = "brownfield" ]; then
     # Validate merge readiness
-    merge_result=$(bash development-agents/framework/tools/validation/validate-brownfield-merge.sh sdd/wip/[feature] --json)
+    merge_result=$(bash development-agents/framework/tools/validate-brownfield-merge.sh sdd/wip/[feature] --json)
     merge_ready=$(echo "$merge_result" | grep -o '"ready":[^,}]*' | cut -d: -f2)
     conflicts=$(echo "$merge_result" | grep -o '"conflict_count":[0-9]*' | cut -d: -f2)
 

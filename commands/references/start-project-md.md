@@ -10,7 +10,7 @@
 
 ```bash
 # Validate PROJECT.md
-validation_result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
+validation_result=$(bash development-agents/framework/tools/validate-project.sh sdd/PROJECT.md --json)
 is_valid=$(echo "$validation_result" | grep -o '"valid":[^,}]*' | cut -d: -f2)
 if [ "$is_valid" != "true" ]; then
     echo "PROJECT.md validation warnings:"

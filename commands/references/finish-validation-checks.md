@@ -131,7 +131,7 @@ grep -rEn "(password|api_key|secret|token|credential)\s*[:=]\s*[\"'][^\"']+[\"']
 
 #### 3. Test Validation (MANDATORY)
 ```bash
-bash development-agents/framework/tools/validation/validate-tests.sh sdd/wip/[feature] .
+bash development-agents/framework/tools/validate-tests.sh sdd/wip/[feature] .
 ```
 
 Checks:

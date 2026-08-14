@@ -128,8 +128,8 @@ sdd/wip/[YYYYMMDD-feature-name]/
 Run task validation with the optional helper if your setup provides it (not shipped with this pack by default — see `development-agents/framework/tools/`); otherwise apply the checks below manually when reviewing `tasks.json`:
 
 ```bash
-if [ -x "development-agents/framework/tools/validation/validate-tasks.sh" ]; then
-    bash development-agents/framework/tools/validation/validate-tasks.sh sdd/wip/[feature]
+if [ -x "development-agents/framework/tools/validate-tasks.sh" ]; then
+    bash development-agents/framework/tools/validate-tasks.sh sdd/wip/[feature]
 fi
 ```
 
