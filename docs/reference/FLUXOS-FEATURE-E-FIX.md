@@ -7,7 +7,7 @@ Não substitui o pipeline canônico (`framework/PIPELINE.md`); só deixa claro o
 
 ## Em uma frase
 
-- **Feature / implementação nova** → fluxo longo: `start → spec → plan → test → build → finish → pr`
+- **Feature / implementação nova** → fluxo longo: `start → spec → plan → test → build → check → finish → pr`
 - **Bug / correção** → fluxo curto: `start → fix → finish → pr`  
   (se o bug for **no meio** de uma feature já aberta → só `/sdd.fix`)
 
@@ -18,11 +18,13 @@ Não substitui o pipeline canônico (`framework/PIPELINE.md`); só deixa claro o
 Bootstrap do projeto alvo — **não** é o ciclo do card:
 
 ```
-/sdd.install          → coloca o pack no projeto
-/sdd.project          → stack, convenções, forbidden (modelo forte)
-/sdd.reverse-eng      → specs/padrões do código existente (modelo forte)
-/sdd.mcp              → opcional (Jira/Confluence só leitura)
+/sdd.install          → coloca o pack no projeto (EXECUTION)
+/sdd.project          → stack, convenções, forbidden (EXECUTION)
+/sdd.reverse-eng      → specs/padrões do código existente (STRONG)
+/sdd.mcp              → opcional (Jira/Confluence só leitura; EXECUTION)
 ```
+
+`STRONG`/`EXECUTION` = Model Role de cada comando (política canônica: `framework/_shared/model-routing.md`; valores concretos por harness: `config/model-routing.yaml`; tradução para Claude Code: `SUGESTAO-MODELOS.md`).
 
 Depois disso o serviço está ancorado. Cada card novo abre **um** `/sdd.start` (de preferência em chat novo).
 
@@ -42,6 +44,8 @@ Use quando o card é **nova capacidade**, mudança de comportamento planejada, o
 /sdd.test            ← testes aprovados (fase red)
     ↓
 /sdd.build           ← só implementa; não inventa teste novo
+    ↓
+/sdd.check           ← status/validação (ver `framework/PIPELINE.md`)
     ↓
 /sdd.finish
     ↓
@@ -103,7 +107,7 @@ continuar de onde parou (/sdd.build ou /sdd.finish)
   ├─ Sim → /sdd.start
   │         │
   │         ├─ Implementação / regra nova / bug que precisa de contrato claro
-  │         │     → Fluxo 1 (Feature): spec → plan → test → build → finish
+  │         │     → Fluxo 1 (Feature): spec → plan → test → build → check → finish
   │         │
   │         └─ Bug com erro/log/comportamento quebrado
   │               → Fluxo 2A (Fix): fix → finish

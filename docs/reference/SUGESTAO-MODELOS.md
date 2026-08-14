@@ -1,9 +1,10 @@
 # Sugestão: quando usar modelo mais forte ou mais barato (Claude Code)
 
 Documento **informativo**, com sabor **Claude Code**, para quem está aprendendo a rodar o time de
-agents SDD. Não é a política canônica — essa é [`framework/_shared/model-routing.md`](./framework/_shared/model-routing.md)
-(harness-agnostic, `STRONG`/`EXECUTION`, sem nomes concretos de modelo). Este doc só traduz essa
-política para nomes reais de modelo Claude Code, com dicas de effort e janela de contexto.
+Skills/commands SDD. Não é a política canônica — essa é [`framework/_shared/model-routing.md`](../../framework/_shared/model-routing.md)
+(harness-agnostic, `STRONG`/`EXECUTION`, sem nomes concretos de modelo). Os valores concretos por
+harness ficam em [`config/model-routing.yaml`](../../config/model-routing.yaml) — este doc só traduz
+essa política para nomes reais de modelo Claude Code, com dicas de effort e janela de contexto.
 
 ---
 

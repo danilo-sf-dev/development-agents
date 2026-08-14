@@ -51,10 +51,32 @@ Medição atual da redução de verbosidade:
 Templates, standards, tools e docs do SDD (necessário para os commands).
 
 - `framework/PIPELINE.md`: **fonte canônica** do diagrama/gates/modos do pipeline — `AGENTS.md`, `WORKFLOW.md`, `COMMANDS.md`, `QUICK_REFERENCE.md` e `skills/sdd-kit-expert/SKILL.md` linkam para lá em vez de duplicar o diagrama completo (reduz custo de manutenção ao adicionar/mudar gates).
+- `framework/_shared/model-routing.md`: política canônica de Model Role (`STRONG`/`EXECUTION`) — harness-agnostic.
+- `framework/_shared/harness-capabilities.md`: vocabulário de capabilities (`DELEGATE_ISOLATED`, `OFFLOAD_READ`, `VALIDATOR_ISOLATED`, etc.) e tabela de suporte por harness.
+
+### adapters/ (4) — tradução de intent para mecanismo concreto por harness
+
+Um `README.md` por harness, único lugar onde sintaxe/flags/worker types concretos podem aparecer (nunca em `skills/`, `commands/` ou `framework/`):
+
+| Adapter | Nível de suporte declarado |
+| --- | --- |
+| `adapters/claude-code/` | Supported (native) |
+| `adapters/cursor/` | Supported (com gaps documentados) |
+| `adapters/codex/` | Experimental |
+| `adapters/generic/` | Fallback only |
+
+### config/
+
+- `config/model-routing.yaml`: única fonte dos modelos concretos por harness/role, lida por `framework/tools/resolve-model.sh`. Editar este arquivo é suficiente para mudar o modelo — nenhuma Skill/command/adapter precisa mudar junto.
+
+### docs/
+
+- `docs/adr/0001-agent-skill-execution-architecture.md`: decisão que eliminou a pasta `agents/` e definiu o modelo atual (Skills + execution requirements + adapters).
+- `docs/reference/`: os três documentos de referência deste manifesto (`FLUXOS-FEATURE-E-FIX.md`, `MANIFEST.md` — este arquivo —, `SUGESTAO-MODELOS.md`).
 
 Paths do pack:
 
-- **Hub (este repo):** raiz — `skills/`, `commands/`, `framework/`
+- **Hub (este repo):** raiz — `skills/`, `commands/`, `framework/`, `adapters/`, `config/`, `docs/`
 - **Projeto alvo:** `development-agents/` (criado pelo instalador)
 
 ---
@@ -123,21 +145,21 @@ O `commit-workflow` foi reescrito para o hub:
 
 ## Instalador
 
-- `/sdd.install` — agente (`sdd-installer`), único caminho de instalação. Sem scripts `.sh`/`.ps1`: usa as ferramentas de leitura/escrita do próprio harness, funciona em qualquer harness compatível com agentes/skills Markdown (Claude Code, Cursor, etc.).
+- `/sdd.install` — Skill (`sdd-installer`), único caminho de instalação. Sem scripts `.sh`/`.ps1`: usa as ferramentas de leitura/escrita do próprio harness. Detecta ou pergunta o harness alvo e instala exatamente o(s) adapter(s) correspondente(s) — ver `adapters/<harness>/README.md` para o que cada um materializa de fato.
 
 Repositório hub: https://github.com/danilo-sf-dev/development-agents
 
-Exporta pack + adapters `.claude/` e `.cursor/` + `sdd/`.  
-No **projeto alvo**, append em `.gitignore` — `development-agents/`, `.cursor/`, `.claude/`, `sdd/` **não sobem no commit**.
+Exporta pack (`skills/`, `commands/`, `framework/`) + adapter(s) do(s) harness(es) escolhido(s) (`.claude/`, `.cursor/`, `.agents/`, ou só instruções para Generic) + `sdd/`.
+No **projeto alvo**, append em `.gitignore` — `development-agents/`, `.cursor/`, `.claude/`, `.agents/`, `sdd/` **não sobem no commit**.
 
 ## Ainda não feito
 
-- [x] Playbook formal — [`framework/PLAYBOOK.md`](./framework/PLAYBOOK.md)
-- [x] `/sdd.pr` + template PR — [`commands/sdd.pr.md`](./commands/sdd.pr.md)
+- [x] Playbook formal — [`../../framework/PLAYBOOK.md`](../../framework/PLAYBOOK.md)
+- [x] `/sdd.pr` + template PR — [`../../commands/sdd.pr.md`](../../commands/sdd.pr.md)
 - [ ] Profiles de stack — **descartado** (não implementar)
 
 ## Como validar
 
-1. Confirmar papéis do time (agents + commands).
+1. Confirmar papéis do time (Skills + commands).
 2. `rg -i 'meli|fury|nordic|everest|andes|furycloud|ltp'` em `development-agents/` → só MANIFEST Cleanup notes (se houver).
 3. Stack resolution = detection scripts + PROJECT.md.

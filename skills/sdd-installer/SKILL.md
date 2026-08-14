@@ -103,8 +103,8 @@ Resultado do Passo 1: uma lista `HARNESS_LIST` com um ou mais de `claude`, `curs
 
 Garantir `TARGET_DIR/development-agents/` com:
 
-- `skills/`, `commands/`, `framework/`
-- `AGENTS.md`, `MANIFEST.md`, `README.md`
+- `skills/`, `commands/`, `framework/`, `adapters/`, `config/`, `docs/`
+- `AGENTS.md`, `README.md`
 
 **Se `SKIP_PACK_COPY`** (hub na raiz) → pular cópia; pack já está em `PACK_DIR`.
 
