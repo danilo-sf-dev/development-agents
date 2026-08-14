@@ -183,7 +183,7 @@ Always persist task status to `tasks.json` after each green gate. Commits at lay
 
 ## Improvement Capture & Flow (short)
 
-Capture generalizable learnings in `progress.md` for `/sdd.finish` promotion.
+Capture generalizable learnings in `4-implementation/progress.md` (canonical path — see `framework/WORKFLOW.md` and `references/start-feature-structure.md`) for `/sdd.finish` promotion.
 Iterative: one task cycle at a time unless Express/`--all`.
 Flow: phase check → read tasks → layers → per-task implement+gate → final validate → next `/sdd.finish` or `/sdd.check`.
 
