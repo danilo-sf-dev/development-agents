@@ -153,10 +153,19 @@ If context high → recommend `/clear` before `/sdd.test`.
 
 > **MANDATORY field, not lazy**: every task's ID field is `"id"` (never `"task_id"` or any other
 > name), formatted `TASK-NNN` (e.g. `"id": "TASK-001"`) — never a custom prefix like `IMPL-`/`TEST-`.
-> `validate-complete.sh` and other deterministic tooling parse this exact contract; a task written
-> with any other field name or ID format is invisible to them. See `framework/standards/task-format.md`
-> and `references/plan-tasks-json.md` for the full schema (structure only, no exception on this field).
-> Read `references/plan-tasks-json.md` when writing/validating the rest of the file shape.
+>
+> **MANDATORY container shape, not lazy**: the top-level task list is a single flat array at
+> `.tasks[]` — `{"tasks": [{"id": "TASK-001", ...}, {"id": "TASK-002", ...}]}`. Layer grouping is
+> expressed by each task's own `"layer"` field (0/1/2/3), never by nesting tasks inside a `.layers[]`
+> array. `{"layers": [{"tasks": [...]}]}` is NOT the contract, even though "Task Layers" below
+> describes layers conceptually — that section is about the `layer` field's values, not about the
+> file's top-level shape.
+>
+> `validate-complete.sh` and other deterministic tooling parse this exact contract (`.tasks[]`, each
+> with `"id"`); a task written with any other field name, ID format, or container shape is invisible
+> to them. See `framework/standards/task-format.md` and `references/plan-tasks-json.md` for the full
+> schema (structure only, no exception on these two points). Read `references/plan-tasks-json.md`
+> when writing/validating the rest of the file shape.
 
 ## Task Layers (short)
 

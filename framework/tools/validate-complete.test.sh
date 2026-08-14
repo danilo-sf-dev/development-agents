@@ -65,6 +65,26 @@ cat > "$TMPD/3-tasks/tasks.json" <<'EOF'
 EOF
 assert_task_counts "schema canônico, uma pendente" 1 2
 
+# --- Case 3: nested "layers[].tasks[]" schema -- must FAIL clearly, not be
+# accepted as an alternate format and not crash with a raw jq error ---
+cat > "$TMPD/3-tasks/tasks.json" <<'EOF'
+{
+  "feature": "test-feature",
+  "layers": [
+    {"layer": 1, "tasks": [{"id": "TASK-001", "title": "Do a thing", "status": "completed"}]}
+  ]
+}
+EOF
+nested_output=$(bash "$VALIDATE_COMPLETE" "$TMPD" 2>&1)
+nested_exit=$?
+if [ "$nested_exit" -ne 0 ] && echo "$nested_output" | grep -q "Invalid tasks.json contract"; then
+    echo "✅ PASS: schema aninhado layers[].tasks[] rejeitado com mensagem clara (exit=$nested_exit)"
+else
+    echo "❌ FAIL: schema aninhado layers[].tasks[] deveria falhar com mensagem clara de contrato inválido"
+    echo "$nested_output" | sed 's/^/    /'
+    ((FAILURES++))
+fi
+
 echo ""
 if [ "$FAILURES" -eq 0 ]; then
     echo "✅ All validate-complete.sh task-completion tests passed"

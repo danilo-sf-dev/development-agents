@@ -36,6 +36,20 @@ echo "✅ Checking task completion..."
 # (framework/standards/task-format.md). Read "id"/"status" from the actual
 # JSON via jq rather than grepping for a markdown "#### TASK-" heading, which
 # can never occur inside JSON syntax.
+#
+# The contract is a flat top-level "tasks" array (commands/sdd.plan.md
+# "MANDATORY container shape"). This is NOT relaxed to also accept nested
+# shapes like "layers[].tasks[]" -- that's a producer bug in whatever wrote
+# tasks.json, not an alternate valid format, so we fail loudly and clearly
+# instead of either silently reporting 0/0 or letting a raw jq crash through.
+if ! jq -e '.tasks | type == "array"' "$TASKS_FILE" >/dev/null 2>&1; then
+    echo "  ❌ Invalid tasks.json contract: no top-level \"tasks\" array found at $TASKS_FILE"
+    echo "     Expected: {\"tasks\": [{\"id\": \"TASK-001\", ...}, ...]}"
+    echo "     This usually means /sdd.plan nested tasks under something else (e.g. \"layers[].tasks[]\")"
+    echo "     instead of the flat \"tasks[]\" contract in commands/sdd.plan.md. Fix the producer, not this script."
+    exit 1
+fi
+
 total_tasks=$(jq '.tasks | length' "$TASKS_FILE")
 completed_tasks=$(jq '[.tasks[] | select(.status == "completed")] | length' "$TASKS_FILE")
 
