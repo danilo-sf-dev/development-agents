@@ -288,7 +288,7 @@ Generate PROJECT.md?
 3. ❌ Cancel
 ```
 
-After user confirms generation, **model advisory**: Read `references/model-suggestion-advisory.md` — full box (`project→reverse-eng` if brownfield/existing code; else `project→start`).
+After user confirms generation, **Model Routing (automatic, informational only)**: the next command (`/sdd.reverse-eng` → `STRONG` if brownfield/existing code, else `/sdd.start` → `EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 > **Note**: PROJECT.md will only contain properties the team decided to configure.
 > Others will use defaults from `coding-standards.md`. For frontend-web, `Skill(frontend-web-expert)` is the source of truth.

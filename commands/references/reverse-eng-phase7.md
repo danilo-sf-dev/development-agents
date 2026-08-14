@@ -107,7 +107,7 @@ AskUserQuestion(
    - Start feature work with: /sdd.start
    ```
 
-**Model advisory** (before next-step AskUserQuestion if shown): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `reverse-eng→start`.
+**Model Routing (automatic, informational only)** (before next-step AskUserQuestion if shown): `/sdd.start` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 #### Update Mode Behavior
 

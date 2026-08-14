@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.list
 description: List all features in the project workspace with their status and phase. Use when user wants to see current features.
-model: haiku
+model_role: EXECUTION
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.

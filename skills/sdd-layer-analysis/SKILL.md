@@ -1,20 +1,25 @@
 ---
-name: sdd-layer-analyzer
+name: sdd-layer-analysis
 description: Cross-layer consistency and analysis specialist for SDD Kit. Use for validating alignment between functional specs, technical specs, tasks, and implementation. Detects drift, extracts evidence, and proposes synchronized fixes. Use during /sdd.check --sync, /sdd.fix, and /sdd.finish.
-tools: Read, Glob, Grep
-model: sonnet
+model_role: EXECUTION
 ---
 
-# SDD Layer Analyzer - Cross-Layer Consistency & Analysis
+# SDD Layer Analysis — Cross-Layer Consistency & Analysis
+
+> **Execution requirement**: `OFFLOAD_READ` — see `framework/_shared/harness-capabilities.md`. `/sdd.check --sync` always offloads this analysis (the volume of cross-layer reading is large enough that inline execution would dominate the calling session); `/sdd.fix` and `/sdd.finish` may offload or run inline depending on context budget.
+>
+> **Permission note (do not silently change this)**: this Skill has historically run with **no `Bash`** — its analysis is pure file comparison (`Read`/`Glob`/`Grep`), unlike `sdd-explorer` which has always had `Bash`. If the execution environment's available offload mechanism only offers a worker/session type broader than `Read`/`Glob`/`Grep` (e.g. one that also grants `Bash`), that is a **documented permission increase**, not a silent default — the adapter implementing `OFFLOAD_READ` for this Skill must say so explicitly rather than absorb it quietly.
+>
+> **Read-only is a behavioral policy, not a filesystem guarantee** — see the same note in `skills/sdd-explorer/SKILL.md` and the `OFFLOAD_READ` entry in `harness-capabilities.md`. This Skill's "Read-Only: Only analyze, never modify" rule (see Important Rules below) is not technically enforced by tool absence alone if the execution context happens to have `Bash`.
 
 > **Disambiguation**: "layer" here means the "Spec Traceability Layers" system (System B:
 > Functional → Technical → Tasks → Implementation) — a different concept from the build-task
 > "Layer 1/2/3" used elsewhere in the pack. See `framework/_shared/layers-and-gates.md` if you
 > need to tell the pack's 4 "Layer N" systems apart.
 
-You are a specialized layer analysis agent for the SDD Kit framework. Your role is to perform deep bidirectional analysis between all framework layers, detecting drift, validating consistency, and extracting evidence.
+You are performing a specialized layer-analysis task for the SDD Kit framework. Your role is to perform deep bidirectional analysis between all framework layers, detecting drift, validating consistency, and extracting evidence.
 
-## When to Use This Agent
+## When to Use This Skill
 
 1. **Sync Validation** (`/sdd.check --sync`)
    - Validate layer consistency
@@ -256,11 +261,11 @@ Code: "router.post('/users', createUser)"
 Only analyze layers that exist at current phase:
 
 | Phase              | Layers to Analyze |
-| ------------------ | ----------------- |
-| 1 (Functional)     | Layer 1 only      |
-| 2 (Technical)      | Layers 1-2        |
-| 3 (Tasks)          | Layers 1-3        |
-| 4 (Implementation) | All layers        |
+| ------------------ | ------------------ |
+| 1 (Functional)     | Layer 1 only        |
+| 2 (Technical)      | Layers 1-2           |
+| 3 (Tasks)          | Layers 1-3           |
+| 4 (Implementation) | All layers          |
 
 ## Important Rules
 
@@ -270,5 +275,6 @@ Only analyze layers that exist at current phase:
 4. **Phase Aware**: Only check existing layers
 5. **Quantify**: Provide percentages and counts
 6. **Prioritize**: HIGH > MEDIUM > LOW for recommendations
-7. **Read-Only**: Only analyze, never modify
+7. **Read-Only (behavioral policy)**: Only analyze, never modify — see the note at the top of this file about what this guarantee actually rests on
 8. **Source of Truth**: Upper layers take precedence
+9. **When invoked via `OFFLOAD_READ`**: return only the compact report above — not raw file dumps

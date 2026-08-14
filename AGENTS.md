@@ -12,20 +12,20 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 
 > **Fonte canônica completa** (diagrama Mermaid, gates, modos, papéis): [`framework/PIPELINE.md`](./framework/PIPELINE.md). Atualize lá primeiro se o pipeline mudar.
 
-**Process gates** (LLM, sem dependência de bash/jq/hooks): [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) — `sdd-validator-runner` (Process Compliance) + AskUserQuestion (sempre com **Outros**).
+**Process gates** (LLM, sem dependência de bash/jq/hooks): [`framework/HARD_GATES.md`](./framework/HARD_GATES.md) — `sdd-validator` (Process Compliance) + AskUserQuestion (sempre com **Outros**).
 
 ## Papéis
 
 | Papel                             | Onde                                                                                                      |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Spec Writer                       | command `/sdd.spec` (+ agent `sdd-explorer`)                                                              |
-| Arquiteto                         | agent `sdd-system-designer` + `/sdd.plan`                                                                 |
-| Developer                         | agent `sdd-implementer`                                                                                   |
-| Test Writer                       | `/sdd.test` + agents `sdd-small-test-writer`, `sdd-large-test-writer` (E2E opcional)                      |
-| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + agent `sdd-validator-runner` (qualidade **e** integridade do pipeline)        |
+| Spec Writer                       | command `/sdd.spec` (+ Skill `sdd-explorer`)                                                              |
+| Arquiteto                         | Skill `sdd-system-design` + `/sdd.plan`                                                                 |
+| Developer                         | Skill `sdd-implementation`                                                                                   |
+| Test Writer                       | `/sdd.test` + agents `sdd-test-writing`, `sdd-test-writing` (E2E opcional)                      |
+| Code Reviewer / Process Validator | skill `sdd-code-reviewer` + Skill `sdd-validator` (qualidade **e** integridade do pipeline)        |
 | Orquestrador                      | commands `/sdd.go`, `/sdd.start` + skill `sdd-kit-expert`                                                 |
-| Instalador                        | command `/sdd.install` + agent `development-agents-installer` (único caminho de instalação — sem scripts) |
-| MCP / integrações                 | command `/sdd.mcp` + agent `sdd-mcp-setup` (Jira/Confluence read-only; host-agnóstico)                    |
+| Instalador                        | command `/sdd.install` + Skill `sdd-installer` (único caminho de instalação — sem scripts) |
+| MCP / integrações                 | command `/sdd.mcp` + Skill `sdd-mcp-setup` (Jira/Confluence read-only; host-agnóstico)                    |
 | Commit                            | skill `commit-workflow` com 4 opções e Graphify opcional                                                  |
 | Pull Request                      | command `/sdd.pr` — rascunho SDD → aprovação humana → `gh pr create`                                      |
 
@@ -33,7 +33,7 @@ Atalho: `/sdd.go` orquestra start→…→finish em modo express (inclui `/sdd.t
 
 ## Paths
 
-- **Hub (este repo):** pack na raiz — `agents/`, `commands/`, `framework/`
+- **Hub (este repo):** pack na raiz — `skills/`, `commands/`, `framework/`
 - **Projeto alvo (após install):** pack em `development-agents/` + adapters `.cursor/`, `.claude/`, `sdd/` — **tudo gitignored**, repo sobe limpo
 - **SDD no dia a dia:** `sdd/PROJECT.md`, `sdd/backlog.md`, `sdd/wip/…`
 

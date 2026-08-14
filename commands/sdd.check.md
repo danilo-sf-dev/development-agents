@@ -1,7 +1,7 @@
 ---
 name: sdd.check
 description: View feature status, progress, and validation results. Use when user wants to check feature health or run validations.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[feature-name] [--sync]"
 ---
 
@@ -69,7 +69,7 @@ argument-hint: "[feature-name] [--sync]"
 result=$(bash development-agents/framework/tools/extraction/analyze-layers.sh sdd/wip/[feature] --json)
 ```
 
-Always delegate the full `--sync` analysis to the `sdd-layer-analyzer` subagent — the deterministic check above is advisory input, not a replacement.
+Always delegate the full `--sync` analysis to the `sdd-layer-analysis` Skill — the deterministic check above is advisory input, not a replacement.
 
 **Skill for --compliance**:
 
@@ -285,9 +285,9 @@ AskUserQuestion(
     "question": "O que deseja fazer agora?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.build", "description": "Continuar a implementação — comando em haiku"},
-      {"label": "/sdd.build --next", "description": "Iniciar a próxima task — comando em haiku"},
-      {"label": "/sdd.finish", "description": "Concluir a feature — comando em sonnet"},
+      {"label": "/sdd.build", "description": "Continuar a implementação — comando em EXECUTION"},
+      {"label": "/sdd.build --next", "description": "Iniciar a próxima task — comando em EXECUTION"},
+      {"label": "/sdd.finish", "description": "Concluir a feature — comando em STRONG"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false

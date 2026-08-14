@@ -8,14 +8,14 @@
 
 **Step 6a.0: Architect-First Self-Check (BLOCKING backend/web)**
 
-> Before summary: confirm you invoked `sdd-system-designer` **before** writing DD/Services/Dependencies,
-> and `sdd-implementer` per selected service. If not → STOP, invoke, regenerate, then continue. No retroactive ratification.
+> Before summary: confirm you invoked `sdd-system-design` **before** writing DD/Services/Dependencies,
+> and `sdd-implementation` per selected service. If not → STOP, invoke, regenerate, then continue. No retroactive ratification.
 
 **Step 6a: Validate technical spec**
 
 ```bash
 # Run deterministic validation BEFORE asking for approval
-bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip/[feature]
+bash development-agents/framework/tools/validate-technical.sh sdd/wip/[feature]
 
 # If exit code != 0: Show errors, DO NOT proceed to approval
 # If exit code == 0: Continue to security validation
@@ -26,7 +26,7 @@ bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip
 > **MANDATORY**: Security validation catches OWASP Top 10 vulnerabilities. Never skip.
 
 ```bash
-bash development-agents/framework/tools/validation/validate-security.sh sdd/wip/[feature] --spec
+bash development-agents/framework/tools/validate-security.sh sdd/wip/[feature] --spec
 # If exit code != 0: Show security issues, DO NOT proceed to approval
 # If exit code == 0: Continue to summary
 ```
@@ -99,7 +99,7 @@ Update `meta.md` stages.technical:
 
 > **MANDATORY**: Always offer interactive selection after approval.
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `technical→plan`.
+**Model Routing (automatic, informational only)**: `/sdd.plan` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 
@@ -109,7 +109,7 @@ AskUserQuestion(
     "question": "Spec técnica aprovada. Qual o próximo passo?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.plan (Recomendado)", "description": "Gerar as tasks de implementação — comando em sonnet"},
+      {"label": "/sdd.plan (Recomendado)", "description": "Gerar as tasks de implementação — comando em EXECUTION"},
       {"label": "/sdd.spec --iterate", "description": "Refinar as specs antes de planejar"},
       {"label": "/sdd.check", "description": "Ver status atual"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

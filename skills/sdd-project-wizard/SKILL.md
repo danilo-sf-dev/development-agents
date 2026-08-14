@@ -1,25 +1,24 @@
-﻿---
+---
 name: sdd-project-wizard
-description: Creates PROJECT.md via interactive wizard in isolated context. Returns summary only. Use when /sdd.start detects missing PROJECT.md to avoid consuming main context with wizard interactions.
-tools: Read, Write, Bash, AskUserQuestion
-model: haiku
+description: Creates PROJECT.md via interactive wizard. Use when /sdd.start detects missing PROJECT.md, or via /sdd.project directly.
+model_role: EXECUTION
 ---
 
-# SDD Project Wizard - PROJECT.md Creation Specialist
+# SDD Project Wizard — PROJECT.md Creation Specialist
 
-You are a specialized agent for creating `sdd/PROJECT.md` configuration files. You run in **isolated context** to avoid consuming the main agent's context window with interactive wizard questions.
+> **Execution requirement**: `INTERACTIVE_OFFLOAD` when invoked **embedded** inside a larger flow (e.g. `/sdd.start` detecting a missing `PROJECT.md` mid-flow) — see `framework/_shared/harness-capabilities.md`. When invoked as its own standalone entry point (`/sdd.project`), running inline (`INVOKE_PROCEDURE`) is a complete substitute, not a degraded fallback — there is no larger flow's context to protect.
+>
+> **Context benefit, when offloaded**: the calling session receives only a compact summary (~200 tokens) instead of the full multi-turn wizard conversation (~15,000 tokens). This is what makes offloading worthwhile specifically for the embedded case.
 
-> Every "Use AskUserQuestion tool" instruction below is `ASK_USER`; being invoked into an isolated context in the first place is `DELEGATE_OFFLOAD` (context-saving, no bias-protection requirement) — see `framework/_shared/harness-capabilities.md`.
+You are performing a specialized task: creating `sdd/PROJECT.md` configuration files. When invoked via `INTERACTIVE_OFFLOAD`, this runs in a fresh context so the interactive wizard turns don't consume the calling session's context window.
 
 ## Purpose
 
-When `/sdd.start` detects that `sdd/PROJECT.md` doesn't exist, it invokes this agent to:
+When `/sdd.start` detects that `sdd/PROJECT.md` doesn't exist, it triggers this Skill (offloaded) to:
 
 1. Run an interactive wizard to gather team conventions
 2. Generate the PROJECT.md file
-3. Return a brief summary to the main agent
-
-**Context Benefit**: The main agent receives only ~200 tokens (your summary) instead of ~15,000 tokens (full wizard conversation).
+3. Return a brief summary to the calling session
 
 ---
 
@@ -38,7 +37,7 @@ I only configure what you decide - the rest uses framework defaults.
 
 ### Step 2: Architecture Pattern
 
-Use AskUserQuestion tool:
+Use `ASK_USER`:
 
 ```markdown
 ## Question: Architecture Pattern
@@ -55,7 +54,7 @@ Options:
 
 ### Step 3: Testing Standards
 
-Use AskUserQuestion tool:
+Use `ASK_USER`:
 
 ```markdown
 ## Question: Coverage Requirement
@@ -71,7 +70,7 @@ Options:
 
 ### Step 4: PR Size Limits
 
-Use AskUserQuestion tool:
+Use `ASK_USER`:
 
 ```markdown
 ## Question: PR Size
@@ -87,7 +86,7 @@ Options:
 
 ### Step 5: Specs Language
 
-Use AskUserQuestion tool:
+Use `ASK_USER`:
 
 ```markdown
 ## Question: Specifications Language
@@ -102,7 +101,7 @@ Options:
 
 ### Step 5.5: Atlassian Integration (Optional)
 
-Use AskUserQuestion tool:
+Use `ASK_USER`:
 
 ```markdown
 ## Question: Atlassian Integration
@@ -118,7 +117,7 @@ Options:
 
 - If "No" (default): Do not write property to PROJECT.md (uses default: false)
 - If "Yes": Write `atlassian_mcp_enabled: true` to PROJECT.md
-- Note: After PROJECT.md is saved, tell the user to run `/sdd.mcp` (host-agnostic) to configure Atlassian MCP + smoke test — do **not** assume `/sdd.start` alone finishes MCP setup
+- Note: After PROJECT.md is saved, tell the user to run `/sdd.mcp` to configure Atlassian MCP + smoke test — do **not** assume `/sdd.start` alone finishes MCP setup
 
 ### Step 6: Summary and Confirmation
 
@@ -222,7 +221,7 @@ After creating PROJECT.md, return this summary:
 
 ## JSON Return Format
 
-At the very end, include this JSON for the main agent to parse:
+At the very end, include this JSON for the calling session to parse:
 
 ```json
 {
@@ -241,7 +240,7 @@ At the very end, include this JSON for the main agent to parse:
 2. **Default First**: Always offer "Use framework default" as first option
 3. **No Bloat**: Only write overrides to PROJECT.md, not defaults
 4. **Quick Execution**: Complete wizard in 4-5 questions max
-5. **Clear Summary**: Return concise summary for main agent
+5. **Clear Summary**: Return concise summary to the calling session
 6. **Create Directory**: If `sdd/` doesn't exist, create it first
 
 ---
@@ -283,14 +282,12 @@ Options:
 These are used when properties are NOT in PROJECT.md:
 
 | Property                       | Default | Source              |
-| ------------------------------ | ------- | ------------------- |
+| -------------------------------- | --------- | ---------------------- |
 | architecture.pattern           | clean   | coding-standards.md |
 | coverage.min_coverage          | 80      | coding-standards.md |
 | testing.ratio_unit_integration | "4:1"   | coding-standards.md |
 | pr.max_lines                   | 400     | coding-standards.md |
 | language.specs                 | en      | coding-standards.md |
-
----
 
 ## Vision Wizard
 
@@ -298,7 +295,7 @@ When invoked for vision configuration via `/sdd.project vision`:
 
 ### Step V1: Summary
 
-Use AskUserQuestion:
+Use `ASK_USER`:
 
 ```
 What does your product do in one sentence?
@@ -311,7 +308,7 @@ Example: "A CLI tool that helps developers implement features using spec-driven 
 
 ### Step V2: Value Proposition
 
-Use AskUserQuestion:
+Use `ASK_USER`:
 
 ```
 What problem does it solve and why should users care?
@@ -322,7 +319,7 @@ This will guide feature prioritization and acceptance criteria.
 
 ### Step V3: Principles (Optional)
 
-Use AskUserQuestion:
+Use `ASK_USER`:
 
 - Question: "What guiding principles should all features follow? (Examples: 'Simplicity over features', 'User privacy first')"
 - Header: "Principles"
@@ -346,7 +343,7 @@ Show summary:
 **Principles**: [user's principles or "Not defined"]
 ```
 
-Use AskUserQuestion:
+Use `ASK_USER`:
 
 - Question: "Save this vision to PROJECT.md?"
 - Options:

@@ -4,12 +4,12 @@
 
 ### Project Services with Code Snippets
 
-> When documenting project services, auto-include code examples by delegating to the `sdd-implementer` **agent** (not a skill — `DELEGATE_OFFLOAD`, see `framework/_shared/harness-capabilities.md`), which fetches live documentation for the actual service/library in use.
+> When documenting project services, auto-include code examples by delegating to the `sdd-implementation` **Skill** (`DELEGATE_OFFLOAD`, see `framework/_shared/harness-capabilities.md`), which fetches live documentation for the actual service/library in use.
 
 **Workflow**:
 
 1. After `sdd-explorer` identifies services
-2. For each service, delegate: `Task(subagent_type="sdd-implementer", ...)` passing the service name and detected project language (on Claude Code; other harnesses per the translation table)
+2. For each service, delegate to the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`, `model_role: EXECUTION` — see `adapters/<harness>/README.md` for the concrete dispatch on the installed harness), passing the service name and detected project language
 3. The agent fetches live documentation and returns ready-to-use snippets
 4. Include the returned snippet in the spec under the service entry
 
@@ -23,16 +23,16 @@
 - **TTL**: 3600s (1 hour)
 - **Criticality**: HIGH
 
-**Implementation Example** (via `sdd-implementer`):
-[snippet returned by sdd-implementer agent]
+**Implementation Example** (via `sdd-implementation`):
+[snippet returned by sdd-implementation agent]
 
 ### Message Queue - Order Events
 - **Topic**: `order-events`
 - **Visibility**: private
 - **Consumer**: `order-processor`
 
-**Implementation Example** (via `sdd-implementer`):
-[snippet returned by sdd-implementer agent]
+**Implementation Example** (via `sdd-implementation`):
+[snippet returned by sdd-implementation agent]
 ```
 
 **Automatic Detection**:

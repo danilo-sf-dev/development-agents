@@ -4,12 +4,12 @@
 
 #### Architecture Options (Standard Mode + Technical Profile)
 
-> **SKIP for mobile projects** — Mobile architecture is handled by `mobile-android-expert` / `mobile-ios-expert` skill, not `sdd-system-designer`. These are a **project-provided extension point, not bundled with this pack or created by `/sdd.install`** — see the status note in `spec-mobile-technical.md`.
+> **SKIP for mobile projects** — Mobile architecture is handled by `mobile-android-expert` / `mobile-ios-expert` skill, not `sdd-system-design`. These are a **project-provided extension point, not bundled with this pack or created by `/sdd.install`** — see the status note in `spec-mobile-technical.md`.
 
-> When sdd-system-designer identifies genuinely different architecture
+> When sdd-system-design identifies genuinely different architecture
 > approaches, present them to the user before writing the spec.
 
-**Trigger**: sdd-system-designer returns 2-3 options (not a single recommendation)
+**Trigger**: sdd-system-design returns 2-3 options (not a single recommendation)
 AND profile == `technical` AND mode == Standard
 
 **Skip when** (auto-select recommended, no user interaction):
@@ -62,14 +62,13 @@ On selection:
 
 > **⚠️ MANDATORY**: Every DD must include `Options Considered` and `Trade-offs Accepted`. Missing either section fails `validate-technical.sh` with an error (not a warning).
 
-**Sections** (delegate heavy lifting to `sdd-system-designer`):
+**Sections** (delegate heavy lifting to `sdd-system-design`):
 
 1. Executive Summary
 2. Architecture (Mermaid diagrams - see `standards/diagram-standard.md`)
 3. Platform compliance (conditional - see below)
 4. Services
 
-⛔ INVOKE TOOL (do not print this, CALL the tool — backend projects only) — `sdd-system-designer` is an **agent**, delegate via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md`):
-Task(subagent_type="sdd-system-designer", ...)
+⛔ DELEGATE (backend projects only) — `sdd-system-design` is a **Skill**, `model_role: STRONG`, delegate via `DELEGATE_OFFLOAD` (see `framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md` for the concrete dispatch on the installed harness).
 
 After the agent responds, if a project-provided CLI-discovery skill (commonly `project-cli-expert`) is available, run it for live instance discovery (existing vs new) — **this skill is not bundled with the pack or created by `/sdd.install`; see the status note in `spec-project-services.md`. If absent, skip live discovery and rely on the technical spec / PROJECT.md for service inventory instead.** 5. Dependencies (MUST verify from docs - NEVER invent) 6. Design Decisions (with rationale) 7. Data Model 8. REST API Contracts 9. Testing Strategy (unit + integration only; E2E is external) 10. Security (MUST include Secrets Management) 11. Performance 12. Deployment

@@ -1,7 +1,7 @@
 ---
 name: sdd.spec
 description: Create and approve functional and technical specifications. Use when user needs to define requirements (functional) or design architecture (technical). Supports --approve, --iterate, --summary, and --audio flags.
-model: sonnet
+model_role: STRONG
 argument-hint: "[functional|technical] [--approve]"
 ---
 
@@ -26,13 +26,13 @@ argument-hint: "[functional|technical] [--approve]"
 | Need                      | Use                                                                      |
 | ------------------------- | ------------------------------------------------------------------------ |
 | Gaps after description    | Inline gap detection: scan for async/persist/calc/API/concurrent signals |
-| Architecture / services   | `sdd-system-designer` then `sdd-implementer`                             |
+| Architecture / services   | `sdd-system-design` then `sdd-implementation`                             |
 | Service discovery         | `sdd-explorer`                                                           |
 | Conflicts after technical | `validate-spec-conflicts.sh`, agent resolves conflicts found             |
 
 Context before technical: >50% → `/clear`; >80% → `context-guardian`.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:spec`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -148,14 +148,17 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 
 #### Backend/Web Technical Spec (platform = backend | web | "")
 
-> **BLOCKING — Architect-First**: before ANY DD / service / dependency / diagram, invoke
-> `Task(sdd-system-designer)` with functional summary + capabilities. Do not invent services from pre-training.
-> Single recommendation → use it. 2–3 options → Architecture Options ref below.
-> Then for each selected service: `Task(sdd-implementer)` for live SDK details.
+> **BLOCKING — Architect-First**: before ANY DD / service / dependency / diagram, invoke the
+> `sdd-system-design` Skill (`OFFLOAD_REASONING`, `model_role: STRONG` — see
+> `framework/_shared/harness-capabilities.md` and `adapters/<harness>/README.md` for the concrete
+> dispatch) with functional summary + capabilities. Do not invent services from pre-training. Single
+> recommendation → use it. 2–3 options → Architecture Options ref below.
+> Then for each selected service: invoke the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`,
+> `model_role: EXECUTION`) for live SDK details.
 
 #### Architecture Options (lazy-loaded)
 
-> **ONLY IF** `sdd-system-designer` returns 2–3 viable approaches AND profile is `technical` AND Standard mode:
+> **ONLY IF** `sdd-system-design` returns 2–3 viable approaches AND profile is `technical` AND Standard mode:
 > Read `references/spec-architecture-options.md`.
 > Otherwise auto-select the recommended approach and continue.
 
@@ -192,7 +195,7 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 
 ### Step 6: Technical Approval Gate
 
-> **BLOCKING**: (1) Architect self-check (`sdd-system-designer` before DD/Services; `sdd-implementer` per service).
+> **BLOCKING**: (1) Architect self-check (`sdd-system-design` before DD/Services; `sdd-implementation` per service).
 > (2) `validate-technical.sh` then `validate-security.sh` (security always mandatory).
 > (3) Short summary + ASCII diagram (shapes: `references/spec-architecture-diagram.md`).
 > (4) AskUserQuestion Approve / View full / Request changes.
@@ -210,9 +213,9 @@ After technical approval + conflicts: run `/sdd.check --compact` if context >40%
 
 ### Step 9: Next Steps (both specs approved)
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `spec→plan`.
+**Model Routing (automatic, informational only)**: `/sdd.plan` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
-AskUserQuestion: `/sdd.plan` (recomendado — comando em sonnet) | `/sdd.spec --iterate` | `/sdd.check`.
+AskUserQuestion: `/sdd.plan` (recomendado — comando em EXECUTION) | `/sdd.spec --iterate` | `/sdd.check`.
 
 ## Key Rules
 

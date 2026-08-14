@@ -9,26 +9,22 @@ After ALL tasks complete:
 | Step | Action                                                                  | On Failure                              |
 | ---- | ----------------------------------------------------------------------- | --------------------------------------- |
 | A    | Code Compliance (3-layer validation)                                    | FIX                                     |
-| B    | Layer 3 Quality Gates (via `sdd-validator-runner`)                      | FIX ALL                                 |
+| B    | Layer 3 Quality Gates (via `sdd-validator`)                      | FIX ALL                                 |
 | C    | Code Pattern Validation (stack-specific patterns)                       | FIX                                     |
 | D    | **Local CI Pipeline** — full pipeline: build, test, coverage, deps, SCA | Auto-fix where the pipeline supports it |
 
-**Step B - Layer 3 Quality Gates** (consolidated) — this is `DELEGATE_ISOLATED`, not just a token
-optimization: `sdd-validator-runner` must not see the implementer's reasoning (see
+**Step B - Layer 3 Quality Gates** (consolidated) — this requires `VALIDATOR_ISOLATED`, not just a token
+optimization: `sdd-validator` (isolated mode) must not see the implementer's reasoning (see
 `framework/_shared/harness-capabilities.md`). The "saves ~5700 tokens" note below is a real side
-benefit, not the reason this is a subagent call:
+benefit, not the reason this runs isolated:
 
-```python
-# Single agent call replaces 3 skill calls, saves ~5700 tokens
-Task(
-    subagent_type="sdd-validator-runner",
-    prompt="""
-    Final validation for all modified files.
-    Run Layer 3 quality gates: performance, security, code-review
-    Return unified JSON verdict.
-    """
-)
-```
+One dispatch replaces 3 separate Skill calls (saves ~5700 tokens — a real side benefit, not the
+reason this runs isolated). Dispatch `sdd-validator` (isolated mode) via `VALIDATOR_ISOLATED`, always
+at `model_role: STRONG`, with a scrubbed prompt (file list only, no implementer rationale, per
+`VALIDATOR_ISOLATED` property 2): "Final validation for all modified files. Run Layer 3 quality
+gates: performance, security, code-review. Return unified JSON verdict." — see
+`framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md` for
+the concrete dispatch on the installed harness.
 
 **Step C: Code Pattern Validation**:
 

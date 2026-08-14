@@ -115,9 +115,9 @@ sdd/wip/[YYYYMMDD-feature-name]/
 
 | Agent                   | Usage                                                                                                                                                                                                                                             |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sdd-implementer`       | Reads tasks during `/sdd.build`                                                                                                                                                                                                                   |
-| `sdd-layer-analyzer`    | Validates task-spec consistency, and scans `tasks.json` directly to flag likely E2E scenarios (tasks touching multiple layers/services, or with `tests_required` entries describing cross-component flows) — there is no separate script for this |
-| `sdd-small-test-writer` | Reads test requirements                                                                                                                                                                                                                           |
+| `sdd-implementation`       | Reads tasks during `/sdd.build`                                                                                                                                                                                                                   |
+| `sdd-layer-analysis`    | Validates task-spec consistency, and scans `tasks.json` directly to flag likely E2E scenarios (tasks touching multiple layers/services, or with `tests_required` entries describing cross-component flows) — there is no separate script for this |
+| `sdd-test-writing` | Reads test requirements                                                                                                                                                                                                                           |
 
 > Context-budget compaction (see `mandatory-standards.md` — Context Budget Protocol) also reads `tasks.json` directly to summarize task state when writing a condensed `progress.md`; this is a reasoning step the active agent performs itself, not a separate script.
 
@@ -128,8 +128,8 @@ sdd/wip/[YYYYMMDD-feature-name]/
 Run task validation with the optional helper if your setup provides it (not shipped with this pack by default — see `development-agents/framework/tools/`); otherwise apply the checks below manually when reviewing `tasks.json`:
 
 ```bash
-if [ -x "development-agents/framework/tools/validation/validate-tasks.sh" ]; then
-    bash development-agents/framework/tools/validation/validate-tasks.sh sdd/wip/[feature]
+if [ -x "development-agents/framework/tools/validate-tasks.sh" ]; then
+    bash development-agents/framework/tools/validate-tasks.sh sdd/wip/[feature]
 fi
 ```
 

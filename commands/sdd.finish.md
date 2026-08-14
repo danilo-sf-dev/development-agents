@@ -1,7 +1,7 @@
 ---
 name: sdd.finish
 description: Complete feature implementation, run final validations, and archive. Use when all tasks are done, CI passes, and you're ready to move the feature from wip/ to features/.
-model: sonnet
+model_role: STRONG
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
@@ -38,7 +38,7 @@ model: sonnet
 
 **See also**: `/sdd.help finish` for detailed documentation
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:finish`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -52,7 +52,7 @@ If not → return to `/sdd.build`. Finish is a double-check + archive. See `stan
 ## Validation Delegation (MANDATORY)
 
 Use skills (all tools): `sdd-validator` → `sdd-code-reviewer` (security + final review).
-Claude Code optional: `Task(sdd-layer-analyzer)` for final consistency.
+Optional: delegate to `sdd-layer-analysis` (`OFFLOAD_READ`, `model_role: EXECUTION` — see `framework/_shared/harness-capabilities.md` and `adapters/<harness>/README.md`) for final consistency.
 Do not invent a parallel validation path.
 
 ## Context Advisory (short)

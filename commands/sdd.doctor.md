@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.doctor
 description: Diagnose whether the project's configuration lets the SDD kit do its job. Detects external instructions that contradict, duplicate, or compete with the kit (CLAUDE.md, AGENTS.md, .claude/*, sdd/PROJECT.md, sdd/PATTERNS.md). Use when specs come out bloated, when the agent ignores kit directives, or after major edits to instruction files.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[--apply] [--scope all|kit|claude] [--strict] [--deep] [--heuristic-only] [--json] [--explain <id>]"
 ---
 
@@ -173,8 +173,8 @@ Use the template at `references/semantic-prompt.md`. Key invariants:
 
 ### Cost & parallelism
 
-- Default: ~3-5 files × 1 sonnet call each. Total ≤ 30s.
-- For large projects (many `.claude/commands/`), if combined comparator + user files exceeds ~30k tokens, delegate semantic analysis to the `general-purpose` subagent so its context stays isolated. Pattern is the same as `/sdd.check --sync` delegating to `sdd-layer-analyzer`.
+- Default: ~3-5 files × 1 `STRONG`-role call each (semantic comparison — see `framework/_shared/model-routing.md`). Total ≤ 30s.
+- For large projects (many `.claude/commands/`), if combined comparator + user files exceeds ~30k tokens, delegate semantic analysis to a fresh-context subagent (`DELEGATE_OFFLOAD`) so its context stays isolated. Pattern is the same as `/sdd.check --sync` delegating to `sdd-layer-analysis`.
 
 ---
 

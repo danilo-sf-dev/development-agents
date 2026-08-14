@@ -2,6 +2,7 @@
 name: sdd-performance-expert
 stack: core
 description: Performance expert for reviewing code for performance issues. This is a SKILL (invoke via Skill tool, NOT Task/subagent). Use after implementation to detect N+1 queries, inefficient algorithms, memory leaks, and other performance anti-patterns. **TRIGGER ON** N+1 query, performance, memory leak, inefficient algorithm, slow query, bottleneck, optimization.
+model_role: STRONG
 ---
 
 # SDD Performance Expert
@@ -241,8 +242,6 @@ grep -rn "\.findAll()" --include="*.java"
 3. **Review string operations**: Concatenation, regex compilation
 4. **Analyze memory usage**: Unbounded collections, leaks
 5. **Check I/O patterns**: Blocking calls, missing pooling
-
----
 
 ## Verdict Output (MANDATORY)
 

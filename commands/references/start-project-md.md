@@ -10,7 +10,7 @@
 
 ```bash
 # Validate PROJECT.md
-validation_result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
+validation_result=$(bash development-agents/framework/tools/validate-project.sh sdd/PROJECT.md --json)
 is_valid=$(echo "$validation_result" | grep -o '"valid":[^,}]*' | cut -d: -f2)
 if [ "$is_valid" != "true" ]; then
     echo "PROJECT.md validation warnings:"
@@ -20,7 +20,7 @@ fi
 ```
 
 **If missing**:
-→ Use AskUserQuestion: 1. Create PROJECT.md now (delegate to `sdd-project-wizard` subagent) 2. Continue with framework defaults 3. What is PROJECT.md?
+→ Use AskUserQuestion: 1. Create PROJECT.md now (delegate to `sdd-project-wizard` Skill) 2. Continue with framework defaults 3. What is PROJECT.md?
 
 #### Step 6.1: Doctor Tip (Non-blocking, ⭐ v1.7.3)
 

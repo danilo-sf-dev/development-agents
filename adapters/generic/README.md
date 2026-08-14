@@ -25,12 +25,23 @@ foi copiado para o projeto, mas a instalacao para de ser automatica a partir daq
    reutilizaveis — leia o arquivo quando o fluxo indicar "invoque a skill X".
 4. Delegacao isolada (validacao, revisao): abra uma nova sessao/conversa contendo so os
    arquivos relevantes (sem o raciocinio de quem implementou), rode o procedimento descrito
-   em agents/sdd-validator-runner.md manualmente, e traga o veredito de volta.
+   em skills/sdd-validator/SKILL.md manualmente, e traga o veredito de volta.
 5. Perguntas ao usuario: os gates do pipeline (aprovar spec, aprovar plano, aprovar testes,
    etc.) sao pontos onde o agente deve parar e perguntar em texto simples, sempre com uma
    opcao livre alem das sugeridas.
+6. Modelo: cada comando/skill declara model_role (STRONG ou EXECUTION) no frontmatter —
+   ver development-agents/framework/_shared/model-routing.md. Model Routing aqui e
+   RECOMMENDED, nao RESOLVED (ver essa distincao em model-routing.md): este harness
+   generico nao tem mecanismo conhecido de selecao automatica de modelo, entao o
+   framework so informa o role/modelo recomendado — nao executa a troca. Se o harness so
+   oferece um modelo, use-o para tudo e continue o pipeline normalmente — nunca
+   enfraqueca Gates, test-first, validator ou isolamento por causa disso. Se oferecer
+   mais de um modelo, use STRONG para os passos marcados STRONG e o mais barato
+   disponivel para EXECUTION, por analogia com os outros adapters (config/model-routing.yaml
+   + framework/tools/resolve-model.sh nao tem entrada para "generic" de proposito),
+   documentando a escolha para o operador.
 ```
 
 ## Known gaps
 
-Everything not explicitly automated above. This adapter deliberately does not simulate `DELEGATE_ISOLATED`, `ASK_USER`, or `ISOLATED_WORKSPACE` — see `framework/_shared/harness-capabilities.md` for what each conceptual capability means and why faking it here would be worse than not having it.
+Everything not explicitly automated above. This adapter deliberately does not simulate `DELEGATE_ISOLATED`, `ASK_USER`, or `ISOLATED_WORKSPACE` — see `framework/_shared/harness-capabilities.md` for what each conceptual capability means and why faking it here would be worse than not having it. Model Routing has no known automatic mechanism either — see the fallback instruction above; `model-routing.md`'s own Fallback section is the canonical rule (never weaken Gates/test-first/validator/isolation because routing isn't available).

@@ -1,7 +1,7 @@
 ---
 name: sdd.project
 description: Initialize or manage PROJECT.md configuration file. Use when user needs to set up project conventions or edit project settings.
-model: sonnet
+model_role: EXECUTION
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
@@ -141,7 +141,7 @@ Missing permissions / invalid YAML → show error, do not overwrite silently. Ba
 2. Never invent stack defaults; use detection + user answers.
 3. PROJECT.md = team conventions only; write overrides, not a novel.
 4. After create/update, confirm path `sdd/PROJECT.md` and next step (`/sdd.start` if starting a feature).
-5. **Model advisory**: Read `references/model-suggestion-advisory.md` — full box for brownfield → `project→reverse-eng`; greenfield/next feature → `project→start` (ask which path if unclear).
+5. **Model Routing (automatic, informational only)**: the next command (`/sdd.reverse-eng` → `STRONG` for brownfield, or `/sdd.start` → `EXECUTION` for greenfield/next feature) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ## Optional flags (lazy-loaded)
 

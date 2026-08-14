@@ -144,14 +144,14 @@ Clone or copy `development-agents/` into your project, open it in Claude Code, C
 /sdd.install
 ```
 
-The `development-agents-installer` agent creates the pack folders using Read/Write/Bash — no separate CLI tool, no pip package. See [README.md](../README.md).
+The `sdd-installer` Skill creates the pack folders using Read/Write/Bash — no separate CLI tool, no pip package. See [README.md](../README.md).
 
 ### What Platform AI docs tools are supported?
 
 | Tool        | Adapter created by `/sdd.install`                                      |
 | ----------- | ---------------------------------------------------------------------- |
-| Claude Code | `.claude/commands/`, `.claude/agents/`, `.claude/skills/`              |
-| Cursor      | `.cursor/agents/`, `.cursor/skills/`, `.cursor/rules/sdd-workflow.mdc` |
+| Claude Code | `.claude/commands/`, `.claude/skills/`              |
+| Cursor      | `.cursor/skills/`, `.cursor/rules/sdd-workflow.mdc` |
 
 ### Do I need to be on VPN?
 
@@ -273,7 +273,7 @@ The functional spec is built through a **structured Platform AI docs interview**
 
 The technical spec phase is where the framework actively consults **both sources**:
 
-1. **Existing code** (brownfield only): the Plan Mode step (Step 4.5) launches the `sdd-explorer` agent to scan endpoints, data models, architectural patterns, SDK imports, and service configurations.
+1. **Existing code** (brownfield only): the Plan Mode step (Step 4.5) launches the `sdd-explorer` Skill to scan endpoints, data models, architectural patterns, SDK imports, and service configurations.
 2. **Previous feature specs**: in the same step, the framework reads all specs in `sdd/features/` and `sdd/wip/` to extract data models, business rules, services, and endpoints — and to detect potential conflicts (duplicate tables, overlapping endpoints, etc.).
 3. **Post-approval conflict detection**: after you approve the technical spec, the agent re-reads all specs in `sdd/features/` and `sdd/wip/` and cross-checks the new spec against them directly, flagging any conflicts (duplicate tables, overlapping endpoints, etc.) in the conversation.
 
@@ -283,8 +283,8 @@ The technical spec phase is where the framework actively consults **both sources
 | ---------------------------- | :--------------------: | :--------------------: | -------------------------------------- |
 | Functional spec (greenfield) |           No           |           No           | AI interview only                      |
 | Functional spec (brownfield) |    Yes (structure)     |           No           | `analyze-structure.sh` via `sdd.start` |
-| Technical spec — Plan Mode   |  **Yes** (full scan)   | **Yes** (all features) | `sdd-explorer` agent                   |
-| Technical spec — generation  |           No           | Yes (current feature)  | `sdd-system-designer` agent            |
+| Technical spec — Plan Mode   |  **Yes** (full scan)   | **Yes** (all features) | `sdd-explorer` Skill                   |
+| Technical spec — generation  |           No           | Yes (current feature)  | `sdd-system-design` Skill            |
 | Post technical approval      |           No           | **Yes** (cross-check)  | Agent re-reads existing specs directly |
 | `/sdd.reverse-eng`           | **Yes** (8-phase scan) | **Yes** (all sources)  | `sdd-explorer` +                       |
 
@@ -415,11 +415,11 @@ If no discovery tooling is declared, this step is skipped and services are docum
 
 ### Which project services should I use?
 
-Use the **`sdd-system-designer`** agent (delegate via `DELEGATE_OFFLOAD` — see `framework/_shared/harness-capabilities.md`), which classifies your capability needs (async processing,
+Use the **`sdd-system-design`** agent (delegate via `DELEGATE_OFFLOAD` — see `framework/_shared/harness-capabilities.md`), which classifies your capability needs (async processing,
 key-value storage, caching, object storage, etc.) and recommends candidates with trade-offs based
 on what's declared in `sdd/PROJECT.md` and detected in the repo.
 
-For code implementation snippets, delegate to the **`sdd-implementer`** agent (`DELEGATE_OFFLOAD`) to get ready-to-use examples
+For code implementation snippets, delegate to the **`sdd-implementation`** agent (`DELEGATE_OFFLOAD`) to get ready-to-use examples
 for the services actually chosen.
 
 ### How do I run tests in CI?

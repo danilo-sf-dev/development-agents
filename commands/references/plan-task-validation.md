@@ -17,18 +17,24 @@ Before approval, validate:
 
 ### Step 7.5: Deterministic Task Validation
 
-Use script for comprehensive task structure validation before approval.
+`validate-tasks.sh` is **not shipped with this pack by default** (see
+`framework/standards/task-format.md` § Validation). Use it if your setup provides it; otherwise apply
+the checklist above manually against `tasks.json` before approval.
 
 ```bash
-# Validate tasks.json structure and content
-task_validation=$(bash development-agents/framework/tools/validation/validate-tasks.sh sdd/wip/[feature]/3-tasks/tasks.json --json)
-is_valid=$(echo "$task_validation" | grep -o '"valid":[^,}]*' | cut -d: -f2)
-error_count=$(echo "$task_validation" | grep -o '"error_count":[0-9]*' | cut -d: -f2)
+# Validate tasks.json structure and content, if the script is present
+if [ -x "development-agents/framework/tools/validate-tasks.sh" ]; then
+    task_validation=$(bash development-agents/framework/tools/validate-tasks.sh sdd/wip/[feature]/3-tasks/tasks.json --json)
+    is_valid=$(echo "$task_validation" | grep -o '"valid":[^,}]*' | cut -d: -f2)
+    error_count=$(echo "$task_validation" | grep -o '"error_count":[0-9]*' | cut -d: -f2)
 
-if [ "$is_valid" != "true" ]; then
-    echo "❌ Task validation failed with $error_count errors:"
-    echo "$task_validation" | grep -o '"errors":\[[^]]*\]'
-    # FIX errors before approval
+    if [ "$is_valid" != "true" ]; then
+        echo "❌ Task validation failed with $error_count errors:"
+        echo "$task_validation" | grep -o '"errors":\[[^]]*\]'
+        # FIX errors before approval
+    fi
+else
+    echo "(validate-tasks.sh not present — apply the checklist above manually)"
 fi
 ```
 

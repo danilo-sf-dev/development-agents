@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.build
 description: Implement feature tasks following approved strategy. Use when tasks are approved and user is ready to code. Handles layer-by-layer execution, infrastructure creation, database migrations, frontend builds, and CI validation.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[task-id|--next|--all]"
 ---
 
@@ -39,7 +39,7 @@ argument-hint: "[task-id|--next|--all]"
 
 **See also**: `/sdd.help build`. Prerequisites: tasks + tests approved (`stages.tests` approved).
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:build`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: EXECUTION` (validator sub-step always `STRONG`), resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -53,7 +53,7 @@ argument-hint: "[task-id|--next|--all]"
 
 > **BLOCKING**: Quality checks after EACH task, not just at the end.
 
-**Per-Task Cycle**: Implement → Test → `Task(sdd-validator-runner)` Layer-3 gates → Fix **all** findings → Re-check → Complete/commit.
+**Per-Task Cycle**: Implement → Test → `VALIDATOR_ISOLATED` Layer-3 gates (`sdd-validator`, isolated mode, always `model_role: STRONG` — see `framework/_shared/harness-capabilities.md` for the capability and `adapters/<harness>/README.md` for the concrete dispatch on the installed harness) → Fix **all** findings → Re-check → Complete/commit.
 Verdicts under `sdd/wip/<feature>/verdicts/` (do not commit).
 
 ### Dependency Scanning (short)
@@ -71,7 +71,7 @@ Before adding a library: run project dependency-security scanner if configured i
 
 ## Mandatory Code Review Protocol (short)
 
-Per task: Implement → run approved tests → `sdd-validator-runner` with **Process Compliance +** perf/security/quality → Fix **all** findings → Re-check → Complete/commit.
+Per task: Implement → run approved tests → `sdd-validator` with **Process Compliance +** perf/security/quality → Fix **all** findings → Re-check → Complete/commit.
 Process Compliance failures are BLOCKING — AskUserQuestion (incl. Outros) before continuing. Minor quality findings are NOT optional.
 
 ## Behavior by Mode
@@ -126,7 +126,7 @@ jq '.tasks[] | select(.status == "pending")' tasks.json
 ### Step 4: Per-Task Implementation
 
 Do **not** write new unit/integration tests; make approved tests pass; never edit them (anti-gaming).
-Route via `sdd-implementer` (+ validator). Include Design Decisions from tech spec in the prompt.
+Route via `sdd-implementation` (+ validator). Include Design Decisions from tech spec in the prompt.
 E2E only if deferred + enabled. Mobile preamble: `references/build-mobile-preamble.md` ONLY IF android/ios.
 
 > **ONLY IF** needing prompt template / routing table:
@@ -134,7 +134,7 @@ E2E only if deferred + enabled. Mobile preamble: `references/build-mobile-preamb
 
 ### Step 5: Quality Gate + Persist
 
-1. Anti-gaming check 2) `sdd-validator-runner` 3) Fix until APPROVED 4) Mark task `completed` in `tasks.json` on disk (survives `/clear`).
+1. Anti-gaming check 2) `sdd-validator` 3) Fix until APPROVED 4) Mark task `completed` in `tasks.json` on disk (survives `/clear`).
 
 ### Step 5b: Context Check Between Tasks (short)
 
@@ -146,7 +146,7 @@ Between tasks: if context >50% recommend `/clear` + `/sdd.build --next`; >80% in
 
 ### Step 6: Final Validation
 
-After all tasks: A compliance → B Layer-3 via `sdd-validator-runner` → C code patterns → D local CI (`PROJECT.md` command). Fix all failures.
+After all tasks: A compliance → B Layer-3 via `sdd-validator` → C code patterns → D local CI (`PROJECT.md` command). Fix all failures.
 
 > **ONLY IF** needing Step 6A–6D bash/details:
 > Read `references/build-final-validation.md`.
@@ -183,7 +183,16 @@ Always persist task status to `tasks.json` after each green gate. Commits at lay
 
 ## Improvement Capture & Flow (short)
 
-Capture generalizable learnings in `progress.md` for `/sdd.finish` promotion.
+Capture generalizable learnings in `4-implementation/progress.md` (canonical path — see `framework/WORKFLOW.md` and `references/start-feature-structure.md`) for `/sdd.finish` promotion.
+
+> **MANDATORY literal lines in `progress.md`** — `validate-complete.sh` (run by `/sdd.finish`) greps for
+> these exact substrings, not just their meaning, so free-form phrasing or bold markdown around them
+> is invisible to it:
+> - `Tests passing: N/M` (e.g. `Tests passing: 15/15`) — lowercase "passing", literal colon.
+> - `Coverage: N%` (e.g. `Coverage: 92%`) if a coverage figure is available.
+> - `Commit: \`<hash>\`` once per completed task (e.g. `` Commit: `a1b2c3d` ``) — plain `Commit:`, not
+>   `**Commit**:`.
+
 Iterative: one task cycle at a time unless Express/`--all`.
 Flow: phase check → read tasks → layers → per-task implement+gate → final validate → next `/sdd.finish` or `/sdd.check`.
 
@@ -212,6 +221,6 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 ## AI Agent Instructions
 
 1. Block if tests not approved. Never edit approved tests (anti-gaming above).
-2. Per task: implement production code only; quality via `sdd-validator-runner`; fix all findings.
+2. Per task: implement production code only; quality via `sdd-validator`; fix all findings.
 3. Flag-first rare paths: infra / migration / mobile → matching refs.
 4. After all tasks + final validation → recommend `/sdd.finish` (or `/sdd.check` if used).

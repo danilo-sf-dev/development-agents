@@ -1,6 +1,7 @@
 ﻿---
 name: sdd.hub
 description: Orchestrate multi-app hub features across apps. Coordinates specs, planning, and build across member apps. Use when working in a hub repo with multiple collaborating apps.
+model_role: inherit
 argument-hint: "<action> [args]"
 ---
 
@@ -11,6 +12,12 @@ argument-hint: "<action> [args]"
 > A hub is a repo that coordinates multiple apps (defined in `sdd/PROJECT.md` via `## Hub members`).
 > Each app has its own `sdd/` directory and works with standard `/sdd.*` commands.
 > This skill adds the cross-app coordination layer on top.
+
+**Model Routing**: like `/sdd.go`, `/sdd.hub` declares `model_role: inherit` and does not pin one
+model for the whole run — each per-app `/sdd.*` command it routes to keeps its own `model_role` and
+is dispatched as its own isolated, model-resolved execution (same automatic, no-operator-action
+mechanism as `/sdd.go` — see `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch"
+for the dispatch principle; the same principle applies per app, per sub-command here).
 
 ---
 

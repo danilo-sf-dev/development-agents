@@ -1,7 +1,7 @@
 ---
 name: sdd.start
 description: Initialize new feature in SDD Kit framework. Use when user wants to begin a new feature, set up the sdd/wip/ directory structure, and configure project metadata. Supports --reopen for archived features.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[feature-description] [--express|--lite|--audio|--from-backlog|--reopen]"
 ---
 
@@ -32,15 +32,12 @@ Infer kebab name → detect stack → create `sdd/wip/YYYYMMDD-name/` + meta.md 
 Modes: Standard (confirm) | Express (minimal). Templates: standard | `--lite` (combined short spec).
 App name ≠ feature name. See `/sdd.help start`.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — **BLOCKING** entry model-confirm for `phase_key`: `entry:start` **before Step 0.5** (full box + AskUserQuestion; do not skip).
+**Model Routing (automatic, informational only)**: this command runs at `model_role: EXECUTION`,
+resolved and dispatched automatically per `adapters/<harness>/README.md` § Model Routing — no
+confirmation needed. Optionally print the one-line observability format from
+`references/model-suggestion-advisory.md` (`ℹ️ Model Routing: EXECUTION → <resolved model> (auto)`).
 
 ## Workflow (Steps in Order)
-
-### Step 0: Model Confirm (BLOCKING)
-
-> **Before profile, validation, or any file creation.** Session header may still show Sonnet — do not proceed without this gate.
-> Read `references/model-suggestion-advisory.md` → **Command entry — model confirm** for `entry:start`.
-> If user selects **Não estou em haiku — parar** → STOP entirely (no WIP, no branch, no profile write).
 
 ### Step 0.5: User Profile Check (BLOCKING)
 
@@ -176,7 +173,7 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 ## AI Agent Instructions
 
 1. Flag-first: if `--help`/`--reopen`/`--rename`/`--from-backlog`/`--audio` → load matching ref, do not run full happy path.
-2. Order: Step 0 (model confirm) → Steps 0.5→12; never skip model confirm (Step 0) or profile (Step 0.5) or input validation (Step 1).
+2. Order: Steps 0.5→12 (Model Routing resolves automatically before Step 0.5, no gate); never skip profile (Step 0.5) or input validation (Step 1).
 3. Infer kebab-case feature name from description; confirm only if ambiguous.
 4. Critical: Application name ≠ feature name; never invent external app registration; stack from detection + PROJECT.md.
 

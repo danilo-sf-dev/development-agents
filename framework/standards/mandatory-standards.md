@@ -147,17 +147,15 @@ Write Code → code review tool → Fix ALL Findings → Repeat until ZERO findi
 
 ### The Solution (Context Isolation)
 
-**MANDATORY**: delegate via `DELEGATE_ISOLATED` (see `framework/_shared/harness-capabilities.md` for how this resolves per harness) to the `sdd-validator-runner` agent — a task whose context is deliberately scrubbed of the delegator's own reasoning, so it validates the code without being biased by knowing why decisions were made.
+**MANDATORY**: delegate via `DELEGATE_ISOLATED` (see `framework/_shared/harness-capabilities.md` for how this resolves per harness) to the `sdd-validator` Skill — a task whose context is deliberately scrubbed of the delegator's own reasoning, so it validates the code without being biased by knowing why decisions were made.
 
-On Claude Code, `DELEGATE_ISOLATED` resolves to exactly this call:
+On every harness, `DELEGATE_ISOLATED` resolves to a fresh-context execution of `sdd-validator`
+(isolated mode), given only a scrubbed prompt (file paths + rules — never the implementer's
+rationale), always at `model_role: STRONG` — see `adapters/<harness>/README.md` for the concrete
+dispatch on the installed harness.
 
-```python
-Task(
-    subagent_type="sdd-validator-runner",
-    prompt="Validate files: [list]. Run: build, tests...",
-    model="sonnet"
-)
-```
+`sdd-validator` always declares `model_role: STRONG` (see `framework/_shared/model-routing.md`),
+independently of isolation — the two are separate guarantees, neither substitutes for the other.
 
 ### Verdict Rules
 

@@ -1,7 +1,7 @@
 ---
 name: sdd.test
 description: Write and approve tests before implementation (tests-first gate). Use after tasks are approved and before /sdd.build. Tests must fail first — production code comes later.
-model: sonnet
+model_role: STRONG
 argument-hint: "[--approve|--refine|--resume]"
 ---
 
@@ -42,7 +42,7 @@ argument-hint: "[--approve|--refine|--resume]"
 
 **See also**: `/sdd.help test` for detailed documentation
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:test`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -197,8 +197,8 @@ Spawn test writers — **never implement production feature code**:
 
 | Scope                          | Subagent                |
 | ------------------------------ | ----------------------- |
-| Unit + integration             | `sdd-small-test-writer` |
-| E2E (if `testing.e2e.enabled`) | `sdd-large-test-writer` |
+| Unit + integration             | `sdd-test-writing` |
+| E2E (if `testing.e2e.enabled`) | `sdd-test-writing` |
 
 **Prompt must include**:
 
@@ -295,11 +295,13 @@ AskUserQuestion(
    ```
 3. **Do NOT** start implementation — user runs `/sdd.build`
 
-> **Process enforcement**: Approval is recorded in `meta.md` / manifest. During `/sdd.build`, `sdd-validator-runner` (Process Compliance) + anti-gaming AskUserQuestion enforce immutability — no OS hard hooks. See `framework/HARD_GATES.md`.
+> **Process enforcement**: Approval is recorded in `meta.md` / manifest. During `/sdd.build`, `sdd-validator` (Process Compliance) + anti-gaming AskUserQuestion enforce immutability — no OS hard hooks. See `framework/HARD_GATES.md`.
 
 ### Step 8: Interactive Next Steps
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `test→build` (troca crítica para modelo barato).
+**Model Routing (automatic, informational only)**: `/sdd.build` next runs at `model_role: EXECUTION`
+— resolved and dispatched automatically, no confirmation needed. Optionally print the one-line
+observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 
@@ -309,8 +311,8 @@ AskUserQuestion(
     "question": "Testes aprovados. Iniciar implementação?",
     "header": "Próximo",
     "options": [
-      {"label": "/clear + /sdd.build (Recomendado)", "description": "Contexto limpo para implementar — comando em haiku"},
-      {"label": "/sdd.build", "description": "Implementar no contexto atual — comando em haiku"},
+      {"label": "/clear + /sdd.build (Recomendado)", "description": "Contexto limpo para implementar — comando em EXECUTION"},
+      {"label": "/sdd.build", "description": "Implementar no contexto atual — comando em EXECUTION"},
       {"label": "/sdd.test --refine", "description": "Ajustar testes antes de codar"},
       {"label": "/sdd.check", "description": "Revisar estrutura da feature"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
@@ -319,8 +321,6 @@ AskUserQuestion(
   }]
 )
 ```
-
-> **Critical switch**: Before this next-steps question, run the **model-confirm** AskUserQuestion from `references/model-suggestion-advisory.md` (`phase_key`: `test→build`). BLOCKING in Standard and before build inside `/sdd.go`.
 
 ---
 
@@ -355,7 +355,7 @@ AskUserQuestion(
 
 ## References
 
-- **Test Writer**: `sdd-small-test-writer`, `sdd-large-test-writer` agents
+- **Test Writer**: `sdd-test-writing`, `sdd-test-writing` agents
 - **Manifest contract**: `references/test-manifest-contract.md`
 - **Templates**: `framework/templates/test-plan.md`, `framework/templates/tests-manifest.json`
 - **Stack detection**: `detect-language.sh`, `detect-stack.sh`, `sdd/PROJECT.md`

@@ -27,7 +27,7 @@ profile=$(grep "type:" sdd/wip/*/meta.md | grep -o 'technical\|non-technical')
 
 | Aspect | Technical | Non-Technical |
 |--------|-----------|---------------|
-| **Code snippets** | Show full implementation examples via `sdd-implementer` skill | Hide code, show "Configuration ready ✓" |
+| **Code snippets** | Show full implementation examples via `sdd-implementation` skill | Hide code, show "Configuration ready ✓" |
 | **Project services** | Show service names, containers, TTLs | Show "Data storage configured" |
 | **Architecture diagrams** | Show full Mermaid diagrams | Show simplified flow: "Input → Processing → Output" |
 | **API contracts** | Show full REST contracts with schemas | Show "API structure: N endpoints" |

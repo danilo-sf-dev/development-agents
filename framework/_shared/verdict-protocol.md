@@ -2,7 +2,7 @@
 
 **Used by**: `skills/sdd-code-reviewer/SKILL.md`, `skills/sdd-performance-expert/SKILL.md`, and any future quality-gate skill that must produce a machine-readable pass/fail result for `/sdd.build` Layer 3. This file is the **single source of truth** for the verdict file's location convention, JSON envelope, and enforcement rule — consuming skills should reference this file by name instead of repeating it.
 
-**Read this file when**: you are writing or maintaining a quality-gate skill and need the verdict-file contract, or you are the orchestrating command / `sdd-validator-runner` and need to know how to read and enforce a verdict.
+**Read this file when**: you are writing or maintaining a quality-gate skill and need the verdict-file contract, or you are the orchestrating command / `sdd-validator` and need to know how to read and enforce a verdict.
 
 ---
 
@@ -82,4 +82,4 @@ Consuming skills may add extra fields beyond the base envelope. These are **not*
 > **v2.0.0**: After completing its checks, a quality-gate skill MUST write a verdict file per the location convention above.
 
 > **CRITICAL**: Enforcement is **agent-based**, not an OS/git hook (see `framework/HARD_GATES.md`).
-> The orchestrating command and `sdd-validator-runner` **must** read this verdict and stop (AskUserQuestion, always including **Outros**) when the result is `CANNOT_PROCEED`.
+> The orchestrating command and `sdd-validator` **must** read this verdict and stop (AskUserQuestion, always including **Outros**) when the result is `CANNOT_PROCEED`.

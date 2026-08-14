@@ -6,7 +6,7 @@
 
 > **MANDATORY**: Always offer interactive selection after tasks are approved.
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `plan→test`.
+**Model Routing (automatic, informational only)**: `/sdd.test` next runs at `model_role: STRONG` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)**:
 
@@ -16,8 +16,8 @@ AskUserQuestion(
     "question": "Tasks prontas. Escrever os testes primeiro?",
     "header": "Próximo",
     "options": [
-      {"label": "/clear + /sdd.test (Recomendado)", "description": "Contexto limpo para o gate tests-first — comando em sonnet"},
-      {"label": "/sdd.test", "description": "Escrever testes que falham antes da implementação — comando em sonnet"},
+      {"label": "/clear + /sdd.test (Recomendado)", "description": "Contexto limpo para o gate tests-first — comando em STRONG"},
+      {"label": "/sdd.test", "description": "Escrever testes que falham antes da implementação — comando em STRONG"},
       {"label": "/sdd.test --refine", "description": "Só refinar se os testes já existirem"},
       {"label": "/sdd.check", "description": "Revisar a estrutura das tasks"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}

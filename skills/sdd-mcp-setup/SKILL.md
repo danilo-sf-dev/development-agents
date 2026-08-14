@@ -1,11 +1,12 @@
 ---
 name: sdd-mcp-setup
 description: Configura integrações MCP de forma agnóstica ao IDE (detecta host, guia plugin nativo ou wizard genérico, smoke test read-only). Use via /sdd.mcp para Jira/Confluence Atlassian e futuras integrações. Não assume Cursor, VS Code ou IntelliJ.
-tools: Read, Write, Glob, Grep, AskUserQuestion
-model: sonnet
+model_role: EXECUTION
 ---
 
 # SDD MCP Setup — Integration Specialist
+
+> **Execution requirement**: `INTERACTIVE_OFFLOAD` when embedded inside a larger flow (`/sdd.start` Step 6.5, `/sdd.spec --include`) — see `framework/_shared/harness-capabilities.md`. When invoked as its own standalone entry point (`/sdd.mcp`), running inline (`INVOKE_PROCEDURE`) is a **complete substitute, not a degraded one** — there's no larger flow's context to protect, and the dialogue itself is short (a handful of `ASK_USER` turns + one smoke-test fetch).
 
 You configure **optional** MCP integrations for the SDD pack. You are **host-agnostic**: detect the current coding assistant / IDE, prefer a native path when one exists, otherwise run a generic wizard. The human executes UI/auth steps; you print exact steps and verify.
 
@@ -24,17 +25,14 @@ When `/sdd.mcp` runs (or `/sdd.start` Step 6.5 / `/sdd.spec --include` needs MCP
 
 > Canonical: `framework/standards/boundaries.md` — B-12, section **`sdd-mcp-setup`**.
 
-- AskUserQuestion gates **must** include **Outros** (see `commands/references/ask-user-question-outros.md`)
+- `ASK_USER` gates **must** include **Outros** (see `commands/references/ask-user-question-outros.md`)
 - Prefer merging project-root `.mcp.json` only after human approval
-
-> Every `AskUserQuestion(...)` call in this file (host selection, integration/access-mode choice, config-path choice) is `ASK_USER` — see `framework/_shared/harness-capabilities.md` for the per-harness translation.
-
 - Response language = user's language
 
 ## Lazy references (read when needed)
 
 | When                     | Read                                         |
-| ------------------------ | -------------------------------------------- |
+| -------------------------- | ----------------------------------------------- |
 | Host detection           | `commands/references/mcp-detect-host.md`     |
 | Atlassian per-host steps | `commands/references/mcp-atlassian-hosts.md` |
 | Smoke test               | `commands/references/mcp-smoke-test.md`      |
@@ -45,7 +43,7 @@ When `/sdd.mcp` runs (or `/sdd.start` Step 6.5 / `/sdd.spec --include` needs MCP
 ## Modes
 
 | Invocation         | Behavior                                                                                                       |
-| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Default `/sdd.mcp` | Full wizard                                                                                                    |
 | `--status`         | Report flag + config presence; no writes                                                                       |
 | `--test <url>`     | Smoke test only (requires MCP already usable)                                                                  |
@@ -57,7 +55,7 @@ When `/sdd.mcp` runs (or `/sdd.start` Step 6.5 / `/sdd.spec --include` needs MCP
 
 ### Step 0 — Resolve pack paths
 
-- Hub: `agents/`, `commands/`, `framework/` at workspace root
+- Hub: `skills/`, `commands/`, `framework/` at workspace root
 - Target project: pack may live under `development-agents/`
 - Working files: `sdd/PROJECT.md`, project-root `.mcp.json`
 
@@ -65,10 +63,10 @@ When `/sdd.mcp` runs (or `/sdd.start` Step 6.5 / `/sdd.spec --include` needs MCP
 
 Follow `commands/references/mcp-detect-host.md`.
 
-Announce detected host + confidence. If ambiguous, AskUserQuestion:
+Announce detected host + confidence. If ambiguous, use `ASK_USER`:
 
 ```
-AskUserQuestion(questions=[{
+ASK_USER(questions=[{
   "question": "Qual assistente / IDE você está usando para o SDD?",
   "header": "Host MCP",
   "options": [
@@ -87,7 +85,7 @@ AskUserQuestion(questions=[{
 v1 supports Atlassian only. Ask:
 
 ```
-AskUserQuestion(questions=[{
+ASK_USER(questions=[{
   "question": "Qual integração MCP configurar?",
   "header": "Integração",
   "options": [
@@ -106,7 +104,7 @@ If user asks for write access: explain v1 is read-only; document that write tool
 Check and report:
 
 | Signal                                                            | Meaning                            |
-| ----------------------------------------------------------------- | ---------------------------------- |
+| --------------------------------------------------------------------- | -------------------------------------- |
 | `sdd/PROJECT.md` has `atlassian_mcp_enabled: true`                | Pack expects Atlassian MCP         |
 | Project-root `.mcp.json` has Atlassian / atlassian / AtlassianMCP | Local MCP entry present            |
 | Host already shows Atlassian tools available                      | Prefer smoke test over reconfigure |
@@ -123,7 +121,7 @@ From `mcp-atlassian-hosts.md`:
 Present **numbered steps for the human**. Wait for confirmation before writing files.
 
 ```
-AskUserQuestion(questions=[{
+ASK_USER(questions=[{
   "question": "Como prefere configurar o Atlassian MCP neste host?",
   "header": "Caminho",
   "options": [
@@ -184,7 +182,7 @@ Only after smoke test **pass** (or user explicitly overrides with risk note):
 - Set `atlassian_mcp_enabled: true` under defaults / documented location matching template
 - Do not rewrite unrelated PROJECT.md sections
 
-### Step 8 — Summary (return to main agent / user)
+### Step 8 — Summary (return to calling command / user)
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -200,13 +198,13 @@ Smoke:    <pass|fail|skipped> <issue-key if any>
 Next: /sdd.spec --include "<jira-url>"
 ```
 
-Return this summary (~150–300 tokens) when invoked as a subagent.
+Return this summary (~150–300 tokens) when invoked via `INTERACTIVE_OFFLOAD`.
 
 ---
 
 ## `--status` mode
 
-Print table: host guess, flag, `.mcp.json` keys, whether Atlassian tools appear available. No AskUserQuestion required unless ambiguous. No writes.
+Print table: host guess, flag, `.mcp.json` keys, whether Atlassian tools appear available. No `ASK_USER` required unless ambiguous. No writes.
 
 ## `--test <url>` mode
 
@@ -214,7 +212,7 @@ Run smoke test only. If MCP unavailable → STOP with steps to run full `/sdd.mc
 
 ## `--disable` mode
 
-1. Confirm with AskUserQuestion (+ Outros)
+1. Confirm with `ASK_USER` (+ Outros)
 2. Set `atlassian_mcp_enabled: false` (or remove override)
 3. Print how to remove Atlassian entry from `.mcp.json` / host UI — delete only if user asks
 
@@ -222,11 +220,9 @@ Run smoke test only. If MCP unavailable → STOP with steps to run full `/sdd.mc
 
 ## What success looks like
 
-- Human can paste a Jira URL into `/sdd.spec --include` and the agent reads the card without copy-paste
+- Human can paste a Jira URL into `/sdd.spec --include` and read the card without copy-paste
 - Pack remains usable without MCP (manual paste fallback unchanged)
 - No secrets committed; `.mcp.json` may be project-local and gitignored per team policy
-
----
 
 ## Out of scope (v1)
 
@@ -234,4 +230,3 @@ Run smoke test only. If MCP unavailable → STOP with steps to run full `/sdd.mc
 - Org-internal MCPs (E2E, dependency scanners, ProjectSystemMCP)
 - Auto-install of marketplace plugins
 - Forcing one IDE
-  )

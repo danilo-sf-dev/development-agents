@@ -88,10 +88,10 @@ Recovery:
 
 ```bash
 # Check what failed
-bash development-agents/tools/validation/validate-technical.sh sdd/wip/[feature]
+bash development-agents/framework/tools/validate-technical.sh sdd/wip/[feature]
 
 # Also check spec alignment
-bash development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/[feature]
+bash development-agents/framework/tools/validate-spec-alignment.sh sdd/wip/[feature]
 ```
 
 **Common issues and fixes:**
@@ -427,13 +427,17 @@ echo "=== Validating Functional Spec ==="
 bash development-agents/tools/validation/validate-functional.sh sdd/wip/$feature
 
 echo "=== Validating Technical Spec ==="
-bash development-agents/tools/validation/validate-technical.sh sdd/wip/$feature
+bash development-agents/framework/tools/validate-technical.sh sdd/wip/$feature
 
 echo "=== Validating Spec Alignment ==="
-bash development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/$feature
+bash development-agents/framework/tools/validate-spec-alignment.sh sdd/wip/$feature
 
 echo "=== Validating Tasks ==="
-bash development-agents/tools/validation/validate-tasks.sh sdd/wip/$feature
+if [ -x "development-agents/framework/tools/validate-tasks.sh" ]; then
+    bash development-agents/framework/tools/validate-tasks.sh sdd/wip/$feature
+else
+    echo "(validate-tasks.sh not shipped by default — apply framework/standards/task-format.md checks manually)"
+fi
 
 echo "=== Validating Code Compliance ==="
 bash development-agents/tools/validation/validate-code.sh .

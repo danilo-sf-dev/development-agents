@@ -1,7 +1,7 @@
 ---
 name: sdd.mcp
 description: Configure optional MCP integrations (Atlassian Jira/Confluence read-only first) in a host-agnostic way. Detects IDE/assistant, guides native or generic setup, smoke-tests from a URL. Use when /sdd.spec --include needs Jira or when atlassian_mcp_enabled is desired.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[--status|--test <url>|--disable]"
 ---
 
@@ -47,7 +47,7 @@ This is a TOOL CALL you must execute, not content to display.
 /sdd.mcp --disable
 ```
 
-**See also**: `framework/MCP_SETUP_GUIDE.md` · agent `sdd-mcp-setup` · `/sdd.spec --include`
+**See also**: `framework/MCP_SETUP_GUIDE.md` · Skill `sdd-mcp-setup` · `/sdd.spec --include`
 
 ---
 
@@ -57,8 +57,8 @@ This is a TOOL CALL you must execute, not content to display.
 
 Siga **integralmente** as instruções em (primeiro caminho que existir):
 
-- `agents/sdd-mcp-setup.md` (hub / pack na raiz)
-- `development-agents/agents/sdd-mcp-setup.md` (pack em subpasta no projeto)
+- `skills/sdd-mcp-setup/SKILL.md` (hub / pack na raiz)
+- `development-agents/skills/sdd-mcp-setup/SKILL.md` (pack em subpasta no projeto)
 
 Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolated subagent when the host supports Task/subagents (`sdd-mcp-setup`); otherwise run the agent instructions in this session. This is `DELEGATE_OFFLOAD` (context-saving only, no isolation-integrity requirement — see `framework/_shared/harness-capabilities.md`), so the inline fallback is a complete substitute, not a degraded one.
 
@@ -94,7 +94,7 @@ Você é o executor: use Read, Write, Glob, Grep, AskUserQuestion. Prefer isolat
 
 ### 6. Next steps
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `mcp→next` (match recommended option: spec → forte; start → barato).
+**Model Routing (automatic, informational only)**: the next command (`/sdd.spec` → `STRONG`, or `/sdd.start` → `EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ⛔ INVOKE TOOL (do not print this, CALL the tool) — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 AskUserQuestion(questions=[{

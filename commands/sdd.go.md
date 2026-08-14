@@ -1,7 +1,7 @@
 ---
 name: sdd.go
 description: Express mode - orchestrates start, spec, plan, build, and finish in one command. Use for rapid feature development when you want the full workflow automated end-to-end with minimal interaction.
-model: inherit
+model_role: inherit
 argument-hint: "[feature-description]"
 ---
 
@@ -53,7 +53,56 @@ argument-hint: "[feature-description]"
 
 **Flow**: `/sdd.start --express` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish`
 
-**Model advisory (start of express)**: Read `references/model-suggestion-advisory.md` — show **express compact map** once at Step 0/1. Before delegating to `/sdd.build`, show full box + **model-confirm** for `test→build` (BLOCKING). Before `/sdd.finish`, show full box + **model-confirm** for `build→finish` (BLOCKING). Other intermediate pauses may be skipped in Express.
+## Model Routing — automatic per-phase dispatch (mandatory mechanism, not documentation-only)
+
+`/sdd.go` declares `model_role: inherit` because it does not pin a single model for the whole
+express run — each phase below has its own `model_role` (from that phase's own command frontmatter)
+and must actually execute under that phase's resolved Model Role, automatically, with no operator
+switching anything. Each phase is dispatched as its own isolated execution, resolved to that phase's
+`model_role` at the moment of dispatch — see `adapters/<harness>/README.md` § Model Routing for the
+concrete mechanism on the installed harness (it differs per harness — a call-time parameter on some,
+a child-process invocation on others — but the dispatch-per-phase principle is the same everywhere).
+This works cleanly because pipeline phases already pass state through disk (`sdd/wip/<feature>/*.md`,
+`meta.md`) rather than through shared conversation context — the same file-based handoff
+`ISOLATED_WORKSPACE` and `VALIDATOR_ISOLATED` already rely on.
+
+**Gates inside a dispatched phase — `NEEDS_USER_INPUT`, not silent pass-through.** A dispatched phase
+cannot itself ask the human a question — verified directly on Claude Code (an immediate tool error,
+not a pause), and true by design on every harness's headless/isolated dispatch mechanism. This applies
+to every phase below that can reach a Gate (1/2/2.5/3, the tests-immutability check in `/sdd.build`,
+next-steps prompts), which in practice is most of them. So a dispatched phase does not "surface its
+own gates" — it **stops at the gate and returns** `{"status": "NEEDS_USER_INPUT", "gate": "<name>",
+"questions": [...]}` instead of attempting to ask. The orchestrator (the session actually running
+`/sdd.go`, which does have the real `ASK_USER` mechanism) then asks the question itself, persists the
+answer to `sdd/wip/<feature>/meta.md` (or wherever that Gate already persists its result), and
+re-dispatches that phase — resolving its `model_role` fresh again — to continue from the state file
+now that the answer is recorded. A phase may therefore take more than one dispatch (one per Gate it
+contains, plus one final call) — this is expected, not an error. See
+`framework/_shared/model-routing.md` § "Interactive dispatch" for the full, harness-general statement
+of this rule, and `adapters/claude-code/README.md` for a live-tested account of exactly this sequence.
+
+**Phase-by-phase Model Role** (the harness's resolver — see `adapters/<harness>/README.md` — is the
+one and only lookup; no concrete model name is repeated here on purpose, so this table never goes
+stale when `config/model-routing.yaml` changes):
+
+| Phase | `model_role` (from that command's frontmatter) |
+| --- | --- |
+| `/sdd.start --express` | `EXECUTION` |
+| `/sdd.spec` | `STRONG` |
+| `/sdd.plan` | `EXECUTION` |
+| `/sdd.test` | `STRONG` |
+| `/sdd.build` (implementation) | `EXECUTION` |
+| `/sdd.build` → validator sub-step | `STRONG` (always — `VALIDATOR_ISOLATED`) |
+| `/sdd.check` | `EXECUTION` |
+| `/sdd.finish` | `STRONG` |
+
+Gates that need a human answer (the 3-5 consolidated Express questions, any `AskUserQuestion`) are
+**never** answered by the phase-dispatch call itself — a dispatched phase cannot ask the human a
+question at all (verified: the attempt errors immediately). The orchestrator session running
+`/sdd.go` asks them, after the current phase-dispatch call returns `NEEDS_USER_INPUT` instead of a
+final result — see "Model Routing" above for the full mechanism.
+Nothing about model routing changes *which* gates fire or *what* they ask; it changes which model
+executes each phase and which execution context (always the orchestrator) answers a gate along the way.
 
 **Express Rules**:
 
@@ -110,15 +159,18 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 
 ## Execution Flow
 
-| Step | Command                         | Reference                    | Override                     |
-| ---- | ------------------------------- | ---------------------------- | ---------------------------- |
-| 0    | Input validation                | -                            | Derive name if description   |
-| 1    | `/sdd.start "<name>" --express` | `start.md` → "Express Mode"  | -                            |
-| 2    | `/sdd.spec`                     | `spec.md` → "Express Mode"   | Consolidated questions       |
-| 3    | `/sdd.plan`                     | `plan.md` → "Express Mode"   | Auto-select Batched          |
-| 4    | `/sdd.test`                     | `test.md` → "Express Mode"   | Auto-approve if red verified |
-| 5    | `/sdd.build`                    | `build.md` → "Express Mode"  | Auto-retry 2x max            |
-| 6    | `/sdd.finish`                   | `finish.md` → "Express Mode" | All validations mandatory    |
+Each step (except Step 0, local input parsing) is a separate model-pinned dispatch — see "Model
+Routing" above, not an inline continuation of this same turn.
+
+| Step | Command                         | Reference                    | Override                     | `model_role` |
+| ---- | -------------------------------- | ----------------------------- | ----------------------------- | --- |
+| 0    | Input validation                | -                            | Derive name if description   | (local, no dispatch) |
+| 1    | `/sdd.start "<name>" --express` | `start.md` → "Express Mode"  | -                            | `EXECUTION` |
+| 2    | `/sdd.spec`                     | `spec.md` → "Express Mode"   | Consolidated questions       | `STRONG` |
+| 3    | `/sdd.plan`                     | `plan.md` → "Express Mode"   | Auto-select Batched          | `EXECUTION` |
+| 4    | `/sdd.test`                     | `test.md` → "Express Mode"   | Auto-approve if red verified | `STRONG` |
+| 5    | `/sdd.build`                    | `build.md` → "Express Mode"  | Auto-retry 2x max            | `EXECUTION` (+ validator: `STRONG`) |
+| 6    | `/sdd.finish`                   | `finish.md` → "Express Mode" | All validations mandatory    | `STRONG` |
 
 ---
 
@@ -147,7 +199,7 @@ Same rules as standard mode. Reference: `spec.md` → "E2E E2E Testing Decision"
 When `/sdd.go` is invoked:
 
 1. **DO NOT implement each step from scratch**
-2. **DO reference and execute the standard commands**
+2. **DO dispatch each standard command as its own model-pinned call** (see "Model Routing" above — never execute a phase's content inline in this turn)
 3. **DO apply express rules as overrides**
 
 ### Step 0: Input Validation
@@ -157,42 +209,42 @@ If input is description → derive name (extract key nouns, kebab-case), DO NOT 
 
 ### Step 1: Initialize
 
-Execute `/sdd.start "<feature-name>" --express`
+Dispatch `/sdd.start "<feature-name>" --express` per "Model Routing" above (`model_role: EXECUTION`)
 → Reference: `start.md` → "Express Mode (`--express`)" section
 
 Includes: app verification, creation if needed, scaffolding cleanup, git branch, meta.md with `execution_mode: express`
 
 ### Step 2: Specifications
 
-Execute `/sdd.spec` (reads `execution_mode: express` from meta.md)
+Dispatch `/sdd.spec` per "Model Routing" above (`model_role: STRONG`; reads `execution_mode: express` from meta.md)
 → Reference: `spec.md` → "Express Mode" section
 
 **Override**: Use consolidated questions instead of full interview.
 
 ### Step 3: Task Planning
 
-Execute `/sdd.plan` (reads mode from meta.md)
+Dispatch `/sdd.plan` per "Model Routing" above (`model_role: EXECUTION`; reads mode from meta.md)
 → Reference: `plan.md` → "Express Mode" section
 
 **Override**: Auto-select "Batched" strategy, no confirmation.
 
 ### Step 4: Tests-First
 
-Execute `/sdd.test` (reads mode from meta.md)
+Dispatch `/sdd.test` per "Model Routing" above (`model_role: STRONG`; reads mode from meta.md)
 → Reference: `test.md` → "Express Mode" section
 
 **Override**: Auto-approve if red phase verified. Never skip writing/running the tests-first gate.
 
 ### Step 5: Implementation
 
-Execute `/sdd.build` (reads mode from meta.md)
+Dispatch `/sdd.build` per "Model Routing" above (`model_role: EXECUTION`; validator sub-step always `STRONG`; reads mode from meta.md)
 → Reference: `build.md` → "Express Mode" section
 
 **Override**: Auto-retry failures (max 2x), then pause.
 
 ### Step 6: Finalization
 
-Execute `/sdd.finish` (reads mode from meta.md)
+Dispatch `/sdd.finish` per "Model Routing" above (`model_role: STRONG`; reads mode from meta.md)
 → Reference: `finish.md` → "Express Mode" section
 
 All validations mandatory (, tests, code review, security, performance).

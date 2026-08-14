@@ -58,7 +58,7 @@ Run deterministic validators before subagent analysis for efficiency.
 
 ```bash
 # Step 0a: Validate spec alignment (functional ↔ technical)
-alignment_result=$(bash development-agents/framework/tools/validation/validate-spec-alignment.sh sdd/wip/[feature] --json)
+alignment_result=$(bash development-agents/framework/tools/validate-spec-alignment.sh sdd/wip/[feature] --json)
 alignment_valid=$(echo "$alignment_result" | grep -o '"aligned":[^,}]*' | cut -d: -f2)
 drift_count=$(echo "$alignment_result" | grep -o '"drift_count":[0-9]*' | cut -d: -f2)
 
@@ -74,7 +74,7 @@ if [ $? -eq 0 ]; then
     verdict=$(echo "$layers_result" | grep -o '"verdict":"[^"]*"' | cut -d'"' -f4)
     echo "📊 Cross-layer analysis: $verdict"
 else
-    echo "🤖 Delegating to sdd-layer-analyzer for deep analysis..."
+    echo "🤖 Delegating to sdd-layer-analysis for deep analysis..."
     # Use subagent for complex analysis
 fi
 ```
@@ -203,7 +203,7 @@ Validates `sdd/PROJECT.md` against framework standards and manages override regi
 
 ```bash
 # Validate PROJECT.md (deterministic)
-result=$(bash development-agents/framework/tools/validation/validate-project.sh sdd/PROJECT.md --json)
+result=$(bash development-agents/framework/tools/validate-project.sh sdd/PROJECT.md --json)
 ```
 
 ### What It Checks

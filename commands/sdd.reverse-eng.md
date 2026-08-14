@@ -1,7 +1,7 @@
 ---
 name: sdd.reverse-eng
 description: Reverse engineer existing codebase to generate SDD specifications. Use when user wants to create specs from existing code.
-model: sonnet
+model_role: STRONG
 argument-hint: "[scope]"
 ---
 
@@ -46,7 +46,7 @@ Use cases:
 
 **See also**: `/sdd.help reverse-eng` · `--focus` / `--audio` lazy-loaded at bottom.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:reverse-eng`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -92,13 +92,15 @@ AskUserQuestion(
 ## Subagent Delegation (MANDATORY)
 
 > **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
-> This command MUST delegate exploration work to the `sdd-explorer` subagent.
+> This command MUST delegate exploration work to the `sdd-explorer` Skill.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  MANDATORY SUBAGENT: sdd-explorer                                   │
 │                                                                      │
-│  Use Task(subagent_type="sdd-explorer") for: Phase 0-3             │
+│  Delegate Phase 0-3 to sdd-explorer (model_role: EXECUTION),         │
+│  per DELEGATE_OFFLOAD — see harness-capabilities.md +                │
+│  adapters/<harness>/README.md for the concrete dispatch              │
 │                                                                      │
 │  WHY: Reduces tokens 30-40%, isolates read-only operations,          │
 │       preserves main context for synthesis.                          │
@@ -236,7 +238,7 @@ sdd/
 | **ADR/RFC**         | `docs/adr/`, `docs/rfc/`                                                                            | 🟡 Medium  |
 | **Plain Docs**      | `ARCHITECTURE.md`, `DESIGN.md`                                                                      | 🟡 Medium  |
 
-> **Reference**: See `sdd-explorer` agent for complete detection commands.
+> **Reference**: See `sdd-explorer` Skill for complete detection commands.
 
 **Optimization Strategies** (based on detected frameworks):
 
@@ -295,7 +297,7 @@ sdd/
 
 ### Phase 1: Parallel Extraction (lazy-loaded)
 
-> Extract from existing docs/specs **and** code (both mandatory). Prefer Task()-delegated subagents.
+> Extract from existing docs/specs **and** code (both mandatory). Prefer delegating to subagents.
 > **ONLY IF** running Phase 1 (full/update/enhance modes that extract):
 > Read `references/reverse-eng-phase1.md`.
 
@@ -393,7 +395,7 @@ Telemetry is captured **automatically by hooks** during reverse-engineering. No 
 
 ## References
 
-- **Detection commands**: `sdd-explorer` agent
+- **Detection commands**: `sdd-explorer` Skill
 - **Spec templates**: `templates/reverse-eng/`
 - **Anti-Invention Protocol**: Never invent APIs, endpoints, or config
 - **Consistency validation**: `standards/spec-consistency.md`

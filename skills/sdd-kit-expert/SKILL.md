@@ -1,11 +1,15 @@
 ﻿---
 name: sdd-kit-expert
 description: Expert on SDD Kit framework for Spec-Driven Development. This is a SKILL (invoke via Skill tool, NOT Task/subagent). Use when user invokes /sdd.* commands, asks about spec-driven development, functional/technical specifications, task planning, or feature implementation workflow. **TRIGGER ON** project, spec, functional spec, technical spec, SDD, feature workflow.
+model_role: EXECUTION
 ---
 
 # SDD Kit Expert
 
-> **SKILL**: Framework knowledge base for SDD workflow. Invoke with `Skill("sdd-kit-expert")` — this is `INVOKE_PROCEDURE`, not `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD`. Do NOT use `Task(subagent_type=...)` — this is a Skill, not a subagent. See `framework/_shared/harness-capabilities.md` for why that distinction matters (a Skill runs inline in the caller's context; an agent delegation gets its own context).
+> **SKILL**: Framework knowledge base for SDD workflow. Invoke via `INVOKE_PROCEDURE`, not
+> `DELEGATE_ISOLATED`/`DELEGATE_OFFLOAD` — this is a Skill, not an isolated delegation. See
+> `framework/_shared/harness-capabilities.md` for why that distinction matters (a Skill runs inline in
+> the caller's context; an isolated delegation gets its own context) and for the per-harness mechanism.
 
 You are an expert on the SDD Kit framework for Spec-Driven Development (SDD).
 
@@ -93,8 +97,6 @@ sdd/
 **✅ CORRECT**: Each command does ONE phase, then waits for next command
 **✅ ALSO CORRECT**: `/sdd.go` orchestrates all phases in express mode
 
----
-
 ## Framework Overview
 
 SDD Kit is a command-based framework that helps teams build software predictably with AI coding assistants. It enforces a tests-first workflow:
@@ -168,23 +170,21 @@ Never invent a corporate platform stack when the repo uses something else.
 | `sdd-code-reviewer` | Security rules and vulnerability review |
 | `sdd-validator` | Build validation, test execution, code compliance |
 
-### Subagents (Task Delegation)
+### Skills (offloadable — via `OFFLOAD_READ`/`OFFLOAD_REASONING`/`INTERACTIVE_OFFLOAD`/`VALIDATOR_ISOLATED`/`ISOLATED_WORKSPACE`)
 
-| Subagent                | Purpose                                       | Used By                                     |
-| ----------------------- | --------------------------------------------- | ------------------------------------------- |
-| `sdd-validator-runner`  | Isolated quality gates execution              | `/sdd.build`, `/sdd.finish`                 |
-| `sdd-layer-analyzer`    | Cross-layer consistency validation            | `/sdd.check --sync`, `/sdd.fix`             |
-| `sdd-debugger`          | Deep debugging and root cause analysis        | `/sdd.fix` for complex bugs                 |
-| `sdd-project-wizard`    | Interactive PROJECT.md creation               | `/sdd.start` when PROJECT.md missing        |
-| `sdd-mcp-setup`         | Host-agnostic MCP setup (Atlassian read-only) | `/sdd.mcp`                                  |
-| `context-guardian`      | Context and tool delegation for efficiency    | All specs requiring external documentation  |
-| `sdd-system-designer`   | Architecture decisions, multi-stack options   | `/sdd.spec technical`                       |
-| `sdd-explorer`          | Project service discovery and configuration   | `/sdd.spec technical`                       |
-| `sdd-large-test-writer` | E2E test generation via E2E                   | `/sdd.test` or `/sdd.build` if E2E deferred |
-| `sdd-small-test-writer` | Unit and integration tests                    | `/sdd.test` (tests-first)                   |
-| `sdd-implementer`       | Code implementation from specs                | `/sdd.build` for implementation tasks       |
-| `sdd-backlog-manager`   | Backlog CRUD operations                       | `/sdd.backlog`                              |
-| `sdd-explorer`          | Codebase exploration + code ownership mapping | `/sdd.reverse-eng`                          |
+| Skill                   | Purpose                                                     | Used By                                     |
+| ------------------------ | -------------------------------------------------------------- | ------------------------------------------- |
+| `sdd-validator`         | Quality gates; isolated mode requires `VALIDATOR_ISOLATED`  | `/sdd.build`, `/sdd.finish`                 |
+| `sdd-layer-analysis`    | Cross-layer consistency validation                          | `/sdd.check --sync`, `/sdd.fix`             |
+| `sdd-debugger`          | Deep debugging and root cause analysis                      | `/sdd.fix` for complex bugs                 |
+| `sdd-project-wizard`    | Interactive PROJECT.md creation                              | `/sdd.start` when PROJECT.md missing        |
+| `sdd-mcp-setup`         | Host-agnostic MCP setup (Atlassian read-only)               | `/sdd.mcp`                                  |
+| `context-guardian`      | Context and tool delegation for efficiency                  | All specs requiring external documentation  |
+| `sdd-system-design`     | Architecture decisions, multi-stack options                 | `/sdd.spec technical`                       |
+| `sdd-explorer`          | Codebase/service discovery, code ownership mapping           | `/sdd.spec technical`, `/sdd.reverse-eng`   |
+| `sdd-test-writing`      | Unit/integration tests; absorbs E2E as a lazy-loaded branch  | `/sdd.test` (tests-first); E2E if deferred to `/sdd.build` |
+| `sdd-implementation`    | Code implementation from specs                               | `/sdd.build` for implementation tasks       |
+| `sdd-backlog`           | Backlog CRUD operations                                      | `/sdd.backlog`                              |
 
 ### Inline Analysis Capabilities
 
@@ -194,7 +194,7 @@ These capabilities are performed directly by the responsible agent/subagent duri
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------ |
 | Detect missing spec info by feature type   | Agent applies `references/spec-completeness-checklist.md` directly against the spec content                  | `/sdd.spec` Completeness Check |
 | Code compliance validation                 | `sdd-explorer` reasoning against coding-standards.md                                                         | `sdd-explorer`                 |
-| Architecture pattern selection             | `sdd-system-designer` applies the pattern-selection rules directly (see its "Architecture Patterns" section) | `sdd-system-designer`          |
+| Architecture pattern selection             | `sdd-system-design` applies the pattern-selection rules directly (see its "Architecture Patterns" section) | `sdd-system-design`          |
 | E2E test scenario analysis                 | Agent reasoning over the functional spec, using `extract-e2e.sh` for deterministic scenario extraction       | `/sdd.plan` E2E planning       |
 | Task layer classification                  | Agent applies the Layer 1/2/3 rules from the `sdd-validator` skill directly                                  | `/sdd.plan` layer assignment   |
 | Context compaction (MINIMAL/STANDARD/FULL) | Manual summarization per `context-guardian` skill guidance                                                   | Context Budget Protocol        |
@@ -228,7 +228,7 @@ Mandatory validations at every phase:
 - **Feature Reopen** - `/sdd.start --reopen` brings completed features back to WIP (reverse dependency checking as gate)
 - **Feature Rename** - `/sdd.start --rename` renames current feature (folder + meta.md)
 - **Framework Viewer** - Interactive HTML viewer for project state (`/sdd.project --view`), outputs to `/tmp/project-viewer/`
-- **Multi-Stack Architecture Options** - During `/sdd.spec technical`, `sdd-system-designer` presents 2-3 architecture options with ASCII diagrams and pros/cons via `AskUserQuestion` (Standard mode + technical profile). Selected option recorded as ADR.
+- **Multi-Stack Architecture Options** - During `/sdd.spec technical`, `sdd-system-design` presents 2-3 architecture options with ASCII diagrams and pros/cons via `AskUserQuestion` (Standard mode + technical profile). Selected option recorded as ADR.
 - **ASCII Architecture Diagrams** - Mandatory in technical spec approval: distinctive shapes per component type (cylinders for databases, segmented tubes for queues)
 - **Database Migration Branch** - Auto-detects DB migrations in technical spec (Step 5.5), `/sdd.build` creates `migration/*` branch from master, runs `your-migration-tool init`, then returns to feature branch
 - **Code Ownership Mapping** - During `/sdd.reverse-eng`, maps each component to primary/supporting/shared files with confidence scores (0.2-1.0) for brownfield development
@@ -276,7 +276,7 @@ For teams with multiple apps collaborating in a domain, `/sdd.hub` coordinates s
 4. **Quality Gates**: Validation at every phase transition
 5. **Horizontal Consistency**: Changes propagate across all layers
 6. **Context Budget Protocol**: Monitor usage, delegate at 60%, compact at 85%
-7. **Validator Independence**: Validation runs in isolated context (sdd-validator-runner)
+7. **Validator Independence**: Validation runs in isolated context (sdd-validator)
 
 ## When to Use This Skill
 

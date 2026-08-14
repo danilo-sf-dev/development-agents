@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.plan
 description: Generate implementation tasks from approved specifications. Use when both functional and technical specs are approved and user is ready to break down work into executable tasks with effort estimates.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[--approve]"
 ---
 
@@ -37,7 +37,7 @@ argument-hint: "[--approve]"
 
 **See also**: `/sdd.help plan`. Next after approve: `/sdd.test` (not `/sdd.build`).
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:plan`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: EXECUTION`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ## Pre-Requisites (BLOCKING)
 
@@ -70,7 +70,7 @@ Technical spec must be approved (`detect-phase.sh`). Context >50% → advisory v
 ### Step 2: Validate Pre-Requisites
 
 ```bash
-bash development-agents/framework/tools/validation/validate-spec-conflicts.sh sdd/wip/[feature] blocking
+bash development-agents/framework/tools/validate-spec-conflicts.sh sdd/wip/[feature] blocking
 ```
 
 If conflicts exist → Block, instruct user to run `/sdd.spec`.
@@ -151,7 +151,21 @@ If context high → recommend `/clear` before `/sdd.test`.
 
 ## tasks.json Structure (lazy-loaded)
 
-> Read `references/plan-tasks-json.md` when writing/validating the file shape.
+> **MANDATORY field, not lazy**: every task's ID field is `"id"` (never `"task_id"` or any other
+> name), formatted `TASK-NNN` (e.g. `"id": "TASK-001"`) — never a custom prefix like `IMPL-`/`TEST-`.
+>
+> **MANDATORY container shape, not lazy**: the top-level task list is a single flat array at
+> `.tasks[]` — `{"tasks": [{"id": "TASK-001", ...}, {"id": "TASK-002", ...}]}`. Layer grouping is
+> expressed by each task's own `"layer"` field (0/1/2/3), never by nesting tasks inside a `.layers[]`
+> array. `{"layers": [{"tasks": [...]}]}` is NOT the contract, even though "Task Layers" below
+> describes layers conceptually — that section is about the `layer` field's values, not about the
+> file's top-level shape.
+>
+> `validate-complete.sh` and other deterministic tooling parse this exact contract (`.tasks[]`, each
+> with `"id"`); a task written with any other field name, ID format, or container shape is invisible
+> to them. See `framework/standards/task-format.md` and `references/plan-tasks-json.md` for the full
+> schema (structure only, no exception on these two points). Read `references/plan-tasks-json.md`
+> when writing/validating the rest of the file shape.
 
 ## Task Layers (short)
 
