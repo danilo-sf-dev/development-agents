@@ -70,7 +70,7 @@ Technical spec must be approved (`detect-phase.sh`). Context >50% → advisory v
 ### Step 2: Validate Pre-Requisites
 
 ```bash
-bash development-agents/framework/tools/validation/validate-spec-conflicts.sh sdd/wip/[feature] blocking
+bash development-agents/framework/tools/validate-spec-conflicts.sh sdd/wip/[feature] blocking
 ```
 
 If conflicts exist → Block, instruct user to run `/sdd.spec`.

@@ -88,7 +88,7 @@ Recovery:
 
 ```bash
 # Check what failed
-bash development-agents/tools/validation/validate-technical.sh sdd/wip/[feature]
+bash development-agents/framework/tools/validate-technical.sh sdd/wip/[feature]
 
 # Also check spec alignment
 bash development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/[feature]
@@ -427,7 +427,7 @@ echo "=== Validating Functional Spec ==="
 bash development-agents/tools/validation/validate-functional.sh sdd/wip/$feature
 
 echo "=== Validating Technical Spec ==="
-bash development-agents/tools/validation/validate-technical.sh sdd/wip/$feature
+bash development-agents/framework/tools/validate-technical.sh sdd/wip/$feature
 
 echo "=== Validating Spec Alignment ==="
 bash development-agents/tools/validation/validate-spec-alignment.sh sdd/wip/$feature

@@ -15,7 +15,7 @@
 
 ```bash
 # Run deterministic validation BEFORE asking for approval
-bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip/[feature]
+bash development-agents/framework/tools/validate-technical.sh sdd/wip/[feature]
 
 # If exit code != 0: Show errors, DO NOT proceed to approval
 # If exit code == 0: Continue to security validation
@@ -26,7 +26,7 @@ bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip
 > **MANDATORY**: Security validation catches OWASP Top 10 vulnerabilities. Never skip.
 
 ```bash
-bash development-agents/framework/tools/validation/validate-security.sh sdd/wip/[feature] --spec
+bash development-agents/framework/tools/validate-security.sh sdd/wip/[feature] --spec
 # If exit code != 0: Show security issues, DO NOT proceed to approval
 # If exit code == 0: Continue to summary
 ```
