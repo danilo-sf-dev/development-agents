@@ -11,7 +11,7 @@
 
 ```bash
 # 1. Check global user preference (persistent across all projects)
-profile_file="$HOMEdevelopment-agents/framework/user-profile.yaml"
+profile_file="$HOME/development-agents/framework/user-profile.yaml"
 if [ -f "$profile_file" ]; then
     profile=$(grep "^profile:" "$profile_file" | cut -d: -f2 | tr -d ' ')
     if [ -n "$profile" ]; then
