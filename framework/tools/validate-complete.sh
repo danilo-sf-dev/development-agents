@@ -32,11 +32,12 @@ warnings=0
 
 echo "✅ Checking task completion..."
 
-# Count total tasks
-total_tasks=$(grep -c "^#### TASK-[0-9]" "$TASKS_FILE")
-
-# Count completed tasks in progress.md
-completed_tasks=$(grep -c "^#### TASK-[0-9].*\- \*\*Status\*\*: ✅ Completed" "$PROGRESS_FILE")
+# tasks.json (not progress.md) is the single source of truth for task status
+# (framework/standards/task-format.md). Read "id"/"status" from the actual
+# JSON via jq rather than grepping for a markdown "#### TASK-" heading, which
+# can never occur inside JSON syntax.
+total_tasks=$(jq '.tasks | length' "$TASKS_FILE")
+completed_tasks=$(jq '[.tasks[] | select(.status == "completed")] | length' "$TASKS_FILE")
 
 echo "  Tasks: $completed_tasks / $total_tasks completed"
 
@@ -47,7 +48,7 @@ if [ "$completed_tasks" -ne "$total_tasks" ]; then
     # List incomplete tasks
     echo ""
     echo "  Incomplete tasks:"
-    grep "^#### TASK-" "$PROGRESS_FILE" | grep -v "✅ Completed" | sed 's/^#### /  • /'
+    jq -r '.tasks[] | select(.status != "completed") | "  • \(.id): \(.title) (\(.status))"' "$TASKS_FILE"
 
     ((errors++))
 else

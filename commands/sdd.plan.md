@@ -151,7 +151,12 @@ If context high → recommend `/clear` before `/sdd.test`.
 
 ## tasks.json Structure (lazy-loaded)
 
-> Read `references/plan-tasks-json.md` when writing/validating the file shape.
+> **MANDATORY field, not lazy**: every task's ID field is `"id"` (never `"task_id"` or any other
+> name), formatted `TASK-NNN` (e.g. `"id": "TASK-001"`) — never a custom prefix like `IMPL-`/`TEST-`.
+> `validate-complete.sh` and other deterministic tooling parse this exact contract; a task written
+> with any other field name or ID format is invisible to them. See `framework/standards/task-format.md`
+> and `references/plan-tasks-json.md` for the full schema (structure only, no exception on this field).
+> Read `references/plan-tasks-json.md` when writing/validating the rest of the file shape.
 
 ## Task Layers (short)
 
