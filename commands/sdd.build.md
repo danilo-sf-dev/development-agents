@@ -184,6 +184,15 @@ Always persist task status to `tasks.json` after each green gate. Commits at lay
 ## Improvement Capture & Flow (short)
 
 Capture generalizable learnings in `4-implementation/progress.md` (canonical path — see `framework/WORKFLOW.md` and `references/start-feature-structure.md`) for `/sdd.finish` promotion.
+
+> **MANDATORY literal lines in `progress.md`** — `validate-complete.sh` (run by `/sdd.finish`) greps for
+> these exact substrings, not just their meaning, so free-form phrasing or bold markdown around them
+> is invisible to it:
+> - `Tests passing: N/M` (e.g. `Tests passing: 15/15`) — lowercase "passing", literal colon.
+> - `Coverage: N%` (e.g. `Coverage: 92%`) if a coverage figure is available.
+> - `Commit: \`<hash>\`` once per completed task (e.g. `` Commit: `a1b2c3d` ``) — plain `Commit:`, not
+>   `**Commit**:`.
+
 Iterative: one task cycle at a time unless Express/`--all`.
 Flow: phase check → read tasks → layers → per-task implement+gate → final validate → next `/sdd.finish` or `/sdd.check`.
 
