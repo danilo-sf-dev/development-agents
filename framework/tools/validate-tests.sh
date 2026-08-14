@@ -85,15 +85,24 @@ if [ -z "$test_cmd" ]; then
     ((errors++))
 else
     echo "  Running: $test_cmd"
-    if command -v pytest >/dev/null 2>&1 && [[ "$test_cmd" == pytest* ]]; then
-        cov_output=$(cd "$PROJECT_ROOT" && pytest --cov="$PROJECT_ROOT" --cov-report=term-missing 2>&1)
-        test_exit=$?
-        echo "$cov_output" | tail -20
-        coverage_pct=$(echo "$cov_output" | grep -E "^TOTAL" | grep -oE "[0-9]+%" | tr -d '%' | tail -1)
+    # Determine pass/fail from a plain run first — coverage tooling (e.g. missing
+    # pytest-cov) must never turn a passing suite into a false "tests failing".
+    # PYTHONPATH is set for the python fallback: a project with no pyproject.toml/
+    # conftest.py adding the root to sys.path otherwise fails on "src.foo" imports
+    # for reasons that have nothing to do with the code under test.
+    if [[ "$test_cmd" == pytest* ]]; then
+        test_output=$(cd "$PROJECT_ROOT" && PYTHONPATH="$PROJECT_ROOT" eval "$test_cmd" 2>&1)
     else
         test_output=$(cd "$PROJECT_ROOT" && eval "$test_cmd" 2>&1)
-        test_exit=$?
-        echo "$test_output" | tail -20
+    fi
+    test_exit=$?
+    echo "$test_output" | tail -20
+
+    if command -v pytest >/dev/null 2>&1 && [[ "$test_cmd" == pytest* ]]; then
+        if python3 -c "import pytest_cov" >/dev/null 2>&1; then
+            cov_output=$(cd "$PROJECT_ROOT" && PYTHONPATH="$PROJECT_ROOT" pytest --cov="$PROJECT_ROOT" --cov-report=term-missing 2>&1)
+            coverage_pct=$(echo "$cov_output" | grep -E "^TOTAL" | grep -oE "[0-9]+%" | tr -d '%' | tail -1)
+        fi
     fi
 
     if [ "$test_exit" -eq 0 ]; then
