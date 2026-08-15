@@ -13,7 +13,14 @@ After `/sdd.finish` completes successfully:
 ### Interactive Next Steps (After Archive Complete)
 
 > **MANDATORY (Standard mode only)**: Offer interactive selection after archiving.
-> **EXPRESS MODE**: Skip this - show brief completion message only.
+> **EXPRESS MODE**: Skip the AskUserQuestion — show the completion block below only.
+
+Before the `AskUserQuestion` (or as the sole output in Express mode), print:
+
+```
+✓ concluído: /sdd.finish
+Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓
+```
 
 **Model Routing (automatic, informational only)**: the next command (`/sdd.pr` or `/sdd.start`, both `model_role: EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 

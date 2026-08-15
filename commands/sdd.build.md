@@ -160,17 +160,11 @@ Confirm tasks.json all completed, meta stage ready for finish, no pending INFRA/
 
 > Resolve and invoke hooks for phase=`build`, trigger=`before-approval`.
 
-### Step 8: Next Step (mandatory)
+### Step 8: Interactive Next Steps (lazy-loaded)
 
-After all tasks and final validation, output:
-
-```
-✓ concluído: /sdd.build
-▶ próxima fase: /sdd.check
-Pipeline: START → SPEC → PLAN → TEST → BUILD → [CHECK] → FINISH
-```
-
-Next step is ALWAYS `/sdd.check` — do NOT offer `/sdd.finish` as an option at this stage.
+> Next step after build is ALWAYS `/sdd.check` — never `/sdd.finish` directly.
+> **ONLY IF** Standard mode AskUserQuestion UX:
+> Read `references/build-next-steps.md`.
 
 ## Platform Compliance Validation (lazy-loaded)
 

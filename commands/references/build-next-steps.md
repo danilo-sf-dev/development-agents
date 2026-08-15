@@ -5,9 +5,11 @@
 ### Step 8: Interactive Next Steps (After All Tasks Complete)
 
 > **MANDATORY (Standard mode only)**: Offer interactive selection after all tasks complete.
-> **EXPRESS MODE**: Skip this - auto-invoke `/sdd.finish`.
+> **EXPRESS MODE**: Skip this — auto-advance to `/sdd.check` (next mandatory phase).
+>
+> Next step is ALWAYS `/sdd.check` — do NOT offer `/sdd.finish` here.
 
-**Model Routing (automatic, informational only)**: `/sdd.finish` next runs at `model_role: STRONG` —
+**Model Routing (automatic, informational only)**: `/sdd.check` next runs at `model_role: EXECUTION` —
 resolved and dispatched automatically, no confirmation needed. Optionally print the one-line
 observability format from `references/model-suggestion-advisory.md`.
 
@@ -16,11 +18,11 @@ observability format from `references/model-suggestion-advisory.md`.
 ```
 AskUserQuestion(
   questions=[{
-    "question": "Todas as tasks concluídas e validadas. Pronto para finalizar?",
+    "question": "Todas as tasks concluídas e validadas. Próximo: /sdd.check.",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.finish (Recomendado)", "description": "Arquivar a feature e concluir — comando em STRONG (code review final)"},
-      {"label": "/sdd.check --sync", "description": "Checagem final de consistência"},
+      {"label": "/sdd.check (Recomendado)", "description": "Verificar status e consistência antes de finalizar — comando em EXECUTION"},
+      {"label": "/sdd.check --sync", "description": "Verificação completa de consistência specs/tasks/código"},
       {"label": "/sdd.build --layer 3", "description": "Rodar de novo os quality checks"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
@@ -33,11 +35,12 @@ AskUserQuestion(
 
 | Selection                 | Action                                      |
 | ------------------------- | ------------------------------------------- |
-| /sdd.finish (Recomendado) | `CONTINUE_WORKFLOW("/sdd.finish")`          |
+| /sdd.check (Recomendado)  | `CONTINUE_WORKFLOW("/sdd.check")`           |
 | /sdd.check --sync         | `CONTINUE_WORKFLOW("/sdd.check --sync")`    |
 | /sdd.build --layer 3      | `CONTINUE_WORKFLOW("/sdd.build --layer 3")` |
 | Outros                    | User types custom input                     |
 
-**MODE BEHAVIOR**: In Express mode this whole section is skipped (see line 8) — `/sdd.finish` is auto-invoked directly, dispatched at its resolved `STRONG` role like any other Express phase (see `commands/sdd.go.md` § Model Routing).
+**MODE BEHAVIOR**: In Express mode this section is skipped — `/sdd.check` is auto-invoked directly,
+dispatched at its resolved `EXECUTION` role (see `commands/sdd.go.md` § Model Routing).
 
 ---

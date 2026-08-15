@@ -77,6 +77,13 @@ At the **start of every** `/sdd.*` command:
 
 ---
 
+## Pipeline Transition Observability (mandatory on successful completion)
+
+At the successful end of each command's final step, BEFORE any `AskUserQuestion`, print the
+pipeline transition block defined in `commands/references/phase-transition-observability.md`.
+Use that file's per-command mapping to fill in `<current>`, `<next>`, and the bracketed pipeline
+string. Do NOT print on error, mid-command, or inside a gate. One block per invocation, max.
+
 ## Single delivery path (mandatory)
 
 There is **one** feature pipeline: `start → spec → plan → test → build → check → finish → pr`

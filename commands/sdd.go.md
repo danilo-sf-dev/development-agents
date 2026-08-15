@@ -203,6 +203,24 @@ When `/sdd.go` is invoked:
 2. **DO dispatch each standard command as its own model-pinned call** (see "Model Routing" above — never execute a phase's content inline in this turn)
 3. **DO apply express rules as overrides**
 
+### Phase Transition Logging (mandatory, never pause)
+
+Before dispatching each step, print one line:
+
+```
+▶ [N/7] /sdd.<phase> (Pipeline: START → ... → [PHASE] → ... → FINISH)
+```
+
+Full example sequence per `commands/references/phase-transition-observability.md` § `/sdd.go`.
+After the pipeline completes:
+
+```
+✓ concluído: /sdd.finish
+Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓
+```
+
+Never pause or gate on these lines — output only.
+
 ### Step 0: Input Validation
 
 If input is valid kebab-case name → use directly
