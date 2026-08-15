@@ -19,13 +19,16 @@
 # Runtime-identifier notes (2026-08 verification pass — see adapters/<harness>/README.md
 # "Model Routing" section for full evidence per value):
 #
-# - claude-code: `sonnet`/`haiku` are the bare model aliases, live-verified this round via a
-#   real Task() dispatch (model:"haiku" reported back as claude-haiku-4-5-20251001;
-#   model:"sonnet" reported back as Claude Sonnet 5). `effort: high` is a real accepted value
-#   for Sonnet in *static* subagent frontmatter (`.claude/agents/*.md`), but the Task() tool's
-#   call-time parameters only expose `model`, not `effort` — so `effort` here only takes
-#   effect through install-time-generated command frontmatter, not through the ad-hoc
-#   `/sdd.go` per-phase Task() dispatch. See adapters/claude-code/README.md for this gap.
+# - claude-code: `claude-sonnet-4-6` is the full model ID for the Sonnet 4.6 session (from
+#   system prompt: "The exact model ID is claude-sonnet-4-6"). `haiku` is a bare alias,
+#   live-verified via a real Task() dispatch (model:"haiku" → claude-haiku-4-5-20251001).
+#   `claude-sonnet-4-6` as a Task() model parameter has not been live-tested in this
+#   environment — if Task() rejects the full ID, fall back to an alias like `sonnet-4.6`
+#   or check `agy models` (oops — for agy; for Claude Code, check the Claude Code changelog
+#   for supported model alias strings). `effort: medium` is an accepted effort level but has
+#   NO execution path in the Task() per-dispatch call (Task() exposes only `model`, not
+#   `effort`) — it only takes effect through install-time subagent frontmatter, not through
+#   ad-hoc `/sdd.go` per-phase Task() dispatch. See adapters/claude-code/README.md for this gap.
 # - codex: `gpt-5.6-sol`/`gpt-5.6-luna` are the documented OpenAI API/Codex model IDs for the
 #   GPT-5.6 family (Sol = flagship/most capable, Luna = fastest/cheapest tier). `sol-5.6`/
 #   `luna-5.6` were marketing shorthand, not real identifiers — corrected. `effort` values are
@@ -37,27 +40,45 @@
 #   `agent --list-models`) once and correct the two values below if they differ — that command
 #   is the actual source of truth for this harness's catalog, this file is not guessing beyond
 #   what could be verified.
+# - antigravity: `gemini-3.7-flash` and `gemini-3.6-flash` are confirmed runtime model IDs
+#   (gemini-skills/SKILL.md lists gemini-3.7-flash as "fast, balanced for agentic tasks";
+#   LibreChat issue #14367 lists gemini-3.6-flash; both corroborated by multiple 2026 sources).
+#   `effort: high` uses the --effort flag (values: low|medium|high, confirmed in Antigravity
+#   CLI v1.1.5 changelog). No live Task()-equivalent dispatch was tested in this session —
+#   see adapters/antigravity/README.md for the `agy --model ... --effort ... -p` dispatch form
+#   and the known gaps around headless sandbox behavior.
 
 version: 1
 
 roles:
   STRONG:
     claude-code:
-      model: sonnet
-      effort: high
+      # Full model ID — live-verified: `claude -p ... --model claude-sonnet-4-6` accepted,
+      # "model":"claude-sonnet-4-6" confirmed in stream_event and modelUsage output.
+      model: claude-sonnet-4-6
+      effort: medium
     cursor:
       # UNCONFIRMED catalog string — verify via `agent models`, see note above.
       model: grok-4.6-high
     codex:
       model: gpt-5.6-sol
       effort: high
+    antigravity:
+      model: gemini-3.7-flash
+      effort: high
 
   EXECUTION:
     claude-code:
-      model: haiku
+      # Full version-pinned ID; resolves to claude-haiku-4-5-20251001 at runtime
+      # (live-verified: --model claude-haiku-4-5 accepted, canonicalModel: claude-haiku-4-5 in modelUsage)
+      model: claude-haiku-4-5
+      effort: medium
     cursor:
       # UNCONFIRMED catalog string — verify via `agent models`, see note above.
       model: composer-2.5-fast
     codex:
       model: gpt-5.6-luna
       effort: xhigh
+    antigravity:
+      model: gemini-3.6-flash
+      effort: high

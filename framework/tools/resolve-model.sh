@@ -4,7 +4,7 @@
 # Reads config/model-routing.yaml — nothing else in the pack may hardcode this mapping.
 #
 # Usage: resolve-model.sh <harness> <STRONG|EXECUTION> [--json]
-#   harness: claude-code | cursor | codex
+#   harness: claude-code | cursor | codex | antigravity
 # Output (default): "model=<value> effort=<value-or-empty>" on stdout, one line.
 # Output (--json):  {"model":"...","effort":"..."} (effort omitted if not set for that harness/role)
 # Exit codes: 0 = resolved, 1 = bad usage, 2 = role/harness not found in config
@@ -21,7 +21,7 @@ OUTPUT_JSON=false
 [[ "$3" == "--json" ]] && OUTPUT_JSON=true
 
 if [[ -z "$HARNESS" || -z "$ROLE" ]]; then
-    echo "Usage: resolve-model.sh <claude-code|cursor|codex> <STRONG|EXECUTION> [--json]" >&2
+    echo "Usage: resolve-model.sh <claude-code|cursor|codex|antigravity> <STRONG|EXECUTION> [--json]" >&2
     exit 1
 fi
 
