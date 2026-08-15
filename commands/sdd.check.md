@@ -189,7 +189,14 @@ By Status:
 
 1. Complete in-progress tasks (TASK-014, TASK-015)
 2. Start pending tasks (TASK-016, TASK-017, TASK-018)
-3. When done: /sdd.finish
+3. When all tasks done: `/sdd.build` complete → `/sdd.check` (confirm) → `/sdd.finish`
+
+> **If all tasks are already done** (post-build state), replace items 1-3 with:
+> ```
+> ✓ concluído: /sdd.check
+> ▶ próxima fase: /sdd.finish
+> Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → [FINISH]
+> ```
 
 ────────────────────────────────────────
 📋 Backlog Summary

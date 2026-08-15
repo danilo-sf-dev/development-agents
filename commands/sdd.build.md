@@ -160,10 +160,17 @@ Confirm tasks.json all completed, meta stage ready for finish, no pending INFRA/
 
 > Resolve and invoke hooks for phase=`build`, trigger=`before-approval`.
 
-### Step 8: Interactive Next Steps (lazy-loaded)
+### Step 8: Next Step (mandatory)
 
-> Recommend `/sdd.finish` (or `/sdd.check` if used). **ONLY IF** AskUserQuestion UX:
-> Read `references/build-next-steps.md`.
+After all tasks and final validation, output:
+
+```
+✓ concluído: /sdd.build
+▶ próxima fase: /sdd.check
+Pipeline: START → SPEC → PLAN → TEST → BUILD → [CHECK] → FINISH
+```
+
+Next step is ALWAYS `/sdd.check` — do NOT offer `/sdd.finish` as an option at this stage.
 
 ## Platform Compliance Validation (lazy-loaded)
 
@@ -223,4 +230,4 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 1. Block if tests not approved. Never edit approved tests (anti-gaming above).
 2. Per task: implement production code only; quality via `sdd-validator`; fix all findings.
 3. Flag-first rare paths: infra / migration / mobile → matching refs.
-4. After all tasks + final validation → recommend `/sdd.finish` (or `/sdd.check` if used).
+4. After all tasks + final validation → next step is ALWAYS `/sdd.check`; output pipeline progress; do NOT offer `/sdd.finish` before check.

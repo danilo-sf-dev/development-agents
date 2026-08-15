@@ -33,7 +33,7 @@ argument-hint: "[feature-description]"
 | `--audio`        | Record feature description via microphone  |
 | `--resume`       | Resume interrupted express workflow        |
 
-**Flow**: start → spec → plan → test → build → finish (3-5 questions total)
+**Flow**: start → spec → plan → test → build → check → finish (3-5 questions total)
 
 **Examples**:
 
@@ -170,7 +170,8 @@ Routing" above, not an inline continuation of this same turn.
 | 3    | `/sdd.plan`                     | `plan.md` → "Express Mode"   | Auto-select Batched          | `EXECUTION` |
 | 4    | `/sdd.test`                     | `test.md` → "Express Mode"   | Auto-approve if red verified | `STRONG` |
 | 5    | `/sdd.build`                    | `build.md` → "Express Mode"  | Auto-retry 2x max            | `EXECUTION` (+ validator: `STRONG`) |
-| 6    | `/sdd.finish`                   | `finish.md` → "Express Mode" | All validations mandatory    | `STRONG` |
+| 6    | `/sdd.check`                    | `check.md` → "Express Mode"  | Auto-advance if status clean | `EXECUTION` |
+| 7    | `/sdd.finish`                   | `finish.md` → "Express Mode" | All validations mandatory    | `STRONG` |
 
 ---
 
@@ -242,7 +243,14 @@ Dispatch `/sdd.build` per "Model Routing" above (`model_role: EXECUTION`; valida
 
 **Override**: Auto-retry failures (max 2x), then pause.
 
-### Step 6: Finalization
+### Step 6: Status/Validation Check
+
+Dispatch `/sdd.check` per "Model Routing" above (`model_role: EXECUTION`; reads mode from meta.md)
+→ Reference: `check.md` → "Express Mode" section
+
+**Override**: Auto-advance if status clean (all tasks completed, no blockers).
+
+### Step 7: Finalization
 
 Dispatch `/sdd.finish` per "Model Routing" above (`model_role: STRONG`; reads mode from meta.md)
 → Reference: `finish.md` → "Express Mode" section
