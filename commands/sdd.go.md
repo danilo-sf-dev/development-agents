@@ -213,14 +213,18 @@ Before dispatching each step, print one line:
 
 Full example sequence per `commands/references/phase-transition-observability.md` § `/sdd.go`.
 
-**Mandatory, blocking, applies to every one of the 7 phases**: immediately after each dispatched
-phase's own call returns (whether it completed cleanly or round-tripped through one or more
-`NEEDS_USER_INPUT` gates), before dispatching the next phase, execute `EMIT_PHASE_OBSERVABILITY`
-— `commands/references/phase-transition-observability.md` § "Enforcement" — for that phase's own
-dispatch(es): real Usage if the phase's `model_role` dispatch was a measurable child process, or
-`telemetry: unavailable (interactive session)` if it wasn't. This mirrors the per-phase breakdown
-`/sdd.reverse-eng.md` documents for its own 8 phases; `/sdd.go`'s 7 phases follow the same rule —
-one `EMIT_PHASE_OBSERVABILITY` per phase closure, never a single end-of-run summary in its place.
+**Mandatory, blocking, executable — applies to every one of the 7 phases**: at Step 0 (before
+dispatching Step 1), run `SDD_TELEMETRY_STATE="$(mktemp)"` once — local, disposable, never
+versioned, reused for every phase call below and passed once more to the final `total` call.
+Immediately after each dispatched phase's own call returns (whether it completed cleanly or
+round-tripped through one or more `NEEDS_USER_INPUT` gates), before dispatching the next phase, run
+`bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> [--model "$RESOLVED_MODEL" --stream-file "$STREAM_FILE"] --phase-label "Phase <N> — /sdd.<phase>" --state-file "$SDD_TELEMETRY_STATE"`
+(omit `--model`/`--stream-file` together if that phase's dispatch produced no capturable stream —
+the helper then deterministically prints `unavailable`, never composed by the agent). Its stdout
+**is** that phase's Usage block. This mirrors the per-phase mechanism `/sdd.reverse-eng.md` uses
+for its own 8 phases; `/sdd.go`'s 7 phases follow the same rule — one `phase` call per phase
+closure, never a single end-of-run summary in its place. Full contract:
+`commands/references/phase-transition-observability.md` § "Helper mechanism".
 
 After the pipeline completes:
 
@@ -229,9 +233,10 @@ After the pipeline completes:
 Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓
 ```
 
-Immediately after, print the `Usage Total` block per `phase-transition-observability.md` §
-"Total / coverage" — `/sdd.go` is a multi-phase command (7 phases), so `coverage: N/7 measured
-phases` is mandatory there, summing only the phases whose dispatch was actually measurable.
+Immediately after, run
+`bash framework/tools/emit-phase-observability.sh total --harness <claude-code|codex> --state-file "$SDD_TELEMETRY_STATE"`
+once — its stdout is the `Usage Total` + `coverage: N/7 measured phases` block, summing only the
+phases whose dispatch was actually measurable.
 
 Never pause or gate on these lines — output only.
 

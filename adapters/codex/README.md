@@ -191,16 +191,18 @@ fallback (see "OFFLOAD_READ" above) has no stream to parse — that phase's Usag
 `telemetry: unavailable (interactive session)`, never a guess.
 
 **This capture/parse step only produces data — it does not, by itself, guarantee the Usage block
-gets printed.** Printing it at each phase closure is the calling command's job, enforced by
-`EMIT_PHASE_OBSERVABILITY` (`commands/references/phase-transition-observability.md` §
-"Enforcement"). A real Codex smoke test of `/sdd.reverse-eng` showed this exact gap: the run used
-the native in-session subagent path documented above, and even the `unavailable` fallback never
-printed — not because this adapter's rule was wrong, but because nothing in the command's own
-phase-closure flow was actually invoking it. If the native-subagent path is used again, the
-calling command's `EMIT_PHASE_OBSERVABILITY` step is what makes `telemetry: unavailable
-(interactive session)` print for that phase — this adapter's job stops at documenting that the
-fallback has no stream to parse; making the print happen is the command file's enforcement, not
-this adapter's.
+gets printed.** Printing it at each phase closure is the calling command's job. Two rounds of
+this were needed: round 1 added a textual, situated "must print" instruction to every command
+file, which a real Codex smoke test of `/sdd.reverse-eng` showed was still not enough — the run
+used the native in-session subagent path documented above, and even the `unavailable` fallback
+never printed, because a markdown instruction to compose a fallback string is not a verifiable
+action. Round 2 replaced that with `framework/tools/emit-phase-observability.sh` — a real Bash
+step every command runs, whose own deterministic logic prints `telemetry: unavailable
+(interactive session)` whenever the command omits `--stream-file` (the honest thing to do when
+the native-subagent path was used), rather than the LLM writing that string itself. This
+adapter's job stops at documenting that the native-subagent fallback has no stream to parse;
+`commands/references/phase-transition-observability.md` § "Helper mechanism" is the concrete
+mechanism that turns that fact into printed output.
 
 ## Known gaps (do not silently degrade past these — tell the user)
 

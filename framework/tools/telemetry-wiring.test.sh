@@ -110,11 +110,14 @@ else
 fi
 
 # ── Test 5: reverse-eng phase breakdown documented ───────────────────────────
+# Round 2: the literal "unavailable (interactive session)" string is now owned by the helper
+# script's own deterministic output (never restated verbatim per phase in this doc — the doc
+# instead says which phases call the helper without --stream-file, which is what triggers it).
 echo ""
 echo "Test 5: sdd.reverse-eng.md documents its own phase-by-phase measurability"
 if grep -qi "Phase 0" "$REVERSE_ENG" && \
    grep -qi "Phase 1-3" "$REVERSE_ENG" && \
-   grep -qi "unavailable (interactive session)" "$REVERSE_ENG"; then
+   grep -q "no \`--model\`/\`--stream-file\` → \`unavailable\`" "$REVERSE_ENG"; then
     ok "Phase 0 / Phase 1-3 / inline-unavailable breakdown present in sdd.reverse-eng.md"
 else
     fail "Phase breakdown not found in sdd.reverse-eng.md telemetry section"
@@ -280,40 +283,47 @@ else
     fail "agent-instructions.md does not name EMIT_PHASE_OBSERVABILITY"
 fi
 
-# ── SHARED Test 18: every single-phase command carries its own situated instruction ──
+# ── SHARED Test 18: every single-phase command invokes the concrete helper ──
+# Round 2 replaced the abstract EMIT_PHASE_OBSERVABILITY term in these files with a concrete
+# `emit-phase-observability.sh phase` invocation (the whole point of round 2 — a textual-only
+# reminder was tested against a real Codex run and found insufficient). The term itself is
+# intentionally gone from these files now; check for the executable action instead.
 echo ""
-echo "Test 18 [SHARED]: every single-phase command has its own EMIT_PHASE_OBSERVABILITY line"
+echo "Test 18 [SHARED]: every single-phase command invokes emit-phase-observability.sh concretely"
 MISSING=""
 for f in $SINGLE_PHASE_CMDS; do
-    if ! grep -q "EMIT_PHASE_OBSERVABILITY" "$PACK_ROOT/commands/$f" 2>/dev/null; then
+    if ! grep -q "emit-phase-observability.sh phase" "$PACK_ROOT/commands/$f" 2>/dev/null; then
         MISSING="$MISSING $f"
     fi
 done
 if [[ -z "$MISSING" ]]; then
-    ok "All 7 single-phase commands ($SINGLE_PHASE_CMDS) carry an explicit instruction"
+    ok "All 7 single-phase commands ($SINGLE_PHASE_CMDS) invoke the helper concretely"
 else
-    fail "Missing EMIT_PHASE_OBSERVABILITY instruction in:$MISSING"
+    fail "Missing concrete emit-phase-observability.sh invocation in:$MISSING"
 fi
 
-# ── SHARED Test 19: sdd.reverse-eng.md enforces per-phase, not just describes format ──
+# ── SHARED Test 19: sdd.reverse-eng.md enforces per-phase via the concrete helper ──
 echo ""
-echo "Test 19 [SHARED]: sdd.reverse-eng.md has a blocking per-phase instruction, not just a table"
-if grep -q "EMIT_PHASE_OBSERVABILITY" "$REVERSE_ENG" && \
-   grep -qi "Eight-Phase Workflow" "$REVERSE_ENG" && \
-   grep -qi "fires up to 8 times" "$REVERSE_ENG"; then
-    ok "sdd.reverse-eng.md carries an explicit, situated per-phase enforcement instruction"
+echo "Test 19 [SHARED]: sdd.reverse-eng.md invokes the helper per phase, plus a state-file total"
+if grep -q "emit-phase-observability.sh phase" "$REVERSE_ENG" && \
+   grep -q "emit-phase-observability.sh total" "$REVERSE_ENG" && \
+   grep -q "SDD_TELEMETRY_STATE" "$REVERSE_ENG" && \
+   grep -qi "Eight-Phase Workflow" "$REVERSE_ENG"; then
+    ok "sdd.reverse-eng.md carries concrete per-phase + total helper invocations and state-file convention"
 else
-    fail "sdd.reverse-eng.md enforcement instruction missing or not clearly per-phase"
+    fail "sdd.reverse-eng.md concrete helper wiring missing or incomplete"
 fi
 
-# ── SHARED Test 20: sdd.go.md enforces per-phase + Total/coverage ──
+# ── SHARED Test 20: sdd.go.md enforces per-phase via the concrete helper + Total/coverage ──
 echo ""
-echo "Test 20 [SHARED]: sdd.go.md requires EMIT_PHASE_OBSERVABILITY per phase and a final Total"
-if grep -q "EMIT_PHASE_OBSERVABILITY" "$GO_CMD" && \
+echo "Test 20 [SHARED]: sdd.go.md invokes the helper per phase and a final total with N/7 coverage"
+if grep -q "emit-phase-observability.sh phase" "$GO_CMD" && \
+   grep -q "emit-phase-observability.sh total" "$GO_CMD" && \
+   grep -q "SDD_TELEMETRY_STATE" "$GO_CMD" && \
    grep -qi "coverage: N/7" "$GO_CMD"; then
-    ok "sdd.go.md ties each of its 7 phases to EMIT_PHASE_OBSERVABILITY and a coverage total"
+    ok "sdd.go.md ties each of its 7 phases to a concrete helper call and a coverage total"
 else
-    fail "sdd.go.md missing per-phase enforcement or the N/7 coverage requirement"
+    fail "sdd.go.md missing concrete per-phase helper call or the N/7 coverage requirement"
 fi
 
 # ── SHARED Test 21: old parsers untouched (git working tree, if this is a git repo) ─────
@@ -382,14 +392,14 @@ else
     fail "Not inside a git work tree — cannot verify Cursor zero-diff"
 fi
 
-# ── CODEX Test 25: native/inline fallback still tied to EMIT_PHASE_OBSERVABILITY ─────
+# ── CODEX Test 25: native/inline fallback tied to the concrete helper, not just text ─────
 echo ""
-echo "Test 25 [CODEX]: native-subagent fallback explicitly enforced, not just documented"
-if grep -qi "EMIT_PHASE_OBSERVABILITY" "$CODEX_README" && \
+echo "Test 25 [CODEX]: native-subagent fallback tied to the concrete helper mechanism"
+if grep -q "emit-phase-observability.sh" "$CODEX_README" && \
    grep -q "does not, by itself, guarantee the Usage block" "$CODEX_README"; then
-    ok "Codex README ties the real smoke-test gap to EMIT_PHASE_OBSERVABILITY enforcement"
+    ok "Codex README ties the real smoke-test gap to the concrete emit-phase-observability.sh helper"
 else
-    fail "Codex README does not tie the native-subagent case to enforcement"
+    fail "Codex README does not tie the native-subagent case to the concrete helper"
 fi
 
 # ── CODEX Test 26: codex telemetry-display.md no longer defines a competing format ───

@@ -79,58 +79,115 @@ Do NOT pause between phases for this logging — it is output only, never a gate
 
 ---
 
-## Enforcement — `EMIT_PHASE_OBSERVABILITY` (blocking, not optional)
+## Enforcement — `EMIT_PHASE_OBSERVABILITY` is an executable action, not a convention
 
-**Root cause this section exists to close**: a real Codex smoke test of `/sdd.reverse-eng`
-produced neither the transition block, nor a real Usage block, nor even the `unavailable`
-fallback — for any phase. The mechanism was never invoked at all. Investigation found that the
-only instruction to print these blocks lived in `framework/_shared/agent-instructions.md`, read
-**once at the start** of the command, with no situated reminder at the point where a phase
-actually closes — many tool calls and, for multi-phase commands, several internal phases later.
-A single read-once pointer at the top of a long run is not a reliable trigger for an action that
-must happen repeatedly at specific later points. Documentation that only *describes* the format
-(what `commands/sdd.reverse-eng.md`'s old "Telemetry" section did) is not the same as an
-*instruction* to execute it — description without a blocking directive at the actual decision
-point was silently treated as optional.
+**Root cause history — read before changing this section again.** Round 1 of this fix added the
+"blocking, not optional" language below as a *textual* reminder, situated in every command file
+instead of only in `agent-instructions.md`. A real Codex smoke test of `/sdd.reverse-eng` *after*
+that fix landed showed it was still not enough: no Usage block, and not even the `unavailable`
+fallback, printed for any phase — the run used Codex's native in-session subagent path, and
+nothing forced the fallback text to be written once nothing was captured to report. More textual
+reinforcement ("must", "blocking", "always") was explicitly ruled out as a next step, because it
+is the same class of fix that had just failed. **`EMIT_PHASE_OBSERVABILITY` is therefore not a
+"thing to remember to write" — it is a concrete script the command invokes as a real Bash step**,
+`framework/tools/emit-phase-observability.sh` (§ "Helper mechanism" below). The unavailable
+fallback is now produced by that script's own deterministic logic when nothing measurable was
+handed to it — never by the LLM composing the fallback string from memory.
 
-**The fix**: `EMIT_PHASE_OBSERVABILITY` is the conceptual routine every logical phase closure
-must execute, defined once here and referenced by name — never re-described — from every command
-file that has a phase-closure point:
+**Where it fires:**
 
 - Every **single-phase command** (`/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.test`,
   `/sdd.build`, `/sdd.check`, `/sdd.finish`) has exactly one closure point: its own final step.
-  That command's own `## AI Agent Instructions` section carries an explicit line naming
-  `EMIT_PHASE_OBSERVABILITY` — not just the inherited pointer from `agent-instructions.md` —
-  so the instruction is still present at the point in context where it must fire, not only at
-  the top of the run.
+  That command's own `## AI Agent Instructions` section carries an explicit line pointing at
+  the concrete invocation below — not just the inherited pointer from `agent-instructions.md`.
 - Every **multi-phase command** (`/sdd.reverse-eng`, `/sdd.go`) has one closure point per
-  internal phase. Each such command's own workflow section carries an explicit
-  "before advancing to the next phase, execute `EMIT_PHASE_OBSERVABILITY`" instruction, in
-  addition to (never instead of) its per-phase telemetry mapping table.
+  internal phase, plus one final `total` call. Each such command's own workflow section carries
+  the same explicit, concrete invocation at each phase boundary and at the end of the run.
 
-`EMIT_PHASE_OBSERVABILITY`, when executed, always does both of the following, in order, for the
+`EMIT_PHASE_OBSERVABILITY`, when it fires, always does both of the following, in order, for the
 phase that just closed:
 
-1. Print the transition block (§ Format, above).
-2. Immediately after — no blank line — print the Usage block (§ "Usage / Telemetry block",
-   below) for that phase's own dispatch(es).
+1. Print the transition block (§ Format, above) — still a direct print, no script involved;
+   it carries no measurable data, there is nothing for a script to get wrong here.
+2. Immediately after — no blank line — run `emit-phase-observability.sh phase ...`
+   (§ "Helper mechanism") for that phase's own dispatch(es); its stdout **is** the Usage block.
 
-There are exactly three outcomes for step 2, and `EMIT_PHASE_OBSERVABILITY` always produces one
-of them — never a fourth outcome where the block is skipped:
+There are exactly three outcomes for step 2, and the helper always produces one of them — never
+a fourth outcome where the block is skipped, because the script always exits 0 and always prints
+something:
 
 1. A real, measurable child dispatch happened (`claude -p ... --output-format stream-json
-   --verbose`, or Codex `codex exec --json`) → parse the captured stream → real Usage block.
+   --verbose`, or Codex `codex exec --json`), its stream was captured to a file, and that file
+   path was passed via `--stream-file` → the helper shells out to the existing parser → real
+   Usage block.
 2. The phase ran inline in the interactive session, **or** — Codex-specific — via the native
    in-session subagent fallback described in `adapters/codex/README.md` § `OFFLOAD_READ` — no
-   captured child stream exists either way → `telemetry: unavailable (interactive session)`.
-   Both cases collapse to the same text: from this protocol's point of view they are the same
-   thing (no capturable stream), and the native-subagent path must never be reported as if it
-   were outcome 1.
-3. A parser call failed for any other reason (malformed stream, missing file) → same
-   `unavailable` text as outcome 2; the phase's own result (green/red) is unaffected.
+   captured child stream exists either way, so the command simply **omits** `--stream-file` →
+   the helper deterministically prints `telemetry: unavailable (interactive session)`. Both
+   cases collapse to the same text and the same code path inside the helper: from its point of
+   view "no stream file was given" and "a native subagent produced nothing to capture" are the
+   same input. The command's own markdown never has to distinguish them or compose the fallback
+   text itself.
+3. A `--stream-file` was given but the parser it invokes reports `available:false` for any
+   reason (malformed stream, missing file, empty file) → same `unavailable` text as outcome 2;
+   the phase's own result (green/red) is unaffected.
 
-This section is the single definition of `EMIT_PHASE_OBSERVABILITY`. Command files reference it
-by name; none of them re-describe what it does.
+This section is the single definition of what `EMIT_PHASE_OBSERVABILITY` means. Command files
+reference the concrete invocation below by pointing here; none of them re-describe the helper's
+internals or hand-write the unavailable text.
+
+---
+
+## Helper mechanism — `framework/tools/emit-phase-observability.sh`
+
+This is what a command file actually runs — a real Bash tool call, not prose. Full contract and
+rationale in the script's own header; summarized here for command authors.
+
+**Per phase**, immediately after a dispatch attempt (whether or not it produced a capturable
+stream):
+
+```bash
+# Real, measurable child dispatch (stream captured to $STREAM_FILE):
+bash framework/tools/emit-phase-observability.sh phase \
+  --harness codex --model "$RESOLVED_MODEL" --effort "$RESOLVED_EFFORT" \
+  --duration-ms "$DURATION_MS" --stream-file "$STREAM_FILE" \
+  [--phase-label "Phase <N> — <name>"] [--state-file "$SDD_TELEMETRY_STATE"]
+
+# Claude Code equivalent (no --effort, no --duration-ms — the parser reads duration from the
+# stream itself):
+bash framework/tools/emit-phase-observability.sh phase \
+  --harness claude-code --model "$RESOLVED_MODEL" --stream-file "$STREAM_FILE" \
+  [--phase-label "Phase <N> — <name>"] [--state-file "$SDD_TELEMETRY_STATE"]
+
+# Inline work, or a native/in-session subagent with nothing to intercept — omit
+# --stream-file entirely, do not try to pass an empty or fabricated path:
+bash framework/tools/emit-phase-observability.sh phase \
+  --harness <claude-code|codex> [--phase-label "Phase <N> — <name>"] \
+  [--state-file "$SDD_TELEMETRY_STATE"]
+```
+
+`--phase-label` is omitted for single-phase commands (matches "Per-phase block" below).
+`--state-file` is omitted for single-phase commands (no Total to build) and required for
+`/sdd.reverse-eng`/`/sdd.go` — pick one path with `mktemp` once at the start of the run
+(`SDD_TELEMETRY_STATE="$(mktemp)"`), reuse it for every phase call, pass it once more to `total`
+at the end. This is local, disposable, per-run state — never versioned, never required to exist
+ahead of time, never depends on any tool beyond bash.
+
+**Once, at the end of a multi-phase command**, after all phases:
+
+```bash
+bash framework/tools/emit-phase-observability.sh total \
+  --harness <claude-code|codex> --state-file "$SDD_TELEMETRY_STATE"
+```
+
+Its stdout **is** the `Usage Total` + `coverage: N/M measured phases` block (§ "Total / coverage"
+below) — sums only records the helper itself marked available, in the fixed field order, never
+a cost line for Codex.
+
+The helper never reimplements token extraction — it shells out to the existing, already-tested
+`adapters/claude-code/tools/parse-telemetry.sh` / `adapters/codex/tools/parse-telemetry.sh` and
+only reads their small, fixed-shape JSON output. Real execution tests (fixtures, not markdown
+grep): `framework/tools/emit-phase-observability.test.sh`.
 
 ---
 

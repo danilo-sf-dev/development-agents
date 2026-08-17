@@ -222,11 +222,15 @@ only: capturing `--output-format stream-json --verbose`, the parser
 switch that adds cache columns to the *final summary table* specifically (`references/
 telemetry-display.md` § "Verbose mode").
 
-**Printing the block at each phase closure is enforced by `EMIT_PHASE_OBSERVABILITY`**
-(`phase-transition-observability.md` § "Enforcement"), triggered by an explicit, situated
-instruction in each `commands/sdd.*.md` file — not by this README or the display reference being
-read once. Work that ran inline in the interactive session (no `claude -p` subprocess captured,
-including the Task()/Agent fallback below) prints the canonical `telemetry: unavailable
+**Printing the block at each phase closure is a real Bash step, not a textual reminder.** A
+textual "must print" instruction (situated in every command file, not just this README) was
+tried first and found insufficient by a real Codex smoke test on the sibling adapter — the same
+class of gap applies here in principle, so this adapter uses the same fix:
+`framework/tools/emit-phase-observability.sh` (`phase-transition-observability.md` § "Helper
+mechanism"), invoked by an explicit line in each `commands/sdd.*.md` file. Work that ran inline
+in the interactive session (no `claude -p` subprocess captured, including the Task()/Agent
+fallback below) means that invocation simply omits `--stream-file`, and the helper's own
+deterministic logic — not the LLM's memory — prints the canonical `telemetry: unavailable
 (interactive session)` text, same as any other harness's inline case.
 
 ### Verbose mode
