@@ -66,7 +66,7 @@ Output (KEY=value lines, always exit 0):
 ```
 GRAPHIFY_AVAILABLE=true|false
 GRAPHIFY_CMD=graphify|python -m graphify|python3 -m graphify|
-GRAPHIFY_CODE_ONLY=true|false
+GRAPHIFY_CODE_ONLY=true|unknown|false
 GRAPHIFY_QUERY=true|false
 GRAPHIFY_PATH=true|false
 GRAPHIFY_EXPLAIN=true|false
@@ -82,9 +82,10 @@ Resolution order (first success wins, nothing here is a hard requirement):
 | C | `python3` on PATH, `python3 -m graphify --version` succeeds | `python3 -m graphify` |
 | D | none of the above | *(empty)* — `GRAPHIFY_AVAILABLE=false` |
 
-If Graphify is detected but `GRAPHIFY_CODE_ONLY=false`, treat it as unavailable for every
-purpose below — do not attempt any bootstrap, do not try to work around it with an API key or
-a different extraction mode.
+`GRAPHIFY_CODE_ONLY` is a tri-state (`true`/`unknown`/`false`), not a plain boolean — see § 3
+for why, and why only `false` withholds bootstrap (`unknown` proceeds to the real test in § 4
+Step 4.2). Do not try to work around a `false`/`unknown` result with an API key or a different
+extraction mode either way.
 
 ## 2. Repository protection — the mandatory guard
 
@@ -133,6 +134,25 @@ checks **capability**, not a hardcoded minimum version — see § 1's `GRAPHIFY_
 `GRAPHIFY_QUERY` / `GRAPHIFY_PATH` / `GRAPHIFY_EXPLAIN` / `GRAPHIFY_UPDATE` fields, each a
 best-effort probe of that installed version's own `--help` output.
 
+**`GRAPHIFY_CODE_ONLY` is a tri-state, not a boolean — `true | unknown | false`.** Real-machine
+testing found `extract --help` text that never mentions `--code-only` on an install where
+`extract . --code-only` itself worked perfectly. Help text is not a reliable oracle for this
+one flag, so a missing mention means **`unknown`, not `false`**:
+
+- `true` — `extract --help` responded and explicitly documents `--code-only`.
+- `unknown` — `extract --help` responded (the `extract` subcommand exists) but doesn't mention
+  `--code-only` either way. The flag may still work — this script does not know, and it never
+  runs `extract . --code-only` itself just to find out (that would create/alter
+  `graphify-out/` in the target project as a side effect of a detection probe, which this
+  mechanism never does outside an explicit user decision — see § 4).
+- `false` — `extract --help` itself did not respond cleanly. No confirmed path to `extract` at
+  all, so none to a code-only graph either.
+
+**`unknown` never blocks the preflight.** Only `false` does. The actual, definitive capability
+test is the real `extract . --code-only` call the user authorizes in Step 4.2 — its own exit
+code is ground truth, confirmed or refuted in real time, never assumed in advance from static
+`--help` text.
+
 ---
 
 ## 4. Preflight — the only place ASK_USER happens for setup decisions
@@ -147,8 +167,9 @@ in core.
 
 ```
 detect-graphify.sh → GRAPHIFY_AVAILABLE?
-  true (and GRAPHIFY_CODE_ONLY=true) → go to Step 4.2
-  false (or GRAPHIFY_CODE_ONLY=false)
+  true, GRAPHIFY_CODE_ONLY=true or unknown  → go to Step 4.2 (unknown is NOT a block —
+                                                see § 3; the real test happens in Step 4.2)
+  false, or GRAPHIFY_CODE_ONLY=false
     ↓
   graphify-state.sh pref-get <repo>/.git/sdd-graphify-pref → DONT_ASK_ABSENT?
     true  → GRAPHIFY_MODE=disabled for this flow, no question asked, continue silently
