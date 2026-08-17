@@ -165,7 +165,7 @@ After all tasks: A compliance → B Layer-3 via `sdd-validator` → C code patte
 > **ONLY IF** `graphify-state.sh get sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active`
 > AND actual code (not docs/spec/Markdown-only) changed during this build run: run
 > `graphify-state.sh mark-stale sdd/wip/<feature>/meta.md`. This is a **state flip only** — it
-> does **not** call `<GRAPHIFY_CMD> update .` and does **not** ask the user anything here. The
+> does **not** call `graphify-run.sh update .` and does **not** ask the user anything here. The
 > update decision (and the one legitimate re-ask) belongs to `/sdd.check`, right before it would
 > consult the graph — see `framework/_shared/graphify-context.md` § 6. Skip entirely if
 > Graphify is disabled for this flow or nothing structural changed (`mark-stale` is also a

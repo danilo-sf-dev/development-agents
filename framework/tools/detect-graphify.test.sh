@@ -8,9 +8,9 @@
 # via a scratch directory.
 #
 # Tests:
-#   1.  graphify CLI detected (tier A), full capability set (code_only="true")
-#   2.  graphify absent, python -m graphify fallback detected (tier B)
-#   3.  graphify + python absent, python3 -m graphify fallback detected (tier C)
+#   1.  graphify CLI detected (tier A: real `graphify --version` succeeds), full capabilities
+#   2.  graphify absent, python -m graphify fallback detected (tier C)
+#   3.  graphify + python absent, python3 -m graphify fallback detected (tier D)
 #   4.  nothing available anywhere on PATH → GRAPHIFY_AVAILABLE=false, exit 0
 #   5.  REGRESSION (real Windows false-negative): --code-only absent from --help text but
 #       extract subcommand genuinely exists → GRAPHIFY_CODE_ONLY=unknown, never false;
@@ -23,6 +23,15 @@
 #   9.  zero-dependency proof: python and python3 both absent from PATH entirely →
 #       script still runs cleanly and reports unavailable (no crash, no hang)
 #  10.  bash -n syntax check on detect-graphify.sh
+#  11.  REAL SCENARIO — Caso A (personal Windows PC): `graphify` on PATH is a broken uv
+#       trampoline (command -v succeeds, --version fails); tier B recovers by asking a real
+#       `cmd.exe` where the actual executable lives and running that instead — proves
+#       "command -v alone is not enough" and "real execution is the only proof that counts"
+#  12.  REAL SCENARIO — Caso B (corporate PC): no standalone binary reachable at all
+#       (`graphify` absent, tier B's `cmd.exe` absent too) but `python -m graphify --version`
+#       genuinely works → accepted normally via tier C, no Windows-specific assumption forced
+#  13.  tier B present but finds nothing (cmd.exe reachable, `where` finds no match) → falls
+#       through cleanly to tier C, exactly like tier A's own failure does — no special-casing
 #
 # Usage: bash detect-graphify.test.sh
 # Exit: 0 if all pass, nonzero otherwise
@@ -77,9 +86,9 @@ else
     fail "Tier A detection wrong: $OUT1"
 fi
 
-# ── Test 2: tier B — python -m graphify fallback ────────────────────────────
+# ── Test 2: tier C — python -m graphify fallback ────────────────────────────
 echo ""
-echo "Test 2: python -m graphify fallback (tier B), graphify absent"
+echo "Test 2: python -m graphify fallback (tier C), graphify absent"
 MOCK2="$SCRATCH/mock2"
 mkdir -p "$MOCK2"
 cat > "$MOCK2/python" <<'EOF'
@@ -96,14 +105,14 @@ chmod +x "$MOCK2/python"
 OUT2=$(PATH="$MOCK2:/usr/bin:/bin" bash "$DETECT")
 if [[ "$(field "$OUT2" GRAPHIFY_AVAILABLE)" == "true" ]] && \
    [[ "$(field "$OUT2" GRAPHIFY_CMD)" == "python -m graphify" ]]; then
-    ok "Tier B detected: cmd='python -m graphify'"
+    ok "Tier C detected: cmd='python -m graphify'"
 else
-    fail "Tier B detection wrong: $OUT2"
+    fail "Tier C detection wrong: $OUT2"
 fi
 
-# ── Test 3: tier C — python3 -m graphify fallback ───────────────────────────
+# ── Test 3: tier D — python3 -m graphify fallback ───────────────────────────
 echo ""
-echo "Test 3: python3 -m graphify fallback (tier C), graphify+python absent"
+echo "Test 3: python3 -m graphify fallback (tier D), graphify+python absent"
 MOCK3="$SCRATCH/mock3"
 mkdir -p "$MOCK3"
 cat > "$MOCK3/python3" <<'EOF'
@@ -118,9 +127,9 @@ chmod +x "$MOCK3/python3"
 OUT3=$(PATH="$MOCK3:/usr/bin:/bin" bash "$DETECT")
 if [[ "$(field "$OUT3" GRAPHIFY_AVAILABLE)" == "true" ]] && \
    [[ "$(field "$OUT3" GRAPHIFY_CMD)" == "python3 -m graphify" ]]; then
-    ok "Tier C detected: cmd='python3 -m graphify'"
+    ok "Tier D detected: cmd='python3 -m graphify'"
 else
-    fail "Tier C detection wrong: $OUT3"
+    fail "Tier D detection wrong: $OUT3"
 fi
 
 # ── Test 4: nothing available → unavailable, exit 0 ─────────────────────────
@@ -256,7 +265,7 @@ fi
 echo ""
 echo "Test 8: --json output well-formed"
 OUT8=$(PATH="$MOCK1:/usr/bin:/bin" bash "$DETECT" --json)
-if printf '%s' "$OUT8" | grep -qE '^\{"available":true,"cmd":"graphify","code_only":"true","query":true,"path":true,"explain":true,"update":true\}$'; then
+if printf '%s' "$OUT8" | grep -qE '^\{"available":true,"cmd":"graphify","exec":"graphify","args":"","code_only":"true","query":true,"path":true,"explain":true,"update":true\}$'; then
     ok "JSON output matches expected shape: $OUT8"
 else
     fail "JSON output malformed: $OUT8"
@@ -290,6 +299,126 @@ fi
 # Git-safety scenarios (Scenario A/B, staged-file correction, real `git check-ignore`) are
 # covered by graphify-git-guard.test.sh against the real graphify-git-guard.sh script — not
 # duplicated here as inline simulation.
+
+# ── Test 11: Caso A — broken uv trampoline recovered via cmd.exe //c where ──────
+# The exact real-world case reported from a personal Windows machine: `graphify` is on
+# PATH (command -v succeeds) but `graphify --version` fails (a broken uv-installed
+# trampoline/launcher). Tier B asks a real `cmd.exe` where the actual executable lives and
+# runs THAT instead. This proves two things at once: (1) command -v alone is never
+# sufficient — only a real successful --version execution counts; (2) the recovery path
+# doesn't assume "Windows" from any OS check, it simply uses cmd.exe because it's reachable.
+echo ""
+echo "Test 11: Caso A — broken graphify trampoline recovered via cmd.exe where"
+MOCK11="$SCRATCH/mock11"
+mkdir -p "$MOCK11"
+
+# Broken trampoline: found by command -v, but --version genuinely fails.
+cat > "$MOCK11/graphify" <<'EOF'
+#!/bin/bash
+exit 1
+EOF
+chmod +x "$MOCK11/graphify"
+
+# The real, working executable that `where` will "find".
+cat > "$MOCK11/real_graphify.exe" <<'EOF'
+#!/bin/bash
+[[ "$1" == "--version" ]] && { echo "graphify 2.3.0 (real exe)"; exit 0; }
+[[ "$1" == "extract" && "$2" == "--help" ]] && { echo "Usage: extract [PATH]"; exit 0; }
+[[ "$1" == "--help" ]] && { echo "Commands: query, path, explain, update, extract"; exit 0; }
+exit 1
+EOF
+chmod +x "$MOCK11/real_graphify.exe"
+
+# cmd.exe mock: `//c where graphify` returns a native Windows path with CRLF, exactly
+# like the real `where.exe` would.
+cat > "$MOCK11/cmd.exe" <<EOF
+#!/bin/bash
+if [[ "\$1" == "//c" && "\$2" == "where" && "\$3" == "graphify" ]]; then
+    printf 'C:\\\\FAKE\\\\graphify.exe\r\n'
+    exit 0
+fi
+exit 1
+EOF
+chmod +x "$MOCK11/cmd.exe"
+
+# cygpath mock: resolves the fake Windows path to our real mock executable.
+cat > "$MOCK11/cygpath" <<EOF
+#!/bin/bash
+[[ "\$1" == "-u" ]] && { echo "$MOCK11/real_graphify.exe"; exit 0; }
+exit 1
+EOF
+chmod +x "$MOCK11/cygpath"
+
+OUT11=$(PATH="$MOCK11:/usr/bin:/bin" bash "$DETECT")
+if [[ "$(field "$OUT11" GRAPHIFY_AVAILABLE)" == "true" ]] && \
+   [[ "$(field "$OUT11" GRAPHIFY_CMD)" == "$MOCK11/real_graphify.exe" ]] && \
+   [[ "$(field "$OUT11" GRAPHIFY_EXEC)" == "$MOCK11/real_graphify.exe" ]] && \
+   [[ "$(field "$OUT11" GRAPHIFY_ARGS)" == "" ]] && \
+   [[ "$(field "$OUT11" GRAPHIFY_QUERY)" == "true" ]]; then
+    ok "Caso A: broken trampoline recovered — tier B resolved GRAPHIFY_EXEC to the real executable, GRAPHIFY_ARGS empty"
+else
+    fail "Caso A recovery failed: $OUT11"
+fi
+
+# ── Test 12: Caso B — corporate PC, no standalone binary, python -m graphify works ──
+# The second real-world case: no `graphify` executable reachable at all (no trampoline,
+# no cmd.exe/Windows executable to fall back to either), but `python -m graphify --version`
+# genuinely works. Must be accepted normally via tier C — no forced Windows-only path.
+echo ""
+echo "Test 12: Caso B — no standalone binary, python -m graphify accepted normally"
+MOCK12="$SCRATCH/mock12"
+mkdir -p "$MOCK12"
+cat > "$MOCK12/python" <<'EOF'
+#!/bin/bash
+if [[ "$1" == "-m" && "$2" == "graphify" ]]; then
+    shift 2
+    [[ "$1" == "--version" ]] && { echo "graphify 1.0.0 (module)"; exit 0; }
+    [[ "$1" == "extract" && "$2" == "--help" ]] && { echo "Usage: extract [PATH]"; exit 0; }
+    [[ "$1" == "--help" ]] && { echo "Commands: query, update"; exit 0; }
+fi
+exit 1
+EOF
+chmod +x "$MOCK12/python"
+# No cmd.exe anywhere on this PATH — tier B is naturally unreachable, exactly like a
+# real Linux/macOS corporate machine, or a Windows machine where `cmd.exe` itself isn't
+# on PATH for some reason. No special-case needed either way.
+OUT12=$(PATH="$MOCK12:/usr/bin:/bin" bash "$DETECT")
+if [[ "$(field "$OUT12" GRAPHIFY_AVAILABLE)" == "true" ]] && \
+   [[ "$(field "$OUT12" GRAPHIFY_CMD)" == "python -m graphify" ]]; then
+    ok "Caso B: python -m graphify accepted normally via tier C, no cmd.exe involved"
+else
+    fail "Caso B failed: $OUT12"
+fi
+
+# ── Test 13: tier B reachable but finds nothing → clean fall-through to tier C ──
+# cmd.exe is present and runs, but `where graphify` finds no match (empty output / nonzero
+# exit) — must fall through to tier C exactly like tier A's own failure does, not treated
+# as a hard stop just because the Windows-specific tier was attempted.
+echo ""
+echo "Test 13: cmd.exe present but finds nothing → falls through to tier C cleanly"
+MOCK13="$SCRATCH/mock13"
+mkdir -p "$MOCK13"
+cat > "$MOCK13/cmd.exe" <<'EOF'
+#!/bin/bash
+exit 1
+EOF
+chmod +x "$MOCK13/cmd.exe"
+cat > "$MOCK13/python" <<'EOF'
+#!/bin/bash
+if [[ "$1" == "-m" && "$2" == "graphify" ]]; then
+    shift 2
+    [[ "$1" == "--version" ]] && { echo "graphify 1.0.0 (module)"; exit 0; }
+fi
+exit 1
+EOF
+chmod +x "$MOCK13/python"
+OUT13=$(PATH="$MOCK13:/usr/bin:/bin" bash "$DETECT")
+if [[ "$(field "$OUT13" GRAPHIFY_AVAILABLE)" == "true" ]] && \
+   [[ "$(field "$OUT13" GRAPHIFY_CMD)" == "python -m graphify" ]]; then
+    ok "Empty tier B result falls through cleanly to tier C"
+else
+    fail "Fall-through from empty tier B failed: $OUT13"
+fi
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo ""

@@ -79,7 +79,7 @@ graphify-context.md` § 6 before implementing this. Before the graph is consulte
 GRAPHIFY_GRAPH=ready   → use the graph, no question (nothing changed since last build/refresh)
 GRAPHIFY_GRAPH=stale   → ASK_USER once: "Código estrutural mudou e o grafo pode estar
                           desatualizado. Deseja atualizar o Graphify antes da validação?"
-                          1. Sim, atualizar → git guard → <GRAPHIFY_CMD> update . → validate →
+                          1. Sim, atualizar → git guard → graphify-run.sh update . → validate →
                              success: GRAPHIFY_GRAPH=ready (persist), use the graph this run
                              failure: GRAPHIFY_GRAPH stays stale (persist), fall back this run
                           2. Não, executar CHECK sem Graphify → stays stale (persist), this

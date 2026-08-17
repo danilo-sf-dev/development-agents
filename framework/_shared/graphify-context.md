@@ -65,7 +65,9 @@ Output (KEY=value lines, always exit 0):
 
 ```
 GRAPHIFY_AVAILABLE=true|false
-GRAPHIFY_CMD=graphify|python -m graphify|python3 -m graphify|
+GRAPHIFY_CMD=<human-readable resolved command — DISPLAY ONLY, never invoke this directly>
+GRAPHIFY_EXEC=<the executable — safe to invoke ONLY as a single quoted token>
+GRAPHIFY_ARGS=<prefix args, space-joined, safe to `read -ra` — "" or "-m graphify">
 GRAPHIFY_CODE_ONLY=true|unknown|false
 GRAPHIFY_QUERY=true|false
 GRAPHIFY_PATH=true|false
@@ -73,14 +75,68 @@ GRAPHIFY_EXPLAIN=true|false
 GRAPHIFY_UPDATE=true|false
 ```
 
-Resolution order (first success wins, nothing here is a hard requirement):
+**Resolution is a real-execution cascade, not a presence check.** `command -v` finding a name
+on PATH is never sufficient by itself — real-machine testing found `command -v graphify`
+succeeding (a `uv`-installed launcher/trampoline script exists) while `graphify --version`
+itself failed (the trampoline's underlying venv was broken). The winner is whichever tier is
+the **first to actually run `--version` successfully**; every tier is attempted only if the
+previous one didn't already produce a working command — none of them is "the Windows path" or
+"the Python path" by assumption, each is simply tried in order until something really runs:
 
-| Tier | Condition | Resulting `GRAPHIFY_CMD` |
-| --- | --- | --- |
-| A | `graphify` on PATH, `graphify --version` succeeds | `graphify` |
-| B | `python` on PATH, `python -m graphify --version` succeeds | `python -m graphify` |
-| C | `python3` on PATH, `python3 -m graphify --version` succeeds | `python3 -m graphify` |
-| D | none of the above | *(empty)* — `GRAPHIFY_AVAILABLE=false` |
+| Tier | Condition | `GRAPHIFY_EXEC` | `GRAPHIFY_ARGS` |
+| --- | --- | --- | --- |
+| A | `graphify` on PATH AND `graphify --version` actually succeeds | `graphify` | *(empty)* |
+| B | Tier A failed AND `cmd.exe` is reachable (`command -v cmd.exe` — Git Bash/MSYS/Cygwin/WSL-interop, never an OS-name check): ask it where a `graphify` executable really lives (`cmd.exe //c where graphify`), resolve each candidate to something bash can exec (`cygpath`/`wslpath` when available), and try `--version` on each until one really succeeds | the resolved absolute executable path (may contain spaces) | *(empty)* |
+| C | Tiers A/B failed AND `python` on PATH AND `python -m graphify --version` actually succeeds | `python` | `-m graphify` |
+| D | Tiers A/B/C failed AND `python3` on PATH AND `python3 -m graphify --version` actually succeeds | `python3` | `-m graphify` |
+| E | none of the above | *(empty)* | *(empty)* — `GRAPHIFY_AVAILABLE=false` |
+
+Tier B is what recovers from tier A's uv-trampoline failure: `where` finds the real
+`graphify.exe` installed alongside/instead of the broken launcher, and running that real
+executable directly works even though the PATH-resolved `graphify` command did not. A machine
+with no `cmd.exe` skips tier B entirely and falls straight to C; a machine with `cmd.exe` but
+no matching Windows executable falls through to C/D exactly the same way tier A's failure does.
+Python (tiers C/D) is Graphify's own interpreter dependency on some installs — never an SDD
+framework requirement; PowerShell, `uv`, and `jq` are never required by any tier either.
+
+### Invocation — the one canonical, safe way to run Graphify
+
+A resolved tier B path can contain a space (a real case: `C:\Users\Jane Doe\.local\bin\
+graphify.exe`). A single flattened string cannot represent "one argument that contains a
+space" without something to interpret its quoting — no amount of quoting discipline at an
+individual call site fixes that once executable and args have been joined into one unquoted
+string. So **`GRAPHIFY_CMD` is display-only. Never build a command from it — never do
+`$GRAPHIFY_CMD <args>`, anywhere, for any reason.**
+
+The safe primitives are the two separate fields, `GRAPHIFY_EXEC` and `GRAPHIFY_ARGS` — but no
+caller should even reconstruct an invocation from those two fields by hand either. There is
+**one canonical wrapper**, and every command file, skill, or ad-hoc script that needs to run
+Graphify shells out to it instead:
+
+```bash
+bash development-agents/framework/tools/graphify-run.sh <graphify-subcommand-or-flag> [args...]
+```
+
+Examples:
+
+```bash
+bash development-agents/framework/tools/graphify-run.sh extract . --code-only
+bash development-agents/framework/tools/graphify-run.sh update .
+bash development-agents/framework/tools/graphify-run.sh query "payment calculation flow" --budget 1500
+bash development-agents/framework/tools/graphify-run.sh path Foo Bar
+```
+
+`graphify-run.sh` re-resolves `GRAPHIFY_EXEC`/`GRAPHIFY_ARGS` itself (in its own process — no
+array is ever serialized to text and re-parsed across a process boundary; `GRAPHIFY_ARGS` is
+safe to `read -ra` back into an array specifically because it is only ever `""` or the literal
+`-m graphify`, both fully controlled, neither containing whitespace itself) and execs with
+real bash array semantics — `"$EXEC" "${PREFIX_ARGS[@]}" "$@"` — no `eval`, anywhere. Every
+argument given to `graphify-run.sh` reaches the real Graphify invocation exactly as given,
+whether that's a single multi-word quoted argument (`query "payment calculation flow"`) or
+several separate ones (`path Foo Bar`). It passes through the real invocation's exit code, and
+exits `127` with a short diagnostic if Graphify could not be resolved at all — callers should
+already have checked `GRAPHIFY_AVAILABLE` before ever reaching it; this is a backstop, not the
+primary availability check, and it never blocks the wider SDD pipeline, only that one call.
 
 `GRAPHIFY_CODE_ONLY` is a tri-state (`true`/`unknown`/`false`), not a plain boolean — see § 3
 for why, and why only `false` withholds bootstrap (`unknown` proceeds to the real test in § 4
@@ -124,7 +180,7 @@ bash development-agents/framework/tools/graphify-git-guard.sh [--gitignore]
   unstage **only** `graphify-out/` paths (`git restore --staged` / `git reset --`), never touch
   any other file, never `git clean`/`git reset --hard`.
 
-Every section below that says "run `<GRAPHIFY_CMD> ...`" implies "run the guard first" — this
+Every section below that says "run `graphify-run.sh ...`" implies "run the guard first" — this
 is not repeated at every call site in prose, but it is not optional.
 
 ## 3. Capability check — not a version gate
@@ -224,7 +280,7 @@ graphify-out/graph.json exists and looks valid?
 run the guard (§ 2), Scenario A unless this flow is also the one that just installed
 Graphify in Step 4.1 (then Scenario B)
   ↓
-<GRAPHIFY_CMD> extract . --code-only
+bash framework/tools/graphify-run.sh extract . --code-only
   ↓
 validate graphify-out/graph.json exists and is non-empty
   success → GRAPHIFY_MODE=active, GRAPHIFY_GRAPH=ready; write graphify-out/.sdd-managed
@@ -237,7 +293,7 @@ free text, degrade to option 2 unless clearly otherwise.
 ```
 run the guard (§ 2)
   ↓
-<GRAPHIFY_CMD> update .
+bash framework/tools/graphify-run.sh update .
   ↓
 validate graphify-out/graph.json still present/non-empty
   success → GRAPHIFY_MODE=active, GRAPHIFY_GRAPH=ready
@@ -336,7 +392,7 @@ read state: GRAPHIFY_MODE / GRAPHIFY_GRAPH (meta.md)
     2. Não, executar CHECK sem Graphify
     3. Outros
 
-    1: run the guard (§ 2) → <GRAPHIFY_CMD> update . → validate
+    1: run the guard (§ 2) → bash framework/tools/graphify-run.sh update . → validate
          success → GRAPHIFY_GRAPH=ready (persist); this CHECK run uses the graph
          failure → GRAPHIFY_GRAPH stays stale (persist); this CHECK run falls back, warn once
     2: GRAPHIFY_GRAPH stays stale (persist, unchanged); this CHECK run falls back to
@@ -357,7 +413,7 @@ When `GRAPHIFY_MODE=active` and `GRAPHIFY_GRAPH=ready` for the current flow:
 | Command | What to ask the graph for, before broad exploration |
 | --- | --- |
 | `/sdd.reverse-eng` | Modules, entry points, dependencies, services, controllers, repositories, integrations, cross-layer flows — Graphify is the **first** tool in Phase 0-3, before `sdd-explorer`'s own Read/Grep. Validate in code only what the synthesis phase actually needs. |
-| `/sdd.spec` | Before file exploration: turn the feature description into a question, run `<GRAPHIFY_CMD> query "<question>"` (optionally `path`/`explain` for named concepts), and use the result to pick which files are worth `Read`ing. |
+| `/sdd.spec` | Before file exploration: turn the feature description into a question, run `graphify-run.sh query "<question>"` (optionally `path`/`explain` for named concepts), and use the result to pick which files are worth `Read`ing. |
 | `/sdd.plan` | Impact, dependencies, likely-affected files/classes, structural ordering of changes. Do not re-explore the whole repo if `/sdd.spec` already gathered enough evidence via the graph. |
 | `/sdd.build` | Not mandatory per task. Use when locating an extension point, discovering callers/dependents, or deciding reuse vs. new code — i.e. when impact isn't already clear from the plan. Always edit/read real source afterward; the graph never substitutes for the actual diff. |
 | `/sdd.check` (`--sync`) | Query the graph (only when state is `ready` — see § 6) for affected dependencies, callers, cross-layer impact, structural drift, forgotten consumers. Still run the real deterministic validators — Graphify narrows scope, it does not replace `sdd-validator`. |
@@ -368,14 +424,14 @@ first, same as extract/update.
 
 ## 8. Graph validity & the "never load it whole" rule
 
-`graphify-out/graph.json` existing and non-empty, plus the resolved `GRAPHIFY_CMD` responding,
-is what `GRAPHIFY_GRAPH=ready` means in practice — but the authoritative signal for whether to
-use the graph in any given command is the **persisted state** (§ 5), not a fresh existence
-check every time.
+`graphify-out/graph.json` existing and non-empty, plus the resolved Graphify command (§ 1)
+responding, is what `GRAPHIFY_GRAPH=ready` means in practice — but the authoritative signal for
+whether to use the graph in any given command is the **persisted state** (§ 5), not a fresh
+existence check every time.
 
 **Critical rule — never load `graph.json` directly into context.** No command in this pipeline
 may `Read graphify-out/graph.json`. The whole point of this mechanism is token economy:
-interact exclusively through `<GRAPHIFY_CMD> query|path|explain`, never by dumping the raw
+interact exclusively through `graphify-run.sh query|path|explain`, never by dumping the raw
 graph file into the conversation.
 
 ## 9. Query budget — token economy
@@ -383,7 +439,7 @@ graph file into the conversation.
 Always request a modest budget when the CLI supports it, rather than a full report:
 
 ```bash
-<GRAPHIFY_CMD> query "<question>" --budget 1500
+bash framework/tools/graphify-run.sh query "<question>" --budget 1500
 ```
 
 Do not dump a full report by default. `GRAPH_REPORT.md` (if Graphify produces one) is reserved
@@ -486,10 +542,10 @@ Do not implement any of the following yet — revisit only after the ON/OFF benc
    update failure → continue with normal Read/Grep/Glob.
 2. **Never install anything without an explicit, per-command confirmation.** Absence is
    resolved by ASK_USER (§ 4), never by silently installing Graphify, Python, or any package.
-3. **Never require Python as an SDD dependency.** Tiers B/C exist only because Graphify itself
+3. **Never require Python as an SDD dependency.** Tiers C/D exist only because Graphify itself
    may be packaged that way on some machines — the SDD framework's own scripts
-   (`detect-graphify.sh`, `graphify-git-guard.sh`, `graphify-state.sh`, and every command
-   referencing this file) never call `python`/`python3` themselves.
+   (`detect-graphify.sh`, `graphify-run.sh`, `graphify-git-guard.sh`, `graphify-state.sh`, and
+   every command referencing this file) never call `python`/`python3` themselves.
 4. **Never load `graph.json` into context.** Interact only through the CLI's own
    query/path/explain subcommands.
 5. **Never stage or commit `graphify-out/`.** § 2's guard is the enforcement point, run before

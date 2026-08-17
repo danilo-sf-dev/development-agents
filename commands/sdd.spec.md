@@ -58,7 +58,7 @@ When the user mentions a technology unfamiliar to the repo, ask which option fit
 > and `GRAPHIFY_GRAPH=ready` (decided once by `/sdd.start`'s preflight — read state here, never
 > re-ask; see `framework/_shared/graphify-context.md` § 5, 7): before broad `Glob`/`Grep`/`Read`
 > exploration for either spec, run the git guard, turn the feature description into a question,
-> and run `<GRAPHIFY_CMD> query "<question>"` (optionally `path`/`explain` for named concepts)
+> and run `graphify-run.sh query "<question>"` (optionally `path`/`explain` for named concepts)
 > to identify the small set of relevant files/services — then `Read` only those. Never
 > `Read graphify-out/graph.json` directly.
 > `disabled` (or state absent) → skip this, proceed with normal exploration exactly as before.
