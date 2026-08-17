@@ -60,149 +60,31 @@ fi
 
 ---
 
-## Per-phase display (after every successful dispatch)
+## Per-phase display and Final summary — format authority moved (corrected this round)
 
-Print the phase completion block, then immediately append the Usage block.
+**`commands/references/phase-transition-observability.md` § "Usage / Telemetry block" and §
+"Total / coverage" are the single, exclusive format authority for both the per-phase Usage block
+and the end-of-run Total.** This file previously specified its own, different bullet-list format
+here (an `effort` field the canonical format doesn't have, a one-line `Usage: unavailable`
+fallback instead of the canonical two-line `Usage` / `telemetry: unavailable (interactive
+session)`, and a `SDD USAGE SUMMARY (Codex)` block format instead of the canonical `Usage Total`)
+— a real, silent divergence from the shared spec that went unnoticed until this round's audit.
+Do not follow the old format from memory or from any cached copy of this file; the sections below
+were removed for exactly this reason.
 
-### Default mode
+What stays specific to Codex, and is not restated in the canonical file:
 
-```
-✓ concluído: /sdd.<phase>
-▶ próxima fase: /sdd.<next>
-
-Usage
-- model: gpt-5.6-sol
-- effort: high
-- input: 26,549
-- cached input: 22,272
-- output: 1,590
-- reasoning: 413
-- duration: 18.4s
-```
-
-### Verbose mode (`telemetry.verbose: true`)
-
-Adds `cache write` between `cached input` and `output`:
-
-```
-✓ concluído: /sdd.<phase>
-▶ próxima fase: /sdd.<next>
-
-Usage
-- model: gpt-5.6-sol
-- effort: high
-- input: 26,549
-- cached input: 22,272
-- cache write: 4,100
-- output: 1,590
-- reasoning: 413
-- duration: 18.4s
-```
-
-### Telemetry unavailable
-
-If the parser returns `{"available":false,...}`, show a single degraded line.
-Never fail the phase — the underlying dispatch result is valid even if telemetry failed:
-
-```
-✓ concluído: /sdd.<phase>
-▶ próxima fase: /sdd.<next>
-
-Usage: unavailable
-```
-
-Do NOT show the `reason` string to the user; it is diagnostic, not actionable.
-
-### Field ordering and presence rules
-
-Fields appear in this fixed order; a field is **omitted entirely** if not present in the
-parser output (the parser omits a field when the Codex CLI did not provide it in `usage`):
-
-```
-model       — always present
-effort      — always present (from --effort arg)
-input       — always present
-cached input — present when parser output contains "cached_input"
-cache write  — present only in verbose mode AND parser output contains "cache_write"
-output      — always present
-reasoning   — present when parser output contains "reasoning"
-duration    — present when parser output contains "duration_ms"
-```
-
-**Never show `cost` or any dollar amount.** No exceptions.
-
-### Formatting rules
-
-- `input`, `output`, `cached input`, `cache write`, `reasoning`: integer with thousands
-  separator — `26,549` not `26549`
-- `duration`: one decimal place in seconds — `18.4s` (convert `duration_ms / 1000`)
-- `/sdd.finish` has no "próxima fase" line; the Usage block still appears immediately after
-
----
-
-## Final summary
-
-Show after `/sdd.finish` completes and after `/sdd.go` completes. Collect the parser output
-from every `codex exec --json` dispatch during the session run.
-
-The summary uses a **block-per-phase format** (not a table). This accommodates the variable
-set of optional fields (reasoning, cached input) without producing ragged table columns.
-
-### Format
-
-```
-SDD USAGE SUMMARY (Codex)
-─────────────────────────────────────────────────────────────
-  /sdd.spec
-  - model:        gpt-5.6-sol
-  - effort:       high
-  - input:        26,549
-  - cached input: 22,272
-  - output:       1,590
-  - reasoning:    413
-  - duration:     18.4s
-
-  /sdd.plan
-  - model:        gpt-5.6-sol
-  - effort:       high
-  - input:        14,102
-  - cached input: 11,780
-  - output:       834
-  - duration:     9.2s
-
-  /sdd.build
-  - model:        gpt-5.6-luna
-  - effort:       xhigh
-  - input:        38,441
-  - cached input: 34,200
-  - output:       2,218
-  - reasoning:    891
-  - duration:     31.7s
-
-  ──────────────────────────────────────────────────
-  TOTAL
-  - input:        79,092
-  - cached input: 68,252
-  - output:       4,642
-  - reasoning:    1,304
-  - duration:     59.3s
-  - total tokens: 83,734
-─────────────────────────────────────────────────────────────
-```
-
-**Verbose mode** adds `cache write` after `cached input` in every phase block and in TOTAL.
-
-### Aggregation rules
-
-- Per-phase values come from that phase's `parse-telemetry.sh` output
-- `TOTAL input`: sum of all phase `input` values
-- `TOTAL cached input`: sum of all phase `cached_input` values (omit row if no phase has it)
-- `TOTAL cache write`: sum of all phase `cache_write` values (verbose mode only; omit row if no phase has it)
-- `TOTAL output`: sum of all phase `output` values
-- `TOTAL reasoning`: sum of all phase `reasoning` values (omit row if no phase has it)
-- `TOTAL duration`: sum of all phase `duration_ms` values, converted to seconds (1 decimal)
-- `TOTAL total tokens`: `TOTAL input` + `TOTAL output`
-- **No cost row** — ever
+- The `--effort` value is Codex-only context (Claude Code has no equivalent CLI flag); when
+  showing the per-phase Usage block, this adapter's dispatch code MAY still surface it, but only
+  as an annotation on the `model:` line (e.g. `model: gpt-5.6-sol (effort: high)`), never as a
+  separate field that shifts the canonical field order.
+- **No cost row or dollar amount, ever** — not per-phase, not in the Total. This is already
+  stated in the canonical file's "Field order" section, restated here because it is the one rule
+  most likely to be violated by copying a Claude Code example.
+- Verbose mode (`telemetry.verbose: true` in `sdd/PROJECT.md`) adds `cache write` to the fields
+  the canonical format already shows conditionally — see "Verbose mode" above for the detection
+  script; the field itself follows the canonical block's placement (immediately after `cached
+  input`).
 
 ### Counting semantics
 
@@ -218,23 +100,19 @@ a live Codex CLI session — validate before relying on aggregated resume-based 
 
 ### Phases with unavailable telemetry
 
-If a phase's parser output is `{"available":false,...}`, show:
-
-```
-  /sdd.test
-  (telemetry unavailable)
-```
-
-Exclude that phase's tokens from TOTAL. Note below the summary:
-
-```
-  (!) /sdd.test excluded from TOTAL — telemetry was unavailable for that dispatch.
-```
+If a phase's parser output is `{"available":false,...}` — or the phase ran inline / via the
+native in-session subagent fallback with no captured stream at all — that phase's Usage block is
+the canonical `Usage` / `telemetry: unavailable (interactive session)` two-line form (§ "Per-phase
+display and Final summary" above), and it contributes nothing to the `Usage Total` sum. This is
+the same "excluded, not zero" rule the canonical file states under "Total / coverage" — not a
+separate Codex-specific rule.
 
 ### `/sdd.finish` summary scope
 
-`/sdd.finish` shows telemetry from its own dispatches only. `/sdd.go` shows the full
-pipeline summary.
+`/sdd.finish` is a single-phase command in the canonical mapping — its one Usage block **is**
+its total; no separate Total/coverage section (canonical rule: single-phase commands don't need
+one). `/sdd.go` and `/sdd.reverse-eng` are the multi-phase commands that print a `Usage Total`
+with `coverage: N/M`, per the canonical file.
 
 ---
 
@@ -242,7 +120,9 @@ pipeline summary.
 
 These are mandatory — a telemetry problem must never become a pipeline problem:
 
-1. **Never block on telemetry**: `{"available":false}` → show `Usage: unavailable`, continue
+1. **Never block on telemetry**: `{"available":false}` → show `telemetry: unavailable
+   (interactive session)` (canonical text, § "Per-phase display and Final summary" above),
+   continue
 2. **Never invent values**: no token estimation, no pricing-table cost derivation
 3. **Never propagate exit codes**: the parser always exits 0; never treat parse failure as dispatch failure
 4. **SDD result is independent**: green dispatch + unavailable telemetry = still green

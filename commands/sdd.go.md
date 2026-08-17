@@ -203,7 +203,7 @@ When `/sdd.go` is invoked:
 2. **DO dispatch each standard command as its own model-pinned call** (see "Model Routing" above — never execute a phase's content inline in this turn)
 3. **DO apply express rules as overrides**
 
-### Phase Transition Logging (mandatory, never pause)
+### Phase Transition Logging & Observability (mandatory, never pause)
 
 Before dispatching each step, print one line:
 
@@ -212,12 +212,26 @@ Before dispatching each step, print one line:
 ```
 
 Full example sequence per `commands/references/phase-transition-observability.md` § `/sdd.go`.
+
+**Mandatory, blocking, applies to every one of the 7 phases**: immediately after each dispatched
+phase's own call returns (whether it completed cleanly or round-tripped through one or more
+`NEEDS_USER_INPUT` gates), before dispatching the next phase, execute `EMIT_PHASE_OBSERVABILITY`
+— `commands/references/phase-transition-observability.md` § "Enforcement" — for that phase's own
+dispatch(es): real Usage if the phase's `model_role` dispatch was a measurable child process, or
+`telemetry: unavailable (interactive session)` if it wasn't. This mirrors the per-phase breakdown
+`/sdd.reverse-eng.md` documents for its own 8 phases; `/sdd.go`'s 7 phases follow the same rule —
+one `EMIT_PHASE_OBSERVABILITY` per phase closure, never a single end-of-run summary in its place.
+
 After the pipeline completes:
 
 ```
 ✓ concluído: /sdd.finish
 Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓
 ```
+
+Immediately after, print the `Usage Total` block per `phase-transition-observability.md` §
+"Total / coverage" — `/sdd.go` is a multi-phase command (7 phases), so `coverage: N/7 measured
+phases` is mandatory there, summing only the phases whose dispatch was actually measurable.
 
 Never pause or gate on these lines — output only.
 

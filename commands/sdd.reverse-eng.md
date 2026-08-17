@@ -201,6 +201,15 @@ Never write `FOCUSED_ANALYSIS_*`, `*_DEEP_DIVE.md`, standalone use-case files, o
 
 ## Eight-Phase Workflow
 
+> **Mandatory, blocking, applies to every phase below (0-7)**: immediately before advancing from
+> one phase to the next — regardless of whether that phase's detail came from this file directly
+> or from a lazy-loaded `references/reverse-eng-phaseN.md` file — execute `EMIT_PHASE_OBSERVABILITY`
+> (`commands/references/phase-transition-observability.md` § "Enforcement"), printing the
+> `Phase <N> — <name>` header and its Usage block per the "## Telemetry" section below. This is a
+> per-phase requirement, not a one-time reminder — it fires up to 8 times in a single run of this
+> command, once per phase closure, and it fires even when the phase ran inline (→ `unavailable`),
+> not only when a real dispatch was captured.
+
 ### Phase 0 Pre-step: Ensure Standard Structure (MANDATORY)
 
 > **PURPOSE**: Create the sdd/ directory structure if it doesn't exist.
@@ -396,13 +405,15 @@ Read **ONLY IF** flag/condition present:
 | Detailed phase rules             | `references/reverse-eng-phase-rules.md`          |
 | Code graph query-first/lifecycle | `framework/_shared/graphify-context.md`          |
 
-## Telemetry
+## Telemetry (mandatory execution, not a reference table to skim)
 
 Format and mechanics: `commands/references/phase-transition-observability.md` § "Usage / Telemetry
 block" — this section only maps that shared format onto `/sdd.reverse-eng`'s own phase structure.
 **Not automatic via any hook** — no such mechanism exists for any harness; each phase below shows
 real Usage only when a measurable dispatch actually happened, and `unavailable` otherwise, never
-omitted.
+omitted. **This section describes *what* to print; the "Eight-Phase Workflow" heading above states
+*when* to print it (`EMIT_PHASE_OBSERVABILITY`, once per phase closure, up to 8 times per run) —
+both are required, neither one alone is enough.**
 
 | Phase | Where it runs | Telemetry |
 | --- | --- | --- |

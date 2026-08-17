@@ -222,3 +222,4 @@ Tasks must be executable, layered, AC-linked to specs; IDs via deterministic gen
 2. Flag-first: `--view` / `--refine` → matching refs; do not regenerate blindly.
 3. Write `tasks.json` only after approval; set next stage to **tests** (`/sdd.test`).
 4. Mobile / frontend / infra → lazy refs only when conditions match.
+5. **Mandatory, blocking**: before ending this command (after task approval), execute `EMIT_PHASE_OBSERVABILITY` — `commands/references/phase-transition-observability.md` § "Enforcement". This is a situated reminder, not a duplicate of the global pointer in `agent-instructions.md` — do not rely on that file alone.

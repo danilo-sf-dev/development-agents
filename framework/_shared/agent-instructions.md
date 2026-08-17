@@ -88,6 +88,18 @@ Immediately after that block, append the Usage/Telemetry block — same file, §
 block". This is the only place that section is referenced; no command file re-implements
 telemetry capture, parsing, or display on its own.
 
+**This paragraph alone is not the enforcement mechanism — it is read once, at the start of the
+command, before any phase work happens.** A real smoke test showed that a read-once pointer at
+the top of a run does not reliably survive to the point, many tool calls later, where a phase
+actually closes: neither the transition block, the real Usage block, nor even the `unavailable`
+fallback printed. The actual, blocking trigger is `EMIT_PHASE_OBSERVABILITY`, defined in
+`commands/references/phase-transition-observability.md` § "Enforcement" — every command file
+that has a phase-closure point (every single-phase command's own final step; every internal
+phase of `/sdd.reverse-eng` and `/sdd.go`) carries its own explicit, situated instruction naming
+it, in that command's own file, in addition to this global pointer. If a command file's own
+closure point has no such explicit instruction, that is a wiring bug in the command file, not a
+case where this paragraph is expected to be enough on its own.
+
 ## Single delivery path (mandatory)
 
 There is **one** feature pipeline: `start → spec → plan → test → build → check → finish → pr`

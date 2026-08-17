@@ -31,6 +31,12 @@
 #       (would indicate the "single wiring point" rule was violated)
 #  12.  bash -n syntax check on this test file
 #
+# Round 2 (enforcement fix — the "no Usage block, not even unavailable" real Codex smoke-test
+# bug): tests 16-30 below verify EMIT_PHASE_OBSERVABILITY is actually wired as a blocking,
+# situated instruction in every command file, not just documented once in agent-instructions.md;
+# and that the two per-adapter telemetry-display.md files no longer carry their own competing
+# format (a real, separate divergence found during this round's audit).
+#
 # Usage: bash telemetry-wiring.test.sh
 # Exit: 0 if all pass, nonzero otherwise
 
@@ -43,6 +49,11 @@ CODEX_README="$PACK_ROOT/adapters/codex/README.md"
 REVERSE_ENG="$PACK_ROOT/commands/sdd.reverse-eng.md"
 OBSERVABILITY="$PACK_ROOT/commands/references/phase-transition-observability.md"
 AGENT_INSTR="$PACK_ROOT/framework/_shared/agent-instructions.md"
+GO_CMD="$PACK_ROOT/commands/sdd.go.md"
+CLAUDE_README="$PACK_ROOT/adapters/claude-code/README.md"
+CLAUDE_DISPLAY="$PACK_ROOT/adapters/claude-code/references/telemetry-display.md"
+CODEX_DISPLAY="$PACK_ROOT/adapters/codex/references/telemetry-display.md"
+SINGLE_PHASE_CMDS="sdd.start.md sdd.spec.md sdd.plan.md sdd.test.md sdd.build.md sdd.check.md sdd.finish.md"
 
 PASS=0; FAIL=0
 ok()   { echo "  PASS: $1"; PASS=$((PASS+1)); }
@@ -244,6 +255,193 @@ if bash -n "$SELF" 2>/tmp/telemetry_wiring_syntax_err; then
     ok "telemetry-wiring.test.sh has valid bash syntax"
 else
     fail "Syntax error: $(cat /tmp/telemetry_wiring_syntax_err)"
+fi
+
+# ══════════════════════════════════════════════════════════════════════════
+# Round 2 — EMIT_PHASE_OBSERVABILITY enforcement (Codex + Claude Code symmetric)
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── SHARED Test 16: EMIT_PHASE_OBSERVABILITY defined as blocking in the canonical file ──
+echo ""
+echo "Test 16 [SHARED]: phase-transition-observability.md defines EMIT_PHASE_OBSERVABILITY as blocking"
+if grep -q "EMIT_PHASE_OBSERVABILITY" "$OBSERVABILITY" && \
+   grep -qi "blocking, not optional" "$OBSERVABILITY"; then
+    ok "EMIT_PHASE_OBSERVABILITY defined, explicitly blocking"
+else
+    fail "EMIT_PHASE_OBSERVABILITY not defined as a blocking routine in the canonical file"
+fi
+
+# ── SHARED Test 17: agent-instructions.md names EMIT_PHASE_OBSERVABILITY, not just Usage block ──
+echo ""
+echo "Test 17 [SHARED]: agent-instructions.md names EMIT_PHASE_OBSERVABILITY explicitly"
+if grep -q "EMIT_PHASE_OBSERVABILITY" "$AGENT_INSTR"; then
+    ok "agent-instructions.md references EMIT_PHASE_OBSERVABILITY by name"
+else
+    fail "agent-instructions.md does not name EMIT_PHASE_OBSERVABILITY"
+fi
+
+# ── SHARED Test 18: every single-phase command carries its own situated instruction ──
+echo ""
+echo "Test 18 [SHARED]: every single-phase command has its own EMIT_PHASE_OBSERVABILITY line"
+MISSING=""
+for f in $SINGLE_PHASE_CMDS; do
+    if ! grep -q "EMIT_PHASE_OBSERVABILITY" "$PACK_ROOT/commands/$f" 2>/dev/null; then
+        MISSING="$MISSING $f"
+    fi
+done
+if [[ -z "$MISSING" ]]; then
+    ok "All 7 single-phase commands ($SINGLE_PHASE_CMDS) carry an explicit instruction"
+else
+    fail "Missing EMIT_PHASE_OBSERVABILITY instruction in:$MISSING"
+fi
+
+# ── SHARED Test 19: sdd.reverse-eng.md enforces per-phase, not just describes format ──
+echo ""
+echo "Test 19 [SHARED]: sdd.reverse-eng.md has a blocking per-phase instruction, not just a table"
+if grep -q "EMIT_PHASE_OBSERVABILITY" "$REVERSE_ENG" && \
+   grep -qi "Eight-Phase Workflow" "$REVERSE_ENG" && \
+   grep -qi "fires up to 8 times" "$REVERSE_ENG"; then
+    ok "sdd.reverse-eng.md carries an explicit, situated per-phase enforcement instruction"
+else
+    fail "sdd.reverse-eng.md enforcement instruction missing or not clearly per-phase"
+fi
+
+# ── SHARED Test 20: sdd.go.md enforces per-phase + Total/coverage ──
+echo ""
+echo "Test 20 [SHARED]: sdd.go.md requires EMIT_PHASE_OBSERVABILITY per phase and a final Total"
+if grep -q "EMIT_PHASE_OBSERVABILITY" "$GO_CMD" && \
+   grep -qi "coverage: N/7" "$GO_CMD"; then
+    ok "sdd.go.md ties each of its 7 phases to EMIT_PHASE_OBSERVABILITY and a coverage total"
+else
+    fail "sdd.go.md missing per-phase enforcement or the N/7 coverage requirement"
+fi
+
+# ── SHARED Test 21: old parsers untouched (git working tree, if this is a git repo) ─────
+echo ""
+echo "Test 21 [SHARED]: parser scripts were not rewritten this round"
+if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    PARSER_DIFF=$(git -C "$PACK_ROOT" diff --name-only -- \
+        adapters/claude-code/tools/parse-telemetry.sh \
+        adapters/codex/tools/parse-telemetry.sh 2>/dev/null)
+    if [[ -z "$PARSER_DIFF" ]]; then
+        ok "Neither parse-telemetry.sh script has a working-tree diff"
+    else
+        fail "Unexpected diff in parser script(s): $PARSER_DIFF"
+    fi
+else
+    fail "Not inside a git work tree — cannot verify parser zero-diff"
+fi
+
+# ── SHARED Test 22: Graphify zero diff ───────────────────────────────────────
+echo ""
+echo "Test 22 [SHARED]: zero diff under Graphify surface this round"
+if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    GRAPHIFY_DIFF=$(git -C "$PACK_ROOT" diff --name-only -- \
+        'framework/tools/detect-graphify.sh' \
+        'framework/tools/graphify-run.sh' \
+        'framework/tools/graphify-git-guard.sh' \
+        'framework/tools/graphify-state.sh' \
+        'framework/_shared/graphify-context.md' 2>/dev/null)
+    if [[ -z "$GRAPHIFY_DIFF" ]]; then
+        ok "No Graphify surface file has a working-tree diff"
+    else
+        fail "Unexpected diff under Graphify surface: $GRAPHIFY_DIFF"
+    fi
+else
+    fail "Not inside a git work tree — cannot verify Graphify zero-diff"
+fi
+
+# ── SHARED Test 23: model-routing zero diff ──────────────────────────────────
+echo ""
+echo "Test 23 [SHARED]: zero diff under model-routing surface this round"
+if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    ROUTING_DIFF=$(git -C "$PACK_ROOT" diff --name-only -- \
+        'config/model-routing.yaml' \
+        'framework/tools/resolve-model.sh' \
+        'framework/_shared/model-routing.md' 2>/dev/null)
+    if [[ -z "$ROUTING_DIFF" ]]; then
+        ok "No model-routing surface file has a working-tree diff"
+    else
+        fail "Unexpected diff under model-routing surface: $ROUTING_DIFF"
+    fi
+else
+    fail "Not inside a git work tree — cannot verify model-routing zero-diff"
+fi
+
+# ── SHARED Test 24: Cursor zero diff ─────────────────────────────────────────
+echo ""
+echo "Test 24 [SHARED]: zero diff under adapters/cursor this round"
+if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    CURSOR_DIFF=$(git -C "$PACK_ROOT" diff --name-only -- 'adapters/cursor/' 2>/dev/null)
+    if [[ -z "$CURSOR_DIFF" ]]; then
+        ok "No file under adapters/cursor/ has a working-tree diff"
+    else
+        fail "Unexpected diff under adapters/cursor/: $CURSOR_DIFF"
+    fi
+else
+    fail "Not inside a git work tree — cannot verify Cursor zero-diff"
+fi
+
+# ── CODEX Test 25: native/inline fallback still tied to EMIT_PHASE_OBSERVABILITY ─────
+echo ""
+echo "Test 25 [CODEX]: native-subagent fallback explicitly enforced, not just documented"
+if grep -qi "EMIT_PHASE_OBSERVABILITY" "$CODEX_README" && \
+   grep -q "does not, by itself, guarantee the Usage block" "$CODEX_README"; then
+    ok "Codex README ties the real smoke-test gap to EMIT_PHASE_OBSERVABILITY enforcement"
+else
+    fail "Codex README does not tie the native-subagent case to enforcement"
+fi
+
+# ── CODEX Test 26: codex telemetry-display.md no longer defines a competing format ───
+# (the file legitimately *mentions* the old format once, in prose, to explain what was removed —
+# the regression check is for the old format's actual rendered block, not the word of it)
+echo ""
+echo "Test 26 [CODEX]: codex telemetry-display.md defers to the canonical format (no more duplicate)"
+if grep -q "format authority moved" "$CODEX_DISPLAY" && \
+   ! grep -q "total tokens:" "$CODEX_DISPLAY" && \
+   ! grep -qE '^\s*- model:\s+gpt-5\.6-sol$' "$CODEX_DISPLAY"; then
+    ok "Codex telemetry-display.md no longer renders its own competing Usage/Total block"
+else
+    fail "Codex telemetry-display.md still renders (or fails to disclaim) a competing format"
+fi
+
+# ── CLAUDE Test 27: claude-code README/display no longer define a competing format ───
+echo ""
+echo "Test 27 [CLAUDE]: claude-code telemetry-display.md defers to the canonical format (no more duplicate)"
+if grep -q "format authority moved" "$CLAUDE_DISPLAY" && \
+   ! grep -q "total cost:" "$CLAUDE_DISPLAY" && \
+   ! grep -qE '^\s*Phase\s+Model\s+Input\s+Output' "$CLAUDE_DISPLAY"; then
+    ok "Claude Code telemetry-display.md no longer renders its own competing Usage/Total block"
+else
+    fail "Claude Code telemetry-display.md still renders (or fails to disclaim) a competing format"
+fi
+
+# ── CLAUDE Test 28: unavailable text now matches canonical exactly (previously diverged) ──
+echo ""
+echo "Test 28 [CLAUDE]: claude-code docs use the canonical two-line unavailable text"
+if grep -q "telemetry: unavailable (interactive session)" "$CLAUDE_DISPLAY" && \
+   ! grep -qE '^Usage: unavailable$' "$CLAUDE_DISPLAY"; then
+    ok "Claude Code display doc uses the canonical unavailable text, old one-liner removed"
+else
+    fail "Claude Code display doc still uses (or lost) the canonical unavailable text"
+fi
+
+# ── CLAUDE Test 29: README ties enforcement to EMIT_PHASE_OBSERVABILITY ──────
+echo ""
+echo "Test 29 [CLAUDE]: claude-code README ties printing to EMIT_PHASE_OBSERVABILITY, not just data capture"
+if grep -q "EMIT_PHASE_OBSERVABILITY" "$CLAUDE_README"; then
+    ok "Claude Code README references EMIT_PHASE_OBSERVABILITY as the print trigger"
+else
+    fail "Claude Code README does not reference EMIT_PHASE_OBSERVABILITY"
+fi
+
+# ── CLAUDE Test 30: cache fields no longer verbose-gated in the per-phase Usage block ──
+echo ""
+echo "Test 30 [CLAUDE]: cache fields documented as unconditional-if-reported, not verbose-only, per phase"
+if grep -qi "no verbose gate" "$CLAUDE_DISPLAY"; then
+    ok "Claude Code display doc aligns per-phase cache fields with the canonical no-verbose-gate rule"
+else
+    fail "Claude Code display doc does not clarify the per-phase cache-field verbose-gate fix"
 fi
 
 # ── Summary ──────────────────────────────────────────────────────────────────

@@ -190,6 +190,18 @@ on every measurable dispatch) and the parser. No cost/dollar figure is ever show
 fallback (see "OFFLOAD_READ" above) has no stream to parse — that phase's Usage block reads
 `telemetry: unavailable (interactive session)`, never a guess.
 
+**This capture/parse step only produces data — it does not, by itself, guarantee the Usage block
+gets printed.** Printing it at each phase closure is the calling command's job, enforced by
+`EMIT_PHASE_OBSERVABILITY` (`commands/references/phase-transition-observability.md` §
+"Enforcement"). A real Codex smoke test of `/sdd.reverse-eng` showed this exact gap: the run used
+the native in-session subagent path documented above, and even the `unavailable` fallback never
+printed — not because this adapter's rule was wrong, but because nothing in the command's own
+phase-closure flow was actually invoking it. If the native-subagent path is used again, the
+calling command's `EMIT_PHASE_OBSERVABILITY` step is what makes `telemetry: unavailable
+(interactive session)` print for that phase — this adapter's job stops at documenting that the
+fallback has no stream to parse; making the print happen is the command file's enforcement, not
+this adapter's.
+
 ## Known gaps (do not silently degrade past these — tell the user)
 
 - **No repo-shareable command surface.** Codex's `~/.codex/prompts/*.md` mechanism is explicitly user-local, not something this installer can populate on a teammate's behalf. The `/sdd.*` command surface is delivered as **skills** instead (Codex discovers `.agents/skills/` automatically), and `AGENTS.md` tells the operator to read `development-agents/commands/*.md` directly for the full command definitions — and, per "Model Routing" above, to dispatch that content via `codex exec --model ...` rather than running it inline.

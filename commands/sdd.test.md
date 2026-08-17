@@ -384,3 +384,10 @@ AskUserQuestion(
 1. Output ONLY the "Quick Help" section
 2. Do NOT execute test logic
 3. Keep response concise (~15 lines)
+
+### Observability (mandatory, blocking)
+
+Before ending this command (after test approval, Gate 2.5), execute `EMIT_PHASE_OBSERVABILITY` —
+`commands/references/phase-transition-observability.md` § "Enforcement". This is a situated
+reminder, not a duplicate of the global pointer in `agent-instructions.md` — do not rely on that
+file alone.

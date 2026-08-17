@@ -52,154 +52,54 @@ fi
 
 ---
 
-## Per-phase display (after every successful dispatch)
+## Per-phase display and Final summary — format authority moved (corrected this round)
 
-Print the phase completion block defined in
-`commands/references/phase-transition-observability.md`, then immediately append the Usage block.
-The two blocks are one contiguous output — no extra blank line between them.
+**`commands/references/phase-transition-observability.md` § "Usage / Telemetry block" and §
+"Total / coverage" are the single, exclusive format authority for both the per-phase Usage block
+and the end-of-run Total — for every harness, Claude Code included.** This file previously
+specified its own, different bullet-list format here (`- model: <model>` instead of the canonical
+`model: <model>`, a one-line `Usage: unavailable` fallback instead of the canonical two-line
+`Usage` / `telemetry: unavailable (interactive session)`, cache fields gated behind a `verbose`
+flag the canonical field-order rule doesn't mention, and a `SDD USAGE SUMMARY` table format
+instead of the canonical `Usage Total` block) — a real, silent divergence from the shared spec
+that went unnoticed until this round's audit. Do not follow the old format from memory or from
+any cached copy of this file; the sections below were removed for exactly this reason.
 
-### Default mode
+Executing `EMIT_PHASE_OBSERVABILITY` — the canonical file's § "Enforcement" — at every phase
+closure (this adapter's contribution: capturing `claude -p ... --output-format stream-json
+--verbose` and parsing it) is what makes the Usage block actually print. This reference
+describing the data source is necessary but not sufficient; the calling command's own explicit,
+situated instruction is what fires it — see each `commands/sdd.*.md` file's own
+`EMIT_PHASE_OBSERVABILITY` line.
 
-```
-✓ concluído: /sdd.<phase>
-▶ próxima fase: /sdd.<next>
+What stays specific to Claude Code, and is not restated in the canonical file:
 
-Usage
-- model: <model>
-- input: <N> tokens
-- output: <N> tokens
-- duration: <X.Xs>
-- cost: $<N.NNNN>
-```
-
-### Verbose mode (telemetry.verbose: true in sdd/PROJECT.md)
-
-```
-✓ concluído: /sdd.<phase>
-▶ próxima fase: /sdd.<next>
-
-Usage
-- model: <model>
-- input: <N> tokens
-- output: <N> tokens
-- cache read: <N> tokens
-- cache write: <N> tokens
-- duration: <X.Xs>
-- cost: $<N.NNNN>
-```
-
-### Telemetry unavailable
-
-If the parser returns `{"available":false,...}`, show a single degraded line instead of the
-full usage block. **Never fail the phase** — the underlying dispatch result is valid even if
-telemetry parsing failed:
-
-```
-✓ concluído: /sdd.<phase>
-▶ próxima fase: /sdd.<next>
-
-Usage: unavailable
-```
-
-Do NOT show the reason string to the user unless debugging — it is diagnostic, not actionable.
-
-### Formatting rules
-
-- `cost`: always 4 decimal places, `$0.0474` (not `$0.047400`)
-- `duration`: one decimal place in seconds, `7.3s` (convert from `duration_ms / 1000`)
-- `input` / `output` / `cache read` / `cache write`: plain integer, no thousands separator
-- `/sdd.finish` uses `Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓` with no
-  "próxima fase" line (see `phase-transition-observability.md`) — the Usage block still appears
-  immediately after
+- `cost`, when reported, is always 4 decimal places (`$0.0474`, not `$0.047400`) and always the
+  last field — the canonical file already states "last field," this adds the decimal-formatting
+  detail.
+- `duration` is one decimal place in seconds (`7.3s`), converted from `duration_ms / 1000`.
+- Verbose mode (`telemetry.verbose: true` in `sdd/PROJECT.md`, § "Verbose mode" above) is an
+  opt-in **display density** choice — cache read/write are part of the canonical block whenever
+  the parser reports them (canonical rule: "only if the parser reported it," no verbose gate);
+  what verbose mode actually changes is whether the *Final summary table* (below) grows cache
+  columns, not whether a single phase's Usage block shows cache fields.
 
 ---
 
-## Final summary
+## Total / coverage
 
-Show after `/sdd.finish` completes and after `/sdd.go` completes. Collect the telemetry from
-every `claude -p` dispatch during that session run. Cache fields always appear in the summary
-regardless of verbose mode (they are relevant to real cost).
-
-**Default mode:**
-
-```
-SDD USAGE SUMMARY
-─────────────────────────────────────────────────────────────────
-  Phase       Model                    Input    Output   Duration       Cost
-  ──────────  ───────────────────────  ───────  ───────  ─────────  ──────────
-  /sdd.spec   claude-sonnet-4-6            4       214      7.3s    $0.0474
-  /sdd.build  claude-haiku-4-5            18       419      7.9s    $0.0152
-  /sdd.finish claude-sonnet-4-6            4       193      9.8s    $0.0485
-
-  TOTAL
-  - input:    26 tokens
-  - output:   826 tokens
-  - duration: 25.0s
-  ──────────────────
-  - total cost: $0.1111
-─────────────────────────────────────────────────────────────────
-```
-
-**Verbose mode** (adds cache columns to the table and cache rows to TOTAL):
-
-```
-SDD USAGE SUMMARY
-─────────────────────────────────────────────────────────────────────────────────────────────
-  Phase       Model                    Input    Output   Cache Read   Cache Write  Duration       Cost
-  ──────────  ───────────────────────  ───────  ───────  ──────────   ───────────  ─────────  ──────────
-  /sdd.spec   claude-sonnet-4-6            4       214      49,816       4,870       7.3s    $0.0474
-  /sdd.build  claude-haiku-4-5            18       419      53,145       3,898       7.9s    $0.0152
-  /sdd.finish claude-sonnet-4-6            4       193      52,323       4,988       9.8s    $0.0485
-
-  TOTAL
-  - input:       26 tokens
-  - output:      826 tokens
-  - cache read:  155,284 tokens
-  - cache write: 13,756 tokens
-  - duration:    25.0s
-  ──────────────────────────
-  - total cost:  $0.1111
-─────────────────────────────────────────────────────────────────────────────────────────────
-```
-
-### Aggregation rules
-
-- For each phase row: use the telemetry from that phase's `parse-telemetry.sh` output
-- `TOTAL input`: sum of all phase `input` values
-- `TOTAL output`: sum of all phase `output` values
-- `TOTAL cache read`: sum of all phase `cache_read` values (verbose only)
-- `TOTAL cache write`: sum of all phase `cache_write` values (verbose only)
-- `TOTAL duration`: sum of all phase `duration_ms` values, converted to seconds
-- `total cost`: sum of all phase `cost_usd` values, formatted to 4 decimal places — always last
-
-Cache values use thousands separators (e.g. `155,284`). Token values in per-phase rows do not.
-
-### Phases with unavailable telemetry
-
-If a phase's telemetry is `{"available":false,...}`, that phase appears in the summary as:
-
-```
-  /sdd.test   (telemetry unavailable)
-```
-
-That phase's tokens and cost are excluded from TOTAL — no estimation, no substitution.
-Clearly note below the table if any phase was excluded:
-
-```
-  (!) /sdd.test excluded from TOTAL — telemetry was unavailable for that dispatch.
-```
+Governed entirely by the canonical file's § "Total / coverage" — the `Usage Total` block, summing
+only phases whose telemetry was `available`, with `coverage: N/M measured phases` mandatory for
+`/sdd.go` (M=7) and `/sdd.reverse-eng` (M up to 4 conceptual phases, per that command's own
+telemetry section). `/sdd.finish` is single-phase in the canonical mapping — its one Usage block
+is its own total; no separate Total/coverage section there.
 
 ### Which dispatches count as phases
 
 Each top-level `claude -p` dispatch from the adapter counts as one phase row. Sub-dispatches
 inside a single phase (e.g. the validator sub-step inside `/sdd.build`) appear as separate rows
-labeled `/sdd.build (validator)`.
-
-### `/sdd.finish` summary scope
-
-`/sdd.finish` shows the summary of its own session's dispatches (validation, code review, and
-any other delegated sub-steps that phase ran). It does not aggregate the entire pipeline from
-`/sdd.start` to `/sdd.finish` — that scope is `/sdd.go`'s summary.
+labeled `/sdd.build (validator)` — this determines what `M` counts in `coverage: N/M`, it does
+not change the canonical Total block's field format.
 
 ---
 
@@ -207,9 +107,17 @@ any other delegated sub-steps that phase ran). It does not aggregate the entire 
 
 These are mandatory — violating them turns a telemetry problem into a feature problem:
 
-1. **Never block on telemetry**: if `parse-telemetry.sh` returns unavailable, proceed anyway
+1. **Never block on telemetry**: if `parse-telemetry.sh` returns unavailable — or no `claude -p`
+   subprocess was dispatched at all (inline work in the interactive session) — show the canonical
+   `telemetry: unavailable (interactive session)` text and proceed anyway; never fall back to a
+   different unavailable string.
 2. **Never invent values**: no estimation, no approximation, no "calculated from prompt length"
 3. **Never propagate exit codes**: the parser always exits 0; the calling session should not
    treat a telemetry parse failure as a dispatch failure
 4. **SDD result is independent**: a green dispatch with unavailable telemetry is still green;
    a red dispatch with available telemetry is still red
+5. **Printing is not automatic**: this file describes what data exists and how it's formatted;
+   the calling command's own explicit `EMIT_PHASE_OBSERVABILITY` instruction (per
+   `commands/references/phase-transition-observability.md` § "Enforcement") is what actually
+   triggers the print at each phase closure — do not assume this reference being read once is
+   enough.

@@ -132,6 +132,12 @@ returning nothing), the adapter may fall back to the in-session `Agent(model: <a
 Never silently switch from `claude-sonnet-4-6` to `sonnet` without this notice. A silent substitution
 is a routing lie — the user may be paying for Sonnet 5 and assuming Sonnet 4.6.
 
+This routing-degradation notice and that phase's `EMIT_PHASE_OBSERVABILITY` Usage block are two
+separate things — the notice explains *why* telemetry is unavailable (no capturable subprocess
+stream from the `Task()`/`Agent` fallback), the Usage block still prints the canonical
+`telemetry: unavailable (interactive session)` text at that phase's closure, same as any other
+inline-work case.
+
 ## How each execution requirement is satisfied
 
 | Capability | Claude Code mechanism (this adapter's choice, not a core dependency) |
@@ -202,37 +208,26 @@ TELEMETRY=$(bash adapters/claude-code/tools/parse-telemetry.sh \
 is the direct key into `modelUsage` — no heuristic, no date-suffix stripping. Live-verified: passing
 `--model claude-sonnet-4-6` → `modelUsage["claude-sonnet-4-6"]` present and correct.
 
-### Display: `adapters/claude-code/references/telemetry-display.md`
+### Display: `commands/references/phase-transition-observability.md` (format authority)
 
-Defines the per-phase UX and final summary format. Key points:
+The per-phase Usage block and the end-of-run `Usage Total` are defined **once**, harness-
+agnostically, in `commands/references/phase-transition-observability.md` § "Usage / Telemetry
+block" and § "Total / coverage" — this adapter does not keep its own copy of the format (an
+earlier version of this README did, and it had silently drifted from the canonical spec: a
+bullet-list shape, a different `unavailable` string, and cache fields gated behind `verbose`
+mode contrary to the canonical "show whenever the parser reports it" rule — corrected this
+round, see `references/telemetry-display.md` for the fix). This adapter's own contribution is
+only: capturing `--output-format stream-json --verbose`, the parser
+(`adapters/claude-code/tools/parse-telemetry.sh`), and the `telemetry.verbose: true` config
+switch that adds cache columns to the *final summary table* specifically (`references/
+telemetry-display.md` § "Verbose mode").
 
-**Default per-phase** (appended to the `✓ concluído` block):
-```
-Usage
-- model: <resolved-model>
-- input: <N> tokens
-- output: <N> tokens
-- duration: <X.Xs>
-- cost: $<N.NNNN>
-```
-Cache fields hidden by default. Cost is always the last field.
-
-**Verbose per-phase** (when `sdd/PROJECT.md` contains `telemetry: { verbose: true }`):
-```
-Usage
-- model: <resolved-model>
-- input: <N> tokens
-- output: <N> tokens
-- cache read: <N> tokens
-- cache write: <N> tokens
-- duration: <X.Xs>
-- cost: $<N.NNNN>
-```
-
-**Final summary** (at end of `/sdd.finish` and `/sdd.go`): per-phase table with columns
-model/input/output/duration/cost; TOTAL block shows input/output/duration then `total cost` last
-(separated by a rule). Cache columns and rows appear only in verbose mode.
-See `references/telemetry-display.md` for exact format.
+**Printing the block at each phase closure is enforced by `EMIT_PHASE_OBSERVABILITY`**
+(`phase-transition-observability.md` § "Enforcement"), triggered by an explicit, situated
+instruction in each `commands/sdd.*.md` file — not by this README or the display reference being
+read once. Work that ran inline in the interactive session (no `claude -p` subprocess captured,
+including the Task()/Agent fallback below) prints the canonical `telemetry: unavailable
+(interactive session)` text, same as any other harness's inline case.
 
 ### Verbose mode
 

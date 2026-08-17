@@ -271,6 +271,7 @@ When a flag-specific variant is invoked, read `references/check-rare-workflows.m
 3. **Highlight blockers** prominently
 4. **Suggest next actions** clearly
 5. **For --sync, --compliance, and --project**: Always ask for confirmation before applying fixes
+6. **Mandatory, blocking**: before ending this command, execute `EMIT_PHASE_OBSERVABILITY` — `commands/references/phase-transition-observability.md` § "Enforcement". This is a situated reminder, not a duplicate of the global pointer in `agent-instructions.md` — do not rely on that file alone.
 
 ## Optional flags (lazy-loaded)
 

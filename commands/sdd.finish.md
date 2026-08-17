@@ -185,3 +185,4 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 3. Atomic `mv` wip→features; verify; promote PATTERNS/backlog via AskUserQuestion.
 4. Mobile / brownfield / hooks → matching lazy refs only.
 5. After archive (Standard): suggest `/sdd.pr` via `references/finish-next-steps.md`.
+6. **Mandatory, blocking**: before ending this command (after archive), execute `EMIT_PHASE_OBSERVABILITY` — `commands/references/phase-transition-observability.md` § "Enforcement". This is a situated reminder, not a duplicate of the global pointer in `agent-instructions.md` — do not rely on that file alone.

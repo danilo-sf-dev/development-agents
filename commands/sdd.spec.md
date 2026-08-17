@@ -304,3 +304,4 @@ Read the matching reference **ONLY IF** the flag/condition is present. Never loa
 - `help` → Quick Help only, do not run workflow.
 - Inline `"description"` → store as `initial_context`, seed interview (do not skip it).
 - Flag-first: if an optional flag/condition matches the table above, Read that reference first and follow it; otherwise run the happy-path workflow above.
+- **Mandatory, blocking**: before ending this command (after full spec approval — functional + technical both done), execute `EMIT_PHASE_OBSERVABILITY` — `commands/references/phase-transition-observability.md` § "Enforcement". This is a situated reminder, not a duplicate of the global pointer in `agent-instructions.md` — do not rely on that file alone.

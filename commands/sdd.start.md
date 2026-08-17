@@ -192,6 +192,7 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 2. Order: Steps 0.5→12 (Model Routing resolves automatically before Step 0.5, no gate); never skip profile (Step 0.5) or input validation (Step 1).
 3. Infer kebab-case feature name from description; confirm only if ambiguous.
 4. Critical: Application name ≠ feature name; never invent external app registration; stack from detection + PROJECT.md.
+5. **Mandatory, blocking**: before ending this command (after Step 12, before returning control), execute `EMIT_PHASE_OBSERVABILITY` — `commands/references/phase-transition-observability.md` § "Enforcement". This is a situated reminder, not a duplicate of the global pointer in `agent-instructions.md` — do not rely on that file alone.
 
 ## Optional flags (lazy-loaded)
 

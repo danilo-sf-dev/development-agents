@@ -79,6 +79,61 @@ Do NOT pause between phases for this logging — it is output only, never a gate
 
 ---
 
+## Enforcement — `EMIT_PHASE_OBSERVABILITY` (blocking, not optional)
+
+**Root cause this section exists to close**: a real Codex smoke test of `/sdd.reverse-eng`
+produced neither the transition block, nor a real Usage block, nor even the `unavailable`
+fallback — for any phase. The mechanism was never invoked at all. Investigation found that the
+only instruction to print these blocks lived in `framework/_shared/agent-instructions.md`, read
+**once at the start** of the command, with no situated reminder at the point where a phase
+actually closes — many tool calls and, for multi-phase commands, several internal phases later.
+A single read-once pointer at the top of a long run is not a reliable trigger for an action that
+must happen repeatedly at specific later points. Documentation that only *describes* the format
+(what `commands/sdd.reverse-eng.md`'s old "Telemetry" section did) is not the same as an
+*instruction* to execute it — description without a blocking directive at the actual decision
+point was silently treated as optional.
+
+**The fix**: `EMIT_PHASE_OBSERVABILITY` is the conceptual routine every logical phase closure
+must execute, defined once here and referenced by name — never re-described — from every command
+file that has a phase-closure point:
+
+- Every **single-phase command** (`/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.test`,
+  `/sdd.build`, `/sdd.check`, `/sdd.finish`) has exactly one closure point: its own final step.
+  That command's own `## AI Agent Instructions` section carries an explicit line naming
+  `EMIT_PHASE_OBSERVABILITY` — not just the inherited pointer from `agent-instructions.md` —
+  so the instruction is still present at the point in context where it must fire, not only at
+  the top of the run.
+- Every **multi-phase command** (`/sdd.reverse-eng`, `/sdd.go`) has one closure point per
+  internal phase. Each such command's own workflow section carries an explicit
+  "before advancing to the next phase, execute `EMIT_PHASE_OBSERVABILITY`" instruction, in
+  addition to (never instead of) its per-phase telemetry mapping table.
+
+`EMIT_PHASE_OBSERVABILITY`, when executed, always does both of the following, in order, for the
+phase that just closed:
+
+1. Print the transition block (§ Format, above).
+2. Immediately after — no blank line — print the Usage block (§ "Usage / Telemetry block",
+   below) for that phase's own dispatch(es).
+
+There are exactly three outcomes for step 2, and `EMIT_PHASE_OBSERVABILITY` always produces one
+of them — never a fourth outcome where the block is skipped:
+
+1. A real, measurable child dispatch happened (`claude -p ... --output-format stream-json
+   --verbose`, or Codex `codex exec --json`) → parse the captured stream → real Usage block.
+2. The phase ran inline in the interactive session, **or** — Codex-specific — via the native
+   in-session subagent fallback described in `adapters/codex/README.md` § `OFFLOAD_READ` — no
+   captured child stream exists either way → `telemetry: unavailable (interactive session)`.
+   Both cases collapse to the same text: from this protocol's point of view they are the same
+   thing (no capturable stream), and the native-subagent path must never be reported as if it
+   were outcome 1.
+3. A parser call failed for any other reason (malformed stream, missing file) → same
+   `unavailable` text as outcome 2; the phase's own result (green/red) is unaffected.
+
+This section is the single definition of `EMIT_PHASE_OBSERVABILITY`. Command files reference it
+by name; none of them re-describe what it does.
+
+---
+
 ## Usage / Telemetry block (mandatory alongside the transition block)
 
 **This is the single wiring point for telemetry in the whole pipeline.** No command file
