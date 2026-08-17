@@ -84,6 +84,10 @@ pipeline transition block defined in `commands/references/phase-transition-obser
 Use that file's per-command mapping to fill in `<current>`, `<next>`, and the bracketed pipeline
 string. Do NOT print on error, mid-command, or inside a gate. One block per invocation, max.
 
+Immediately after that block, append the Usage/Telemetry block — same file, § "Usage / Telemetry
+block". This is the only place that section is referenced; no command file re-implements
+telemetry capture, parsing, or display on its own.
+
 ## Single delivery path (mandatory)
 
 There is **one** feature pipeline: `start → spec → plan → test → build → check → finish → pr`

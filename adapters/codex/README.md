@@ -35,7 +35,7 @@ command/Skill content that declares a `model_role`, the calling session resolves
 (`resolve-model.sh codex STRONG` → `model=gpt-5.6-sol effort=high`) and runs
 
 ```bash
-codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' "<task>"
+codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' --json "<task>"
 ```
 
 as a child process, rather than executing that content inline under whatever model the parent session
@@ -43,6 +43,12 @@ happens to be running. Note the value is quoted inside the `-c` argument (`-c
 'model_reasoning_effort="high"'`) — `-c` takes a raw TOML-style value, so a string needs its own
 quotes; a bare `-c model_reasoning_effort=high` has been reported to work in most shells too, but the
 quoted form is the one shown in official examples and is what this adapter uses.
+
+**`--json` is mandatory on every `codex exec` dispatch, not optional.** It is the only source of
+the `turn.completed` usage event that `adapters/codex/tools/parse-telemetry.sh` reads — see
+"Telemetry" below. Capture stdout to a temp file (`... --json > "$STREAM_FILE"`) so the parser can
+read it after the call completes; never omit `--json` "for simplicity" on a dispatch whose usage
+should be observable.
 
 **Sandbox — read vs. write dispatch, confirmed via current docs, corrected this round**:
 `codex exec` is **read-only by default** (no network access, no writes outside temp — confirmed in
@@ -55,11 +61,41 @@ actually writes files, and withholds it from everything else:
 
 | Dispatch is...                                                                                    | Command                                                                                       | Why                                                                 |
 | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Read-only / analysis (`sdd-explorer`, `sdd-layer-analysis`, `sdd-system-design`, `sdd-debugger`, `sdd-validator` isolated mode) | `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' "<task>"` (default sandbox, no override) | Default `codex exec` is already read-only — nothing extra needed, and nothing here should mutate the working tree (`sdd-validator` must not, per `VALIDATOR_ISOLATED` property 3). |
-| Write-capable (`sdd-implementation`, `sdd-test-writing`, `/sdd.build`, `/sdd.plan` writing `tasks.json`, any phase that creates/edits files) | `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' --sandbox workspace-write --ask-for-approval never "<task>"` | Without `--sandbox workspace-write`, the call is read-only and would silently do nothing to the filesystem while still reporting a result; `--ask-for-approval never` is required alongside it so the headless call doesn't block waiting for an approval prompt that will never come. |
+| Read-only / analysis (`sdd-explorer`, `sdd-layer-analysis`, `sdd-system-design`, `sdd-debugger`, `sdd-validator` isolated mode) | `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' --json "<task>"` (default sandbox, no override) | Default `codex exec` is already read-only — nothing extra needed, and nothing here should mutate the working tree (`sdd-validator` must not, per `VALIDATOR_ISOLATED` property 3). |
+| Write-capable (`sdd-implementation`, `sdd-test-writing`, `/sdd.build`, `/sdd.plan` writing `tasks.json`, any phase that creates/edits files) | `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' --sandbox workspace-write --ask-for-approval never --json "<task>"` | Without `--sandbox workspace-write`, the call is read-only and would silently do nothing to the filesystem while still reporting a result; `--ask-for-approval never` is required alongside it so the headless call doesn't block waiting for an approval prompt that will never come. |
 
 `--sandbox workspace-write --ask-for-approval never` is granted per-dispatch based on what that
 specific Skill/phase does, never blanket-applied to every call.
+
+**`OFFLOAD_READ` / `sdd-explorer` — desambiguation (corrected this round).** `harness-capabilities.md`
+describes this capability for Codex as "real subagents where available" — a phrase that, before this
+correction, was ambiguous between two structurally different mechanisms: (a) a genuine child process
+this session shells out to via `codex exec --json` (the "Read-only / analysis" row above — a real
+OS-level subprocess whose stdout this session captures), and (b) a native, in-session subagent tool
+that Codex CLI itself may expose inside an already-running interactive session (structurally
+analogous to Claude Code's `Task()` tool) — which, if that is what actually runs, produces no
+separate JSONL stream this session's own scripts can intercept, because it never leaves the parent
+process. This is now resolved explicitly:
+
+- **Preferred**: dispatch `sdd-explorer` (and every other `OFFLOAD_READ` Skill) as the child
+  `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' --json "<task>"` form from
+  the table above. This is what "real subagents" in `harness-capabilities.md` means for
+  `OFFLOAD_READ`, and it is what makes the delegation's token usage measurable —
+  `adapters/codex/tools/parse-telemetry.sh` can read its captured stream. Requires no extra
+  operator action beyond the harness's normal command-approval flow — the calling session
+  dispatches it the same way it dispatches any other child `codex exec` call.
+- **Fallback**: if a genuinely fresh child process cannot be used for some reason and the delegation
+  runs via Codex's own native in-session subagent mechanism instead, that is still an acceptable way
+  to satisfy `OFFLOAD_READ` **behaviorally** (a compact result still comes back, context is still
+  saved) — but its telemetry is **not** available, because there is no captured stream for
+  `parse-telemetry.sh` to read. Report it as such (`telemetry: unavailable (interactive session)` —
+  see `commands/references/phase-transition-observability.md`); never estimate a token count for it,
+  and never try to scrape it from any UI or status output.
+- The choice between these two is made at dispatch time by whether a child process was actually
+  used — not declared in advance by this document, and not something a command file should decide
+  by naming a mechanism; the command asks for `OFFLOAD_READ`, this adapter satisfies it via whichever
+  of the two above actually happened, and whichever one it was determines whether telemetry exists
+  for that call.
 
 **This upgrades `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` from manual to automatic.** The previous
 version of this adapter (before Model Routing) described the isolation procedure as "the operator
@@ -72,7 +108,7 @@ has shell access) with no operator action. The Validator Independence Protocol n
 2. It builds the scrubbed prompt (file list + rule tables from `skills/sdd-validator/SKILL.md`, never
    the implementation rationale — identical scrubbing rule to the Claude Code `Task()` call).
 3. It resolves `STRONG` → `resolve-model.sh codex STRONG` → `model=gpt-5.6-sol effort=high`, then runs
-   `codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' "<scrubbed prompt>"` itself
+   `codex exec --model gpt-5.6-sol -c 'model_reasoning_effort="high"' --json "<scrubbed prompt>"` itself
    (default read-only sandbox — no `--sandbox workspace-write`, see "Sandbox" above), as a child
    process — a genuinely fresh process/context, not a continuation of its own conversation, and
    **without** any file-editing instruction in the prompt (validator dispatches are read-only by
@@ -130,16 +166,29 @@ not a claim of a completed live test — before relying on this in production, r
 
 ```bash
 # READ dispatch — default sandbox (read-only), no file-editing instruction in the prompt
-codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' "List the files in the current directory and suggest one naming improvement, but do not change anything." --output-last-message /dev/stdout
+codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' --json "List the files in the current directory and suggest one naming improvement, but do not change anything." --output-last-message /dev/stdout
 # Expect: no change to any file on disk.
 
 # WRITE dispatch — explicit workspace-write sandbox + no-prompt approval
-codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' --sandbox workspace-write --ask-for-approval never "Append a comment line to README.md confirming this test ran."
+codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' --sandbox workspace-write --ask-for-approval never --json "Append a comment line to README.md confirming this test ran."
 # Expect: README.md actually modified.
 
 # Resume
 codex exec resume --last "Looks good, proceed."
 ```
+
+## Telemetry
+
+Every `codex exec` dispatch that should be observable captures `--json` output to a temp file, then
+`adapters/codex/tools/parse-telemetry.sh --model "<resolved>" --effort "<level>" --file "$STREAM_FILE"`
+extracts the `turn.completed` usage event — full mechanics in `adapters/codex/references/
+telemetry-display.md`. Display and aggregation (the actual per-phase Usage block, the Total/coverage
+line at command end) are defined once, harness-agnostically, in `commands/references/
+phase-transition-observability.md` — this adapter's contribution is only the capture step (`--json`
+on every measurable dispatch) and the parser. No cost/dollar figure is ever shown for Codex (see
+`parse-telemetry.sh`'s own header for why). A dispatch that ran via the native in-session subagent
+fallback (see "OFFLOAD_READ" above) has no stream to parse — that phase's Usage block reads
+`telemetry: unavailable (interactive session)`, never a guess.
 
 ## Known gaps (do not silently degrade past these — tell the user)
 

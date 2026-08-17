@@ -398,15 +398,28 @@ Read **ONLY IF** flag/condition present:
 
 ## Telemetry
 
-Telemetry is captured **automatically by hooks** during reverse-engineering. No manual tracking required.
+Format and mechanics: `commands/references/phase-transition-observability.md` § "Usage / Telemetry
+block" — this section only maps that shared format onto `/sdd.reverse-eng`'s own phase structure.
+**Not automatic via any hook** — no such mechanism exists for any harness; each phase below shows
+real Usage only when a measurable dispatch actually happened, and `unavailable` otherwise, never
+omitted.
 
-**Supported Tools**:
+| Phase | Where it runs | Telemetry |
+| --- | --- | --- |
+| Phase 0 (repository state detection) | Inline, main session | `Usage: telemetry: unavailable (interactive session)` |
+| **Phase 1-3** (parallel extraction + cross-validation) | Delegated to `sdd-explorer` — real Usage requires the **child `codex exec --json`** (Codex) or `claude -p --output-format stream-json --verbose` (Claude Code) dispatch form, per each adapter's `OFFLOAD_READ` mechanism (`adapters/codex/README.md` § OFFLOAD_READ desambiguates the child-vs-native-subagent choice for Codex specifically) | Real Usage when the delegation used a captured child dispatch; `unavailable` if it fell back to an uncaptured mechanism (e.g. Codex's native in-session subagent) |
+| Phase 4 (synthesis) | Inline, main session — "Results returned to main agent for synthesis" | `Usage: telemetry: unavailable (interactive session)` |
+| Phase 4.5-7 (ownership mapping, patterns, consistency, promotion) | Inline, main session | `Usage: telemetry: unavailable (interactive session)` |
 
-| Tool               | Support |
-| ------------------ | ------- |
-| Claude Code        | ✅      |
-| Cursor             | ✅      |
-| optional Agent CLI | ✅      |
+**Multiple children within Phase 1-3**: if extraction dispatches more than one child (e.g. one per
+sub-area), aggregate only the real, available ones into that phase's Usage block; a per-child
+breakdown may additionally be shown if useful, but the phase-level block is what counts toward the
+command's Total. Never fold Phase 0/4-7's inline (`unavailable`) status into that sum.
+
+**Total**: shown once at the end, per `phase-transition-observability.md`'s "Total / coverage"
+rules — sums only Phase 1-3's real data (when available), with `coverage: N/M` reflecting how many
+of the (up to) 4 conceptual phases above actually had measurable telemetry. A typical run reads
+`coverage: 1/4` — Phase 1-3 measured, Phases 0/4/5-7 inline — this is expected, not a bug.
 
 ---
 
