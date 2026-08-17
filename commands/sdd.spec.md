@@ -52,6 +52,17 @@ Context before technical: >50% → `/clear`; >80% → `context-guardian`.
 
 When the user mentions a technology unfamiliar to the repo, ask which option fits PROJECT.md — do not silently rewrite to a vendor platform.
 
+## Code Graph — query-first exploration (lazy-loaded, optional)
+
+> **ONLY IF** `graphify-state.sh get sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active`
+> and `GRAPHIFY_GRAPH=ready` (decided once by `/sdd.start`'s preflight — read state here, never
+> re-ask; see `framework/_shared/graphify-context.md` § 5, 7): before broad `Glob`/`Grep`/`Read`
+> exploration for either spec, run the git guard, turn the feature description into a question,
+> and run `<GRAPHIFY_CMD> query "<question>"` (optionally `path`/`explain` for named concepts)
+> to identify the small set of relevant files/services — then `Read` only those. Never
+> `Read graphify-out/graph.json` directly.
+> `disabled` (or state absent) → skip this, proceed with normal exploration exactly as before.
+
 ---
 
 ## Behavior by Mode

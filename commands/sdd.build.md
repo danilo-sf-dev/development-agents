@@ -132,6 +132,14 @@ E2E only if deferred + enabled. Mobile preamble: `references/build-mobile-preamb
 > **ONLY IF** needing prompt template / routing table:
 > Read `references/build-per-task.md`.
 
+**Code Graph (lazy-loaded, optional, not mandatory per-task)**: **ONLY IF**
+`graphify-state.sh get sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active` and
+`GRAPHIFY_GRAPH=ready` (see `framework/_shared/graphify-context.md` § 7) AND impact isn't
+already clear from `/sdd.plan` — query for extension points, callers/dependents, or
+reuse-vs-new decisions before implementing (git guard first, § 2). Always still edit/read real
+source afterward; the graph never substitutes for the actual diff. Read this state once per
+build run, do not re-ask — disabled/impact already clear → skip, implement as before.
+
 ### Step 5: Quality Gate + Persist
 
 1. Anti-gaming check 2) `sdd-validator` 3) Fix until APPROVED 4) Mark task `completed` in `tasks.json` on disk (survives `/clear`).
@@ -151,6 +159,17 @@ After all tasks: A compliance → B Layer-3 via `sdd-validator` → C code patte
 > **ONLY IF** needing Step 6A–6D bash/details:
 > Read `references/build-final-validation.md`.
 > Platform compliance details: `references/build-platform-compliance.md` (backend/web).
+
+### Step 6.5: Code Graph — mark stale (lazy-loaded, optional)
+
+> **ONLY IF** `graphify-state.sh get sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active`
+> AND actual code (not docs/spec/Markdown-only) changed during this build run: run
+> `graphify-state.sh mark-stale sdd/wip/<feature>/meta.md`. This is a **state flip only** — it
+> does **not** call `<GRAPHIFY_CMD> update .` and does **not** ask the user anything here. The
+> update decision (and the one legitimate re-ask) belongs to `/sdd.check`, right before it would
+> consult the graph — see `framework/_shared/graphify-context.md` § 6. Skip entirely if
+> Graphify is disabled for this flow or nothing structural changed (`mark-stale` is also a
+> no-op by design when mode is not `active`).
 
 ### Step 7: Final Sync (short)
 
@@ -217,6 +236,7 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 | Mobile preamble                   | `references/build-mobile-preamble.md`       |
 | Platform compliance (backend/web) | `references/build-platform-compliance.md`   |
 | Stack command examples            | `references/build-commands-by-stack.md`     |
+| Code graph query/refresh          | `framework/_shared/graphify-context.md`     |
 | Next-steps UX                     | `references/build-next-steps.md`            |
 
 ## AI Agent Instructions

@@ -71,6 +71,30 @@ result=$(bash development-agents/framework/tools/extraction/analyze-layers.sh sd
 
 Always delegate the full `--sync` analysis to the `sdd-layer-analysis` Skill — the deterministic check above is advisory input, not a replacement.
 
+**Code Graph (lazy-loaded, optional)**: **ONLY IF** `graphify-state.sh get
+sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active` — read `framework/_shared/
+graphify-context.md` § 6 before implementing this. Before the graph is consulted for `--sync`:
+
+```
+GRAPHIFY_GRAPH=ready   → use the graph, no question (nothing changed since last build/refresh)
+GRAPHIFY_GRAPH=stale   → ASK_USER once: "Código estrutural mudou e o grafo pode estar
+                          desatualizado. Deseja atualizar o Graphify antes da validação?"
+                          1. Sim, atualizar → git guard → <GRAPHIFY_CMD> update . → validate →
+                             success: GRAPHIFY_GRAPH=ready (persist), use the graph this run
+                             failure: GRAPHIFY_GRAPH stays stale (persist), fall back this run
+                          2. Não, executar CHECK sem Graphify → stays stale (persist), this
+                             run falls back to normal Read/Grep/Glob — graph NOT consulted
+                          3. Outros → degrade to option 2 unless clearly otherwise
+GRAPHIFY_MODE=disabled → normal Read/Grep/Glob, no question
+```
+
+**Mandatory: never consult a graph known to be stale without this question resolving it
+first.** Once resolved (ready, or explicitly skipped), do not ask again until `/sdd.build`
+marks it stale a subsequent time. Query the graph (only when `ready`) for affected
+dependencies, callers, cross-layer impact, and structural drift before/alongside
+`sdd-layer-analysis` — narrows scope, never replaces the deterministic validators or
+`sdd-layer-analysis` itself.
+
 **Skill for --compliance**:
 
 | Check Type          | Skill           |

@@ -114,6 +114,29 @@ AskUserQuestion(
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+## Code Graph — preflight + first exploration tool (lazy-loaded, optional)
+
+> `/sdd.reverse-eng` may run **without** an `/sdd.start` feature branch, so it is one of the two
+> commands (with `/sdd.start`) authorized to run the Graphify preflight itself. Before Phase 0
+> exploration, read `framework/_shared/graphify-context.md` § 4 ("Standalone case") and run the
+> same ASK_USER flow as `/sdd.start` Step 9.x: absence → offer install/continue-without/don't-
+> ask-again/outros (skip entirely if the local no-ask preference is already set); available →
+> git guard, then offer to generate (graph missing) or update/use-as-is/skip (graph exists).
+> The resolved `GRAPHIFY_MODE`/`GRAPHIFY_GRAPH` apply for the rest of this single run — no
+> re-asking mid-run, no `meta.md` needed for a standalone invocation.
+>
+> When `GRAPHIFY_MODE=active` and `GRAPHIFY_GRAPH=ready`: this is the **first** tool
+> `sdd-explorer` reaches for in Phase 0-3, ahead of its own Read/Grep — query for modules, entry
+> points, dependencies, services, controllers, repositories, integrations, and cross-layer
+> flows; validate in code only what Phase 4 synthesis actually needs. Every query goes through
+> the git guard first (`graphify-context.md` § 2), same as any other Graphify call.
+> Disabled/unavailable → skip, `sdd-explorer` runs exactly as before.
+
+At the end of the run, if this invocation's own "sim, gerar agora" answer created and marked
+`graphify-out/` (`.sdd-managed` present), prefer removing it to keep the project clean —
+unless the user explicitly asked to keep it. Never remove a `graphify-out/` that predates this
+run (no marker present) — see `graphify-context.md` § 10.
+
 ---
 
 ## Purpose
@@ -371,6 +394,7 @@ Read **ONLY IF** flag/condition present:
 | Phase 4–7                        | `references/reverse-eng-phase4.md` … `phase7.md` |
 | Anti-truncation                  | `references/reverse-eng-anti-truncation.md`      |
 | Detailed phase rules             | `references/reverse-eng-phase-rules.md`          |
+| Code graph query-first/lifecycle | `framework/_shared/graphify-context.md`          |
 
 ## Telemetry
 

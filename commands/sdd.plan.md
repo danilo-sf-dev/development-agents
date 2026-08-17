@@ -94,6 +94,16 @@ Read both specs:
 - ELSE:
   → Standard spec reading (current behavior)
 
+### Step 3.5: Code Graph — impact & dependencies (lazy-loaded, optional)
+
+> **ONLY IF** `graphify-state.sh get sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active`
+> and `GRAPHIFY_GRAPH=ready` (decided once by `/sdd.start`'s preflight — read state here, never
+> re-ask; see `framework/_shared/graphify-context.md` § 5, 7): run the git guard, then query for
+> impact, dependencies, and likely-affected files/classes before generating tasks — helps order
+> the structural changes and avoid re-exploring the whole repo when `/sdd.spec` already gathered
+> enough evidence via the graph.
+> `disabled` (or state absent) → skip, proceed with the specs alone exactly as before.
+
 ### Step 4: Services & Local Env (lazy-loaded)
 
 > Detect local DB/services needs from tech spec; store in `tasks.json → local_config`.

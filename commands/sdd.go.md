@@ -316,6 +316,15 @@ Inherited from standard commands - see `spec.md`. Map external tech to project s
 > `/sdd.go` only defines: express rules, orchestration flow, error handling.
 > For implementation details, read the corresponding command file.
 
+## Code Graph — inherited, not duplicated
+
+`/sdd.go` never implements Graphify bootstrap/query/refresh/cleanup itself. Because it
+dispatches `start.md`/`spec.md`/`plan.md`/`build.md`/`check.md`/`finish.md` unchanged (see
+"Architecture: Orchestrator Pattern" above), each phase's own optional Graphify behavior —
+bootstrap in `/sdd.start` (after branch creation), query-first in `/sdd.spec`/`/sdd.plan`/
+`/sdd.check`, refresh in `/sdd.build`, cleanup in `/sdd.finish` — applies automatically,
+express mode or not. See `framework/_shared/graphify-context.md` for the full mechanism.
+
 ## Optional flags (lazy-loaded)
 
 | Flag      | Reference                          |

@@ -107,6 +107,16 @@ Final step in feature workflow. Runs comprehensive validation, generates summary
 
 > Resolve and invoke hooks for phase=`finish`, trigger=`before-approval`.
 
+## Code Graph Cleanup (lazy-loaded, optional)
+
+> **ONLY IF** `graphify-out/` exists (this session or a prior one): after all gates above,
+> before the final archive/conclusion, Read `framework/_shared/graphify-context.md` § 10.
+> Remove `graphify-out/` **only** if `graphify-out/.sdd-managed` is present (this SDD run
+> created it) — never delete a `graphify-out/` that predates this session's own `/sdd.start`
+> bootstrap. Either way, re-confirm nothing under `graphify-out/` is staged before archiving.
+> Cleanup failure → warn, do not block finish, re-verify nothing staged. If `graphify-out/`
+> doesn't exist, skip this step entirely.
+
 ## Generated Documentation
 
 ### README.md
@@ -165,6 +175,7 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 | Brownfield spec merge               | `references/finish-brownfield-merge.md`     |
 | Archive / PATTERNS details          | `references/finish-archive-workflow.md`     |
 | Examples                            | `references/finish-examples.md`             |
+| Code graph cleanup                  | `framework/_shared/graphify-context.md`     |
 | Next-steps UX                       | `references/finish-next-steps.md`           |
 
 ## AI Agent Instructions

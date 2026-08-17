@@ -132,6 +132,22 @@ If already on feature branch: keep it. See `framework/standards/boundaries.md` �
 > **ONLY IF** needing gitflow variants:
 > Read `references/start-git-branch.md`.
 
+### Step 9.x: Optional Code Graph Preflight (lazy-loaded)
+
+> Only after the feature branch exists (Step 9). Graphify is an optional, disposable local
+> accelerator — never a dependency. Read `framework/_shared/graphify-context.md` § 4 (Preflight)
+> for the full ASK_USER flow before implementing this step.
+>
+> Short version: `detect-graphify.sh` → if unavailable/incapable, check the local no-ask
+> preference (`graphify-state.sh pref-get`) — if not set, ASK_USER once (install / continue
+> without / continue without + don't ask again / outros); never install without explicit
+> per-command confirmation. If available: run the git guard, then ASK_USER once more depending
+> on whether `graphify-out/graph.json` already exists (offer to generate, or offer to
+> update/use-as-is/skip). Persist the result via `graphify-state.sh set sdd/wip/<feature>/meta.md
+> --mode <active|disabled> --graph <missing|ready|stale>` so `/sdd.spec`, `/sdd.plan`,
+> `/sdd.build`, `/sdd.check` read it instead of re-asking. Any failure at any point → one short
+> warning, `GRAPHIFY_MODE=disabled`, continue normally — never block feature creation.
+
 ### Step 9.5: CLAUDE.md (lazy-loaded)
 
 > **ONLY IF** Claude Code session and CLAUDE.md integration needed:
@@ -199,4 +215,5 @@ Read the matching reference **ONLY IF** the flag/condition is present. Never loa
 | Load/validate PROJECT.md                   | `references/start-project-md.md`                      |
 | Local MCP setup needed                     | `references/start-local-mcps.md`                      |
 | `sdd/PATTERNS.md` exists                   | `references/start-patterns.md`                        |
+| Code graph bootstrap (Step 9.x)            | `framework/_shared/graphify-context.md`                |
 | Next-steps UX                              | `references/start-next-steps.md`                      |

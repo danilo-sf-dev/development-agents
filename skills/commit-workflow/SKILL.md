@@ -165,39 +165,48 @@ Antes do commit, confirme: branch atual, arquivos staged, diff staged, ausência
 
 ## Graphify — integração opcional de contexto
 
-Graphify não faz parte do commit e nunca deve ser adicionado ao stage.
-`graphify-out/` é um contexto auxiliar do projeto, não um artefato da
-funcionalidade.
+Referência canônica: `framework/_shared/graphify-context.md`. Esta seção só descreve o
+contrato específico do `commit-workflow`; detecção, bootstrap, query e cleanup vivem
+exclusivamente naquele arquivo — não duplicar as regras aqui.
 
-### Detecção
+Graphify não faz parte do commit e nunca deve ser adicionado ao stage. `graphify-out/` é
+cache local descartável do projeto, nunca um artefato da funcionalidade.
 
-Se o projeto tiver `graphify-out/graph.json`, configuração Graphify ou o
-comando `graphify` disponível, considere a integração detectada.
+### Contrato
 
-Se não houver evidência de Graphify, não faça pergunta sobre Graphify e siga
-o fluxo normalmente.
+- `commit-workflow` **nunca** executa `extract` nem `update`. O único momento em que
+  `extract`/`update` rodam é a resposta explícita do usuário no preflight de `/sdd.start` ou
+  `/sdd.reverse-eng`, ou na pergunta de `/sdd.check` antes de usar um grafo `stale` — ver
+  `graphify-context.md` § 4, 6. `commit-workflow` nunca decide isso sozinho e nunca pergunta.
+- Se a feature ativa tem `GRAPHIFY_MODE=active` (`graphify-state.sh get
+  sdd/wip/<feature>/meta.md`) e o commit inclui alteração estrutural de código (nunca para
+  mudança apenas de documentação/spec/Markdown): rode `graphify-state.sh mark-stale
+  sdd/wip/<feature>/meta.md` — apenas uma mudança de estado, igual ao que `/sdd.build` já faz
+  no seu Step 6.5. A decisão de atualizar o grafo continua sendo feita uma única vez em
+  `/sdd.check`, nunca aqui.
+- Sem feature ativa (commit fora de um fluxo `/sdd.*`, ou `meta.md` inexistente): não há estado
+  Graphify para tocar — pule esta seção inteira.
+- Se o projeto já possuir hooks `post-commit`/`post-checkout` próprios, respeite-os.
 
-### Quando detectado
+### Verificação obrigatória antes do commit
 
-Após alterações de código, o agent pode atualizar o contexto com:
+Se `graphify-out/` existir no projeto, rode o guard real antes de `git commit` — nunca
+reimplemente esta lógica aqui:
 
 ```bash
-graphify update .
+bash development-agents/framework/tools/graphify-git-guard.sh
 ```
 
-Essa atualização deve ser não bloqueante e não deve alterar o escopo do
-commit. Não execute `graphify update` quando a mudança for apenas documentação,
-spec ou Markdown sem alteração estrutural de código.
-
-Se o projeto já possuir hooks `post-commit` ou `post-checkout`, respeite-os.
-Não execute uma segunda atualização sem necessidade.
+Isso garante, via `git check-ignore` real (não busca textual), que `graphify-out/` está
+protegido, e corrige automaticamente qualquer caminho sob `graphify-out/` que tenha sido
+staged (`git restore --staged` / `git reset --`, nunca apagando arquivos de produção). Reporte
+a correção no resultado final do commit se `GUARD_STAGED_CORRECTED=true`.
 
 ### Restrições
 
+- nunca executar `graphify extract` nem `graphify update` a partir desta skill;
 - não perguntar se `graphify-out/` deve entrar no commit;
-- não executar `graphify extract` automaticamente;
 - não exigir API key;
-- não bloquear o commit se a atualização falhar;
 - não executar Graphify quando ele não estiver presente;
 - nunca fazer `git add graphify-out/` automaticamente.
 
