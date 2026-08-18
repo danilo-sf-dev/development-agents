@@ -304,7 +304,7 @@ Read the matching reference **ONLY IF** the flag/condition is present. Never loa
 - `help` → Quick Help only, do not run workflow.
 - Inline `"description"` → store as `initial_context`, seed interview (do not skip it).
 - Flag-first: if an optional flag/condition matches the table above, Read that reference first and follow it; otherwise run the happy-path workflow above.
-- **Mandatory, blocking, executable — not just textual**: before ending this command (after full
+- **Contract, executable — report what actually happened**: before ending this command (after full
   spec approval — functional + technical both done), run
   `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
   — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable

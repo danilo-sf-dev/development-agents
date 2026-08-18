@@ -454,6 +454,72 @@ else
     fail "Claude Code display doc does not clarify the per-phase cache-field verbose-gate fix"
 fi
 
+# ══════════════════════════════════════════════════════════════════════════
+# Round 3 — honesty correction (no more "always fires" claims) + installer zero-diff
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── SHARED Test 31: no more false "guaranteed to fire on every phase" claims ──
+echo ""
+echo "Test 31 [SHARED]: no command file claims EMIT_PHASE_OBSERVABILITY is guaranteed/blocking"
+OLD_PHRASE_FOUND=""
+for f in $SINGLE_PHASE_CMDS sdd.reverse-eng.md sdd.go.md; do
+    if grep -q "Mandatory, blocking, executable" "$PACK_ROOT/commands/$f" 2>/dev/null; then
+        OLD_PHRASE_FOUND="$OLD_PHRASE_FOUND $f"
+    fi
+done
+if [[ -z "$OLD_PHRASE_FOUND" ]]; then
+    ok "No command file still claims the old 'Mandatory, blocking' guarantee"
+else
+    fail "Old false-guarantee phrase still present in:$OLD_PHRASE_FOUND"
+fi
+
+# ── SHARED Test 32: the shared files now state this is a contract, not a guarantee ──
+echo ""
+echo "Test 32 [SHARED]: shared files honestly state EMIT_PHASE_OBSERVABILITY firing is not guaranteed"
+if grep -qi "not something this document" "$AGENT_INSTR" || grep -qi "outside what any of these documents controls" "$AGENT_INSTR"; then
+    ok "agent-instructions.md honestly states the limitation"
+else
+    fail "agent-instructions.md missing the honest non-guarantee statement"
+fi
+if grep -qi "not a promise that it always" "$OBSERVABILITY"; then
+    ok "phase-transition-observability.md honestly states the limitation"
+else
+    fail "phase-transition-observability.md missing the honest non-guarantee statement"
+fi
+
+# ── SHARED Test 33: child-measurable dispatch is still documented as measurable ──
+echo ""
+echo "Test 33 [SHARED]: real child dispatch (Codex --json / Claude stream-json) still documented as real"
+if grep -q "codex exec --json" "$OBSERVABILITY" && grep -q -- "--output-format stream-json" "$OBSERVABILITY"; then
+    ok "Both harnesses' real child-dispatch mechanism still documented in the canonical file"
+else
+    fail "Child-dispatch mechanism documentation regressed"
+fi
+
+# ── SHARED Test 34: inline/native still honestly reports unavailable ──────────
+echo ""
+echo "Test 34 [SHARED]: inline/native case still reports the canonical unavailable text"
+if grep -q "telemetry: unavailable (interactive session)" "$OBSERVABILITY"; then
+    ok "Canonical unavailable text still present and unchanged"
+else
+    fail "Canonical unavailable text missing — regression"
+fi
+
+# ── SHARED Test 35: installer zero diff ────────────────────────────────────
+echo ""
+echo "Test 35 [SHARED]: zero diff under the installer surface this round"
+if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    INSTALLER_DIFF=$(git -C "$PACK_ROOT" diff --name-only -- \
+        'skills/sdd-installer/' 'commands/sdd.install.md' 2>/dev/null)
+    if [[ -z "$INSTALLER_DIFF" ]]; then
+        ok "No installer surface file has a working-tree diff"
+    else
+        fail "Unexpected diff under installer surface: $INSTALLER_DIFF"
+    fi
+else
+    fail "Not inside a git work tree — cannot verify installer zero-diff"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo ""
 echo "══════════════════════════════════════════════════════"

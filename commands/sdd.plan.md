@@ -222,7 +222,7 @@ Tasks must be executable, layered, AC-linked to specs; IDs via deterministic gen
 2. Flag-first: `--view` / `--refine` → matching refs; do not regenerate blindly.
 3. Write `tasks.json` only after approval; set next stage to **tests** (`/sdd.test`).
 4. Mobile / frontend / infra → lazy refs only when conditions match.
-5. **Mandatory, blocking, executable — not just textual**: before ending this command (after
+5. **Contract, executable — report what actually happened**: before ending this command (after
    task approval), run
    `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
    — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable

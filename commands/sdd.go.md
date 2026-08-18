@@ -213,7 +213,7 @@ Before dispatching each step, print one line:
 
 Full example sequence per `commands/references/phase-transition-observability.md` § `/sdd.go`.
 
-**Mandatory, blocking, executable — applies to every one of the 7 phases**: at Step 0 (before
+**Contract, executable — applies to each of the 7 phases, when reached**: at Step 0 (before
 dispatching Step 1), run `SDD_TELEMETRY_STATE="$(mktemp)"` once — local, disposable, never
 versioned, reused for every phase call below and passed once more to the final `total` call.
 Immediately after each dispatched phase's own call returns (whether it completed cleanly or

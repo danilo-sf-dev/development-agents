@@ -79,32 +79,38 @@ Do NOT pause between phases for this logging — it is output only, never a gate
 
 ---
 
-## Enforcement — `EMIT_PHASE_OBSERVABILITY` is an executable action, not a convention
+## Contract — `EMIT_PHASE_OBSERVABILITY` (what to report, conditional on what actually ran)
 
-**Root cause history — read before changing this section again.** Round 1 of this fix added the
-"blocking, not optional" language below as a *textual* reminder, situated in every command file
-instead of only in `agent-instructions.md`. A real Codex smoke test of `/sdd.reverse-eng` *after*
-that fix landed showed it was still not enough: no Usage block, and not even the `unavailable`
-fallback, printed for any phase — the run used Codex's native in-session subagent path, and
-nothing forced the fallback text to be written once nothing was captured to report. More textual
-reinforcement ("must", "blocking", "always") was explicitly ruled out as a next step, because it
-is the same class of fix that had just failed. **`EMIT_PHASE_OBSERVABILITY` is therefore not a
-"thing to remember to write" — it is a concrete script the command invokes as a real Bash step**,
-`framework/tools/emit-phase-observability.sh` (§ "Helper mechanism" below). The unavailable
-fallback is now produced by that script's own deterministic logic when nothing measurable was
-handed to it — never by the LLM composing the fallback string from memory.
+**Root cause history — read before changing this section again, and before re-adding stronger
+language than this.** Round 1 added a *textual* "blocking, not optional" reminder to every
+command file. A real Codex smoke test of `/sdd.reverse-eng` afterward showed no Usage block and
+not even the `unavailable` fallback printed — the run used Codex's native in-session subagent
+path. Round 2 replaced the textual reminder with a concrete script,
+`framework/tools/emit-phase-observability.sh` (§ "Helper mechanism" below), reasoning that a
+real Bash step is more reliable than a sentence. A **second** real smoke test, on both Codex and
+Claude Code, showed the same silence again: in both cases the phase ran inline or via a native
+subagent, and the concrete Bash step itself was never invoked either.
 
-**Where it fires:**
+**What this proves, stated plainly**: whether `EMIT_PHASE_OBSERVABILITY` actually fires at a
+given phase closure is a decision made by the orchestrating LLM/harness in the moment, not
+something this document — or any document, or any script sitting unexecuted on disk — can
+guarantee. No further wording change in this file fixes that; it isn't a wording problem.
+**What this section defines is the contract for when it does fire**, not a promise that it always
+will. Treat every "the helper reports X" statement below as conditional on the phase's dispatch
+actually reaching this step, not as a claim that every phase closure produces a Usage block.
+
+**Where the contract applies, when reached:**
 
 - Every **single-phase command** (`/sdd.start`, `/sdd.spec`, `/sdd.plan`, `/sdd.test`,
   `/sdd.build`, `/sdd.check`, `/sdd.finish`) has exactly one closure point: its own final step.
-  That command's own `## AI Agent Instructions` section carries an explicit line pointing at
-  the concrete invocation below — not just the inherited pointer from `agent-instructions.md`.
+  That command's own `## AI Agent Instructions` section carries an explicit line naming the
+  concrete invocation below — not just the inherited pointer from `agent-instructions.md` — so
+  the instruction is at least present at the point it's needed, even though presence alone
+  doesn't guarantee execution.
 - Every **multi-phase command** (`/sdd.reverse-eng`, `/sdd.go`) has one closure point per
-  internal phase, plus one final `total` call. Each such command's own workflow section carries
-  the same explicit, concrete invocation at each phase boundary and at the end of the run.
+  internal phase, plus one final `total` call, each carrying the same explicit invocation.
 
-`EMIT_PHASE_OBSERVABILITY`, when it fires, always does both of the following, in order, for the
+`EMIT_PHASE_OBSERVABILITY`, **when it does fire**, does both of the following, in order, for the
 phase that just closed:
 
 1. Print the transition block (§ Format, above) — still a direct print, no script involved;
@@ -191,12 +197,14 @@ grep): `framework/tools/emit-phase-observability.test.sh`.
 
 ---
 
-## Usage / Telemetry block (mandatory alongside the transition block)
+## Usage / Telemetry block (the format contract, when a Usage block is printed)
 
-**This is the single wiring point for telemetry in the whole pipeline.** No command file
+**This is the single wiring point for telemetry format in the whole pipeline.** No command file
 reimplements this — `framework/_shared/agent-instructions.md` § "Pipeline Transition
 Observability" points here for both the transition block above and this Usage block; a command
-file that prints its own ad-hoc Usage format instead of following this section is a bug.
+file that prints its own ad-hoc Usage format instead of following this section is a bug. This
+section does not claim a Usage block is guaranteed to print on every phase closure (see §
+"Contract" above) — it defines what that block must look like on the phases where it does.
 
 Immediately after the transition block (no blank line between them), append a Usage block for
 the dispatch(es) that just ran. Source of truth per harness — never estimated, never scraped:

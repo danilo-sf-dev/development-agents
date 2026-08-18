@@ -77,28 +77,27 @@ At the **start of every** `/sdd.*` command:
 
 ---
 
-## Pipeline Transition Observability (mandatory on successful completion)
+## Pipeline Transition Observability (print the transition block on successful completion)
 
 At the successful end of each command's final step, BEFORE any `AskUserQuestion`, print the
 pipeline transition block defined in `commands/references/phase-transition-observability.md`.
 Use that file's per-command mapping to fill in `<current>`, `<next>`, and the bracketed pipeline
 string. Do NOT print on error, mid-command, or inside a gate. One block per invocation, max.
 
-Immediately after that block, append the Usage/Telemetry block — same file, § "Usage / Telemetry
-block". This is the only place that section is referenced; no command file re-implements
-telemetry capture, parsing, or display on its own.
+Immediately after that block, report telemetry per the contract in the Usage/Telemetry block section
+of the same file — this is the only place that section is referenced. No command file re-implements
+telemetry capture, parsing, or display on its own; that would be a bug.
 
-**This paragraph alone is not the enforcement mechanism — it is read once, at the start of the
-command, before any phase work happens.** A real smoke test showed that a read-once pointer at
-the top of a run does not reliably survive to the point, many tool calls later, where a phase
-actually closes: neither the transition block, the real Usage block, nor even the `unavailable`
-fallback printed. The actual, blocking trigger is `EMIT_PHASE_OBSERVABILITY`, defined in
-`commands/references/phase-transition-observability.md` § "Enforcement" — every command file
-that has a phase-closure point (every single-phase command's own final step; every internal
-phase of `/sdd.reverse-eng` and `/sdd.go`) carries its own explicit, situated instruction naming
-it, in that command's own file, in addition to this global pointer. If a command file's own
-closure point has no such explicit instruction, that is a wiring bug in the command file, not a
-case where this paragraph is expected to be enough on its own.
+**Two rounds of real smoke tests (Codex and Claude Code) showed that neither a read-once pointer
+here nor a concrete per-command Bash instruction (`EMIT_PHASE_OBSERVABILITY`, §
+"Contract" in the file above) reliably fires on every phase closure — in both cases the phase ran
+inline or via a native/background subagent, and telemetry reporting simply didn't happen, not
+even the `unavailable` fallback.** This is not a wording problem this file can fix by being
+phrased more strongly again. What each command file's own `EMIT_PHASE_OBSERVABILITY` line
+guarantees is that the instruction is *present* at the point it's needed; whether the orchestrating
+LLM/harness actually executes it on a given run is outside what any of these documents controls.
+Treat telemetry output as best-effort observability, not as a pipeline guarantee — nothing about
+the pipeline's correctness depends on it firing.
 
 ## Single delivery path (mandatory)
 

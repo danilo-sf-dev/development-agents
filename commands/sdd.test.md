@@ -387,7 +387,7 @@ AskUserQuestion(
 
 ### Observability (mandatory, blocking)
 
-**Mandatory, blocking, executable — not just textual**: before ending this command (after test
+**Contract, executable — report what actually happened**: before ending this command (after test
 approval, Gate 2.5), run
 `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
 — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable

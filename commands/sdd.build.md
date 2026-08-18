@@ -245,7 +245,7 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 2. Per task: implement production code only; quality via `sdd-validator`; fix all findings.
 3. Flag-first rare paths: infra / migration / mobile → matching refs.
 4. After all tasks + final validation → next step is ALWAYS `/sdd.check`; output pipeline progress; do NOT offer `/sdd.finish` before check.
-5. **Mandatory, blocking, executable — not just textual**: before ending this command (after
+5. **Contract, executable — report what actually happened**: before ending this command (after
    final validation), run
    `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
    — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable

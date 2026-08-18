@@ -80,19 +80,31 @@ AskUserQuestion(
 | Mode                      | Condition                                     | Behavior                                                      |
 | ------------------------- | --------------------------------------------- | ------------------------------------------------------------- |
 | **FULL EXTRACTION**       | Any state                                     | Delete existing `sdd/extracted/`, create fresh, run Phase 0-7 |
-| **UPDATE MODE**           | `sdd/extracted/` exists                       | Re-run extraction, compare diffs, update ALL files            |
+| **UPDATE MODE**           | `sdd/extracted/` exists                       | **Delta-first, incremental** (corrected — was "re-run extraction, compare diffs, update ALL files," which made UPDATE cost as much as FULL): detect what changed since the last extraction before touching anything; update only affected files/sections; zero delta → idempotent, no re-extraction. See `references/reverse-eng-update-delta.md` |
 | **UPDATE MODE + --focus** | `sdd/extracted/` exists + `--focus` flag      | **Enrich** existing specs with focused component detail       |
 | **VIEW STATUS**           | `sdd/extracted/` exists                       | Show summary of current extraction, no changes                |
 | **ENHANCE SPECS**         | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs         |
 
 > **Lazy-loaded**: When `--focus` is present, Read `references/reverse-eng-focus.md` (includes anti-pattern rules for `-UPDATED` suffixes).
+> **Lazy-loaded**: When Mode = UPDATE and `--focus` is **not** present, Read
+> `references/reverse-eng-update-delta.md` **before** Phase 1 — it governs whether/how Phase 1
+> runs at all for this mode (may short-circuit to a zero-delta idempotent finish, or hand Phase 1
+> a pre-built target set instead of the full-repo protocol).
 
 ---
 
-## Subagent Delegation (MANDATORY)
+## Subagent Delegation (MANDATORY for FULL EXTRACTION / ENHANCE SPECS)
 
-> **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
-> This command MUST delegate exploration work to the `sdd-explorer` Skill.
+> **⚠️ MANDATORY for FULL EXTRACTION and ENHANCE SPECS**: See
+> [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle)
+> for the central principle. These two modes MUST delegate exploration work to the `sdd-explorer`
+> Skill — unchanged by this round.
+>
+> **UPDATE MODE (without `--focus`) does NOT inherit this block automatically** — see
+> `references/reverse-eng-update-delta.md` § "2.3 Delegate only on genuine ambiguity". UPDATE
+> starts local/incremental by default and delegates to `sdd-explorer` (never a generic
+> `general-purpose` agent) only when a concrete ambiguity trigger applies, always with an
+> explicit, pre-scoped target set — never an open-ended "explore the codebase" prompt.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -201,7 +213,7 @@ Never write `FOCUSED_ANALYSIS_*`, `*_DEEP_DIVE.md`, standalone use-case files, o
 
 ## Eight-Phase Workflow
 
-> **Mandatory, blocking, executable — applies to every phase below (0-7)**: at the very start of
+> **Contract, executable — applies to each phase below (0-7), when reached**: at the very start of
 > this workflow (before Phase 0), run `SDD_TELEMETRY_STATE="$(mktemp)"` once — a local, disposable
 > path, never versioned, reused for every phase call below and passed once more to the final
 > `total` call. Immediately before advancing from one phase to the next — regardless of whether
@@ -323,9 +335,9 @@ sdd/
 
 ## Extraction History
 
-| Date | Mode | Focus | Summary |
-|------|------|-------|---------|
-| [ISO-8601] | [mode] | [component or "-"] | [brief description] |
+| Date | Mode | Focus | Summary | Git SHA |
+|------|------|-------|---------|---------|
+| [ISO-8601] | [mode] | [component or "-"] | [brief description] | [full commit SHA at completion — `current_sha` from `reverse-eng-delta.sh`'s output, or `git rev-parse HEAD` for FULL/ENHANCE runs; this is UPDATE MODE's baseline for its next run, see `references/reverse-eng-update-delta.md`] |
 
 ## Recommendations
 
@@ -336,8 +348,14 @@ sdd/
 
 ### Phase 1: Parallel Extraction (lazy-loaded)
 
+> **UPDATE MODE (no `--focus`) — read `references/reverse-eng-update-delta.md` FIRST, not this
+> section.** That file's Step 0-2 decide whether this Phase 1 protocol runs at all (zero delta
+> → skip entirely) and, if it does run, hand it a pre-built target set instead of the full-repo
+> scope below. This paragraph and the rest of Phase 1 describe the FULL EXTRACTION / ENHANCE
+> SPECS protocol, unchanged.
+>
 > Extract from existing docs/specs **and** code (both mandatory). Prefer delegating to subagents.
-> **ONLY IF** running Phase 1 (full/update/enhance modes that extract):
+> **ONLY IF** running Phase 1 (full/enhance modes, or UPDATE after its own delta-scoping above):
 > Read `references/reverse-eng-phase1.md`.
 
 ### Phase 2: Cross-Validation (lazy-loaded)
@@ -411,6 +429,7 @@ Read **ONLY IF** flag/condition present:
 | Anti-truncation                  | `references/reverse-eng-anti-truncation.md`      |
 | Detailed phase rules             | `references/reverse-eng-phase-rules.md`          |
 | Code graph query-first/lifecycle | `framework/_shared/graphify-context.md`          |
+| UPDATE MODE (no `--focus`)       | `references/reverse-eng-update-delta.md`         |
 
 ## Telemetry (mandatory execution, not a reference table to skim)
 

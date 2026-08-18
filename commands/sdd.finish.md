@@ -185,7 +185,7 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 3. Atomic `mv` wip→features; verify; promote PATTERNS/backlog via AskUserQuestion.
 4. Mobile / brownfield / hooks → matching lazy refs only.
 5. After archive (Standard): suggest `/sdd.pr` via `references/finish-next-steps.md`.
-6. **Mandatory, blocking, executable — not just textual**: before ending this command (after
+6. **Contract, executable — report what actually happened**: before ending this command (after
    archive), run
    `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
    — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable
