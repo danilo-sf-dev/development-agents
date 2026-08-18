@@ -233,31 +233,11 @@ Reference features by name or full name:
 
 ---
 
-## Telemetry (v2.0)
+## Telemetry
 
-Telemetry is captured **automatically by hooks** - no manual logging required.
-
-**Supported Tools**:
-
-| Tool        | Support | Data Location       |
-| ----------- | ------- | ------------------- |
-| Claude Code | ✅      | `~/.claude/logs/`   |
-| Cursor      | ✅      | `~/.cursor/logs/`   |
-| Codex CLI   | ❌      | N/A — not supported |
-| Generic     | ❌      | N/A — not supported |
-
-**What's Captured** (when supported):
-
-- Sessions with timestamps and duration
-- Tool calls (Read, Write, Edit, Bash, etc.)
-- User interactions
-
-**When**:
-
-- `session-start` → Creates session file
-- `post-tool-use` → Logs tool calls
-- `user-prompt` → Logs interactions
-- `session-end` → Finalizes session
+This framework does not capture token/cost/session telemetry itself. For usage/cost visibility,
+use your harness's own native tooling (Claude Code, Cursor, Codex CLI each expose their own) —
+outside this pipeline.
 
 ---
 

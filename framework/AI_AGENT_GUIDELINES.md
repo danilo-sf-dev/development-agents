@@ -916,7 +916,10 @@ All generated code must include:
 
 ## Telemetry
 
-Automatic via hooks. No manual logging required.
+This framework does not capture token/cost/session telemetry itself — no hook does this
+automatically, on any harness. For usage/cost visibility, use your harness's own native tooling
+(Claude Code, Cursor, Codex CLI each expose their own) — that lives entirely outside this
+pipeline.
 
 > **Observability Design Note**:
 >
@@ -924,13 +927,6 @@ Automatic via hooks. No manual logging required.
 > - **Application-level observability** (metrics, tracing, logging in generated apps) = External by design, uses your platform services
 >
 > The "external by design" constraint in FRAMEWORK_MAINTENANCE.md refers to generated applications, not framework tooling.
-
-| Tool        | Location                                                                     |
-| ----------- | ---------------------------------------------------------------------------- |
-| Claude Code | `~/.claude/logs/`                                                            |
-| Cursor      | `~/.cursor/logs/`                                                            |
-| Codex CLI   | N/A — not supported (no automatic hook-based telemetry directory)            |
-| Generic     | N/A — not supported (no tooling assumption; nothing is logged automatically) |
 
 ---
 

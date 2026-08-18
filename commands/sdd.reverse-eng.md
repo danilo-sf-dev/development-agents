@@ -108,7 +108,9 @@ AskUserQuestion(
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  MANDATORY SUBAGENT: sdd-explorer                                   │
+│  MANDATORY SUBAGENT (FULL EXTRACTION / ENHANCE SPECS ONLY):         │
+│  sdd-explorer — UPDATE MODE uses its own conditional rule instead,  │
+│  see reverse-eng-update-delta.md § 2.3, never this box.             │
 │                                                                      │
 │  Delegate Phase 0-3 to sdd-explorer (model_role: EXECUTION),         │
 │  per DELEGATE_OFFLOAD — see harness-capabilities.md +                │
@@ -212,22 +214,6 @@ Never write `FOCUSED_ANALYSIS_*`, `*_DEEP_DIVE.md`, standalone use-case files, o
 > Read `references/reverse-eng-forbidden.md`.
 
 ## Eight-Phase Workflow
-
-> **Contract, executable — applies to each phase below (0-7), when reached**: at the very start of
-> this workflow (before Phase 0), run `SDD_TELEMETRY_STATE="$(mktemp)"` once — a local, disposable
-> path, never versioned, reused for every phase call below and passed once more to the final
-> `total` call. Immediately before advancing from one phase to the next — regardless of whether
-> that phase's detail came from this file directly or from a lazy-loaded
-> `references/reverse-eng-phaseN.md` file — run
-> `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> [--model "$RESOLVED_MODEL" --stream-file "$STREAM_FILE"] --phase-label "Phase <N> — <name>" --state-file "$SDD_TELEMETRY_STATE"`
-> (omit `--model`/`--stream-file` together if the phase ran inline or via Codex's native
-> in-session subagent — the helper then deterministically prints `unavailable`, never composed by
-> the agent). Its stdout **is** the phase's Usage block — see "## Telemetry" below for the exact
-> per-phase mapping. This fires up to 8 times per run, once per phase closure, whether or not a
-> real dispatch was captured. After Phase 7, run
-> `bash framework/tools/emit-phase-observability.sh total --harness <claude-code|codex> --state-file "$SDD_TELEMETRY_STATE"`
-> once — its stdout is the `Usage Total` + `coverage` block. Full contract:
-> `commands/references/phase-transition-observability.md` § "Helper mechanism".
 
 ### Phase 0 Pre-step: Ensure Standard Structure (MANDATORY)
 
@@ -430,36 +416,6 @@ Read **ONLY IF** flag/condition present:
 | Detailed phase rules             | `references/reverse-eng-phase-rules.md`          |
 | Code graph query-first/lifecycle | `framework/_shared/graphify-context.md`          |
 | UPDATE MODE (no `--focus`)       | `references/reverse-eng-update-delta.md`         |
-
-## Telemetry (mandatory execution, not a reference table to skim)
-
-Format and mechanics: `commands/references/phase-transition-observability.md` § "Usage / Telemetry
-block" and § "Helper mechanism" — this section only maps that shared, executable mechanism onto
-`/sdd.reverse-eng`'s own phase structure. **Not automatic via any hook** — no such mechanism
-exists for any harness; each phase below gets real Usage only when the "Eight-Phase Workflow"
-heading's `emit-phase-observability.sh phase` call above was actually given a `--stream-file`,
-and `unavailable` otherwise — the helper decides this deterministically, never the agent composing
-text from memory.
-
-| Phase | Where it runs | Telemetry |
-| --- | --- | --- |
-| Phase 0 (repository state detection) | Inline, main session | `phase` call with no `--model`/`--stream-file` → `unavailable` |
-| **Phase 1-3** (parallel extraction + cross-validation) | Delegated to `sdd-explorer` — real Usage requires the **child `codex exec --json`** (Codex) or `claude -p --output-format stream-json --verbose` (Claude Code) dispatch form, per each adapter's `OFFLOAD_READ` mechanism (`adapters/codex/README.md` § OFFLOAD_READ desambiguates the child-vs-native-subagent choice for Codex specifically) | `phase` call with `--stream-file` set → real Usage when the delegation used a captured child dispatch; if it fell back to an uncaptured mechanism (e.g. Codex's native in-session subagent), the command simply omits `--stream-file` for that call → `unavailable` |
-| Phase 4 (synthesis) | Inline, main session — "Results returned to main agent for synthesis" | `phase` call with no `--model`/`--stream-file` → `unavailable` |
-| Phase 4.5-7 (ownership mapping, patterns, consistency, promotion) | Inline, main session | `phase` call with no `--model`/`--stream-file` → `unavailable` |
-
-**Multiple children within Phase 1-3**: if extraction dispatches more than one child (e.g. one per
-sub-area), call `emit-phase-observability.sh phase` once per child with the same `--phase-label`
-and `--state-file` — each call appends its own record, so the later `total` call aggregates all of
-them correctly; a per-child breakdown may additionally be shown if useful, but the accumulated
-records are what count toward the command's Total. Phase 0/4-7's `unavailable` records are also
-appended to the same state file — `total` already excludes them from the sum on its own, per its
-own logic (§ "Helper mechanism"), never a manual bookkeeping step here.
-
-**Total**: printed by the single `emit-phase-observability.sh total` call at the end of the
-"Eight-Phase Workflow" section above — its `coverage: N/M` reflects how many of the (up to) 4
-conceptual phases above actually had measurable telemetry. A typical run reads `coverage: 1/4` —
-Phase 1-3 measured, Phases 0/4/5-7 inline — this is expected, not a bug.
 
 ---
 

@@ -7,8 +7,7 @@
 # file lists, baseline tiering) is tested with real git fixtures in
 # framework/tools/reverse-eng-delta.test.sh — this file covers the parts that are inherently
 # agent-judgment calls (when to delegate, how to build a target set with Graphify, which
-# artifacts to touch) and can only be verified as a documented CONTRACT, the same limitation
-# telemetry-wiring.test.sh already has for EMIT_PHASE_OBSERVABILITY. Grep-based, honestly so.
+# artifacts to touch) and can only be verified as a documented CONTRACT. Grep-based, honestly so.
 #
 # ZERO-DEPENDENCY: grep/bash only.
 #
@@ -192,6 +191,12 @@ else
 fi
 
 # ── Test 15: Graphify tool files zero diff ────────────────────────────────
+# graphify-context.md is intentionally excluded from this check in the telemetry-removal round:
+# it cited two files (adapters/*/tools/parse-telemetry.sh, adapters/*/references/
+# telemetry-display.md) that were deleted along with the rest of the custom telemetry system.
+# The only change there is swapping that dangling citation for a generic sentence — zero change
+# to Graphify's own mechanism, scripts, or behavior. The 4 actual Graphify tool scripts below
+# still must have zero diff.
 echo ""
 echo "Test 15 [SHARED]: zero diff under Graphify tool surface this round"
 if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -199,10 +204,9 @@ if git -C "$PACK_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         'framework/tools/detect-graphify.sh' \
         'framework/tools/graphify-run.sh' \
         'framework/tools/graphify-git-guard.sh' \
-        'framework/tools/graphify-state.sh' \
-        'framework/_shared/graphify-context.md' 2>/dev/null)
+        'framework/tools/graphify-state.sh' 2>/dev/null)
     if [[ -z "$GRAPHIFY_DIFF" ]]; then
-        ok "No Graphify tool file has a working-tree diff"
+        ok "No Graphify tool script has a working-tree diff (graphify-context.md excluded — see comment above)"
     else
         fail "Unexpected diff under Graphify tool surface: $GRAPHIFY_DIFF"
     fi

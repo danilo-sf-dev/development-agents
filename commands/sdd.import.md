@@ -174,12 +174,6 @@ Import all? [Y/n/select]
 
 ---
 
-## Telemetry (Automatic)
-
-> Session stats are captured automatically via hooks. No manual logging required.
-
----
-
 ## AI Agent Instructions
 
 ### Help Flag Detection

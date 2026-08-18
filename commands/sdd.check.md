@@ -271,13 +271,6 @@ When a flag-specific variant is invoked, read `references/check-rare-workflows.m
 3. **Highlight blockers** prominently
 4. **Suggest next actions** clearly
 5. **For --sync, --compliance, and --project**: Always ask for confirmation before applying fixes
-6. **Contract, executable — report what actually happened**: before ending this command, run
-   `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
-   — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable
-   stream; the helper's own logic then prints `telemetry: unavailable (interactive session)`
-   deterministically, never composed by the agent. Full contract:
-   `commands/references/phase-transition-observability.md` § "Helper mechanism". This is a
-   situated, concrete action — not a duplicate of the global pointer in `agent-instructions.md`.
 
 ## Optional flags (lazy-loaded)
 

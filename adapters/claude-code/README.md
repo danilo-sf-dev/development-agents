@@ -70,9 +70,11 @@ claude -p "<task>" \
 claude --model <resolved-model> --effort <resolved-effort>
 ```
 
-`--output-format stream-json --verbose` is mandatory on all subprocess dispatches — the JSON result
-envelope contains `modelUsage` (per-model token breakdown) and `usage` (totals), which are the
-telemetry foundation for future per-SDD-phase token accounting. Never omit them.
+`--output-format stream-json --verbose` is used on subprocess dispatches that need reliable,
+structured parsing of the result — the JSON result envelope contains the final message,
+`permission_denials`, and other structured fields the orchestrator needs to capture reliably.
+This pipeline does not track token/cost usage itself; for that, use Claude Code's own native
+tooling, outside this pipeline.
 
 ## Read vs. Write dispatch
 
@@ -119,24 +121,16 @@ returning nothing), the adapter may fall back to the in-session `Agent(model: <a
 | Model accuracy | Exact — `claude-sonnet-4-6` confirmed | Alias resolves to latest; `sonnet` → Sonnet 5 (not 4.6) |
 | Effort per dispatch | `--effort medium` accepted and applied | No effort parameter — `effort` field is ignored at dispatch time |
 | Tool allowlist | `--allowedTools` blocks hard at invocation | Agent tool grant set at spawn time; granularity varies |
-| Telemetry | `modelUsage` + `usage` in JSON result | No structured token breakdown available |
 
 **On fallback, the adapter MUST report degradation explicitly** — output this before the fallback dispatch:
 
 ```
 ⚠ Model Routing degraded: claude binary not found. Falling back to Task()/Agent.
   Requested: claude-sonnet-4-6 / effort:medium → dispatching: sonnet (Sonnet 5, effort ignored)
-  Token telemetry unavailable in this mode.
 ```
 
 Never silently switch from `claude-sonnet-4-6` to `sonnet` without this notice. A silent substitution
 is a routing lie — the user may be paying for Sonnet 5 and assuming Sonnet 4.6.
-
-This routing-degradation notice and that phase's `EMIT_PHASE_OBSERVABILITY` Usage block are two
-separate things — the notice explains *why* telemetry is unavailable (no capturable subprocess
-stream from the `Task()`/`Agent` fallback), the Usage block still prints the canonical
-`telemetry: unavailable (interactive session)` text at that phase's closure, same as any other
-inline-work case.
 
 ## How each execution requirement is satisfied
 
@@ -151,105 +145,10 @@ inline-work case.
 **Frontmatter stays verbatim** — `model_role:` is never rewritten at install time. Resolution happens
 entirely at dispatch time via `resolve-model.sh`.
 
-## Telemetry
-
-Per-phase usage is extracted from the `--output-format stream-json --verbose` result of every
-`claude -p` dispatch. This is the **only** source of telemetry data — no token estimation, no
-re-tokenization, no pricing-table lookups. All three dimensions (tokens, cost, duration) come from
-the result envelope produced by the subprocess itself.
-
-### Stream-json result structure (live-verified)
-
-```json
-{
-  "type": "result",
-  "duration_ms": 7300,
-  "total_cost_usd": 0.0474,
-  "usage": {
-    "input_tokens": 4,
-    "cache_creation_input_tokens": 4870,
-    "cache_read_input_tokens": 49816,
-    "output_tokens": 214
-  },
-  "modelUsage": {
-    "claude-sonnet-4-6": {
-      "inputTokens": 4, "outputTokens": 214,
-      "cacheReadInputTokens": 49816, "cacheCreationInputTokens": 4870,
-      "costUSD": 0.0474
-    },
-    "claude-haiku-4-5-20251001": {
-      "inputTokens": 563, "outputTokens": 13,
-      "cacheReadInputTokens": 27082, "cacheCreationInputTokens": 0,
-      "costUSD": 0.0002
-    }
-  }
-}
-```
-
-`modelUsage` contains two entries: the **task model** (the ID passed to `--model`, e.g.
-`claude-sonnet-4-6`) and an **orchestration model** (always `claude-haiku-4-5-20251001` with a
-date suffix — the routing layer). The task model is looked up by the exact ID the adapter resolved
-via `resolve-model.sh` and passed to `--model` at dispatch time.
-
-### Parser: `adapters/claude-code/tools/parse-telemetry.sh`
-
-Extracts per-dispatch telemetry. Always exits 0 — parse failures return `{"available":false,...}`,
-never propagate as errors that would abort the calling pipeline.
-
-```bash
-# After a dispatch that captured stream-json to $STREAM_FILE:
-TELEMETRY=$(bash adapters/claude-code/tools/parse-telemetry.sh \
-    --model "$RESOLVED_MODEL" \
-    --file  "$STREAM_FILE")
-# → {"available":true,"model":"...","input":N,"output":N,"cache_read":N,"cache_write":N,"cost_usd":N.NN,"duration_ms":N}
-```
-
-**Identity strategy**: `--model` takes the same resolved ID the adapter passed to `claude -p`. This
-is the direct key into `modelUsage` — no heuristic, no date-suffix stripping. Live-verified: passing
-`--model claude-sonnet-4-6` → `modelUsage["claude-sonnet-4-6"]` present and correct.
-
-### Display: `commands/references/phase-transition-observability.md` (format authority)
-
-The per-phase Usage block and the end-of-run `Usage Total` are defined **once**, harness-
-agnostically, in `commands/references/phase-transition-observability.md` § "Usage / Telemetry
-block" and § "Total / coverage" — this adapter does not keep its own copy of the format (an
-earlier version of this README did, and it had silently drifted from the canonical spec: a
-bullet-list shape, a different `unavailable` string, and cache fields gated behind `verbose`
-mode contrary to the canonical "show whenever the parser reports it" rule — corrected this
-round, see `references/telemetry-display.md` for the fix). This adapter's own contribution is
-only: capturing `--output-format stream-json --verbose`, the parser
-(`adapters/claude-code/tools/parse-telemetry.sh`), and the `telemetry.verbose: true` config
-switch that adds cache columns to the *final summary table* specifically (`references/
-telemetry-display.md` § "Verbose mode").
-
-**Printing the block at each phase closure is a real Bash step, not a textual reminder.** A
-textual "must print" instruction (situated in every command file, not just this README) was
-tried first and found insufficient by a real Codex smoke test on the sibling adapter — the same
-class of gap applies here in principle, so this adapter uses the same fix:
-`framework/tools/emit-phase-observability.sh` (`phase-transition-observability.md` § "Helper
-mechanism"), invoked by an explicit line in each `commands/sdd.*.md` file. Work that ran inline
-in the interactive session (no `claude -p` subprocess captured, including the Task()/Agent
-fallback below) means that invocation simply omits `--stream-file`, and the helper's own
-deterministic logic — not the LLM's memory — prints the canonical `telemetry: unavailable
-(interactive session)` text, same as any other harness's inline case.
-
-### Verbose mode
-
-Configured via `sdd/PROJECT.md` — the existing project configuration mechanism, no new concept:
-
-```yaml
-telemetry:
-  verbose: true   # add cache read/write to per-phase display and summary
-```
-
-Checked by a single `grep -qE '^\s+verbose:\s+true' sdd/PROJECT.md`. If absent or false: default
-mode. In default mode, cache is hidden everywhere — per-phase and summary TOTAL.
-
-### Resilience rules (live-enforced)
-
-- Parse failure (`{"available":false}`) → show `Usage: unavailable`, proceed with the dispatch result
-- A green dispatch with unavailable telemetry is still green; telemetry never gates SDD correctness
-- Parser always exits 0; no error propagation into the SDD pipeline
+This pipeline does not track token/cost usage itself. Earlier rounds built a custom per-phase
+Usage/Total system for this; two consecutive real smoke tests showed it never actually fired in
+practice, so it was removed. For usage/cost visibility, use Claude Code's own native tooling —
+outside this pipeline.
 
 ## Known gaps
 

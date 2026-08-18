@@ -55,6 +55,4 @@ bash development-agents/framework/tools/generation/generate-ids.sh task sdd/wip/
 2. When adding tasks via --refine → Get next sequential ID
 3. Batch generation → Use --count for efficiency
 
-> **Telemetry**: Captured automatically by hooks - no manual logging required.
-
 ---

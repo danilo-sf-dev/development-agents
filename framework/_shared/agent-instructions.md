@@ -84,20 +84,10 @@ pipeline transition block defined in `commands/references/phase-transition-obser
 Use that file's per-command mapping to fill in `<current>`, `<next>`, and the bracketed pipeline
 string. Do NOT print on error, mid-command, or inside a gate. One block per invocation, max.
 
-Immediately after that block, report telemetry per the contract in the Usage/Telemetry block section
-of the same file — this is the only place that section is referenced. No command file re-implements
-telemetry capture, parsing, or display on its own; that would be a bug.
-
-**Two rounds of real smoke tests (Codex and Claude Code) showed that neither a read-once pointer
-here nor a concrete per-command Bash instruction (`EMIT_PHASE_OBSERVABILITY`, §
-"Contract" in the file above) reliably fires on every phase closure — in both cases the phase ran
-inline or via a native/background subagent, and telemetry reporting simply didn't happen, not
-even the `unavailable` fallback.** This is not a wording problem this file can fix by being
-phrased more strongly again. What each command file's own `EMIT_PHASE_OBSERVABILITY` line
-guarantees is that the instruction is *present* at the point it's needed; whether the orchestrating
-LLM/harness actually executes it on a given run is outside what any of these documents controls.
-Treat telemetry output as best-effort observability, not as a pipeline guarantee — nothing about
-the pipeline's correctness depends on it firing.
+This pipeline does not track token/cost usage itself — no per-phase Usage block, no custom
+telemetry capture. Earlier rounds built one (`EMIT_PHASE_OBSERVABILITY`); two consecutive real
+smoke tests on Codex and Claude Code showed it never actually fired in practice, so it was
+removed. For usage/cost visibility, use your harness's own native tooling — outside this pipeline.
 
 ## Single delivery path (mandatory)
 

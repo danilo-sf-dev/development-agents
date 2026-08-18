@@ -384,14 +384,3 @@ AskUserQuestion(
 1. Output ONLY the "Quick Help" section
 2. Do NOT execute test logic
 3. Keep response concise (~15 lines)
-
-### Observability (mandatory, blocking)
-
-**Contract, executable — report what actually happened**: before ending this command (after test
-approval, Gate 2.5), run
-`bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
-— omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable
-stream; the helper's own logic then prints `telemetry: unavailable (interactive session)`
-deterministically, never composed by the agent. Full contract:
-`commands/references/phase-transition-observability.md` § "Helper mechanism". This is a situated,
-concrete action — not a duplicate of the global pointer in `agent-instructions.md`.

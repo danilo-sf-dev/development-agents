@@ -34,8 +34,6 @@
 14. **PERSIST FIX RECORD EARLY** ⭐ v1.7.0 - Create FIX-NNN.md DRAFT at Step 4.6 (before any code). Finalize at Step 8. Even if fix is interrupted, the investigation record must exist.
 15. **ONE ISSUE PER CONTEXT** ⭐ v1.7.0 - If N>1 issues, ALWAYS spawn subagents (one per fix). NEVER process multiple fixes inline. Context exhaustion = shallow analysis.
 
-> **Telemetry**: Captured automatically by hooks - no manual logging required.
-
 ---
 
 ### Enforcement Rules (v1.5.0)

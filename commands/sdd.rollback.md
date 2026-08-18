@@ -232,12 +232,6 @@ ls -la sdd/wip/[feature-name]/.rollback-history/
 
 ---
 
-## Telemetry on Rollback
-
-> **Note**: Telemetry is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor). Not available for optional Agent CLI.
-
----
-
 ## Optional flags (lazy-loaded)
 
 | Flag | Reference |
@@ -306,11 +300,9 @@ ELSE:
 1. **Always create snapshot** before rollback
 2. **Require confirmation** for destructive operations
 3. **Document reason** in rollback record
-4. **Never delete** - archive instead (applies to logs/ too!)
-5. **Update telemetry** - Record rollback event and affected phases
-6. **Add rollback_marker** - Never delete token log entries, add marker instead
-7. **Increment runs counter** - Track re-executions in telemetry
-8. **Accurate phase detection** - NEVER assume phase based on file count alone; check meta.md stages
+4. **Never delete** - archive instead
+5. **Add rollback_marker** - Never delete prior rollback-history entries, add marker instead
+6. **Accurate phase detection** - NEVER assume phase based on file count alone; check meta.md stages
 
 ---
 

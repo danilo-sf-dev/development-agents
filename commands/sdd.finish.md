@@ -156,8 +156,6 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 
 **CRITICAL**: See `framework/standards/boundaries.md` — B-09, `/sdd.finish` section.
 
-> **Telemetry**: Data is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor).
-
 ---
 
 ## Examples (lazy-loaded)
@@ -185,11 +183,3 @@ sdd/features/[YYYYMMDD-feature-name]/    #: Preserves date prefix
 3. Atomic `mv` wip→features; verify; promote PATTERNS/backlog via AskUserQuestion.
 4. Mobile / brownfield / hooks → matching lazy refs only.
 5. After archive (Standard): suggest `/sdd.pr` via `references/finish-next-steps.md`.
-6. **Contract, executable — report what actually happened**: before ending this command (after
-   archive), run
-   `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
-   — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable
-   stream; the helper's own logic then prints `telemetry: unavailable (interactive session)`
-   deterministically, never composed by the agent. Full contract:
-   `commands/references/phase-transition-observability.md` § "Helper mechanism". This is a
-   situated, concrete action — not a duplicate of the global pointer in `agent-instructions.md`.

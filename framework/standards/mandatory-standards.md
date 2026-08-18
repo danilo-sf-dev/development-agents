@@ -240,26 +240,11 @@ class PaymentService:
 
 ---
 
-## Automatic Telemetry System
+## Telemetry
 
-> **Telemetry is captured AUTOMATICALLY** via hooks. NO manual logging required.
-
-### What Is Captured
-
-- Tokens (input/output per tool call)
-- Tool calls with timing
-- User interactions
-- Sessions (start/end, durations)
-- Costs (calculated from model pricing)
-
-### Data Location
-
-| Tool        | Location            |
-| ----------- | ------------------- |
-| Claude Code | `~/.claude/logs/`   |
-| Cursor      | `~/.cursor/logs/`   |
-| Codex CLI   | N/A — not supported |
-| Generic     | N/A — not supported |
+This framework does not capture token/cost/session telemetry itself. For usage/cost visibility,
+use your harness's own native tooling (Claude Code, Cursor, Codex CLI each expose their own) —
+outside this pipeline, never something this framework tracks or promises to capture.
 
 ---
 

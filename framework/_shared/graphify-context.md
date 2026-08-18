@@ -512,10 +512,11 @@ Context
 Keep the counters simple (a running count of graph queries issued and of Read calls that
 happened as fallback/confirmation within that phase) — do not build a sophisticated
 attribution system for this. This is a **separate, local execution-metadata field**, never
-mixed into Claude/Codex model-usage telemetry (`adapters/*/tools/parse-telemetry.sh`,
-`adapters/*/references/telemetry-display.md`) — no LLM token/cost accounting ever attributes
-tokens to Graphify, and Graphify never appears as if it were a model in any Usage block or
-summary table.
+mixed into any model-usage telemetry a harness might report natively — no LLM token/cost
+accounting ever attributes tokens to Graphify, and Graphify never appears as if it were a model
+in any usage report. This pipeline does not track token/cost telemetry itself (see
+`framework/_shared/agent-instructions.md`); this note only clarifies that Graphify's own local
+counters are conceptually distinct from that, wherever/however usage is measured.
 
 ---
 

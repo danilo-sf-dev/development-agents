@@ -245,11 +245,3 @@ Flow: phase check → read tasks → layers → per-task implement+gate → fina
 2. Per task: implement production code only; quality via `sdd-validator`; fix all findings.
 3. Flag-first rare paths: infra / migration / mobile → matching refs.
 4. After all tasks + final validation → next step is ALWAYS `/sdd.check`; output pipeline progress; do NOT offer `/sdd.finish` before check.
-5. **Contract, executable — report what actually happened**: before ending this command (after
-   final validation), run
-   `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
-   — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable
-   stream; the helper's own logic then prints `telemetry: unavailable (interactive session)`
-   deterministically, never composed by the agent. Full contract:
-   `commands/references/phase-transition-observability.md` § "Helper mechanism". This is a
-   situated, concrete action — not a duplicate of the global pointer in `agent-instructions.md`.

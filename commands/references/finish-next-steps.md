@@ -7,8 +7,7 @@
 After `/sdd.finish` completes successfully:
 
 1. **Your feature is archived** in `sdd/features/[feature-name]/`
-2. **Telemetry** captured automatically in `~/.claude/logs/` or `~/.cursor/logs/` (when supported)
-3. **Documentation generated** (README.md, implementation-summary.md)
+2. **Documentation generated** (README.md, implementation-summary.md)
 
 ### Interactive Next Steps (After Archive Complete)
 

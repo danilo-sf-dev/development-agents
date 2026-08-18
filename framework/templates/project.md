@@ -311,23 +311,6 @@ frontend:
 
 ---
 
-## Telemetry (Claude Code adapter)
-
-<!-- Controls how per-phase token usage is displayed after each dispatch.
-     Only applies when running on the Claude Code harness.
-     Omit entirely to use defaults. -->
-
-<!-- Uncomment to enable verbose telemetry display (adds cache tokens to per-phase output):
-```yaml
-telemetry:
-  verbose: true   # default: false — set true to show cache_read/cache_write per phase
-```
-Default (false): shows model, input, output, cost, duration per phase.
-Verbose (true):  also shows cache read and cache write per phase.
-The final SDD USAGE SUMMARY always includes cache regardless of this setting.
--->
-
----
 
 ## Default Feature Settings
 

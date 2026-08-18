@@ -192,14 +192,6 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 2. Order: Steps 0.5→12 (Model Routing resolves automatically before Step 0.5, no gate); never skip profile (Step 0.5) or input validation (Step 1).
 3. Infer kebab-case feature name from description; confirm only if ambiguous.
 4. Critical: Application name ≠ feature name; never invent external app registration; stack from detection + PROJECT.md.
-5. **Contract, executable — report what actually happened**: before ending this command (after
-   Step 12, before returning control), run
-   `bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> --model "$RESOLVED_MODEL" [--effort "$RESOLVED_EFFORT"] [--duration-ms "$DURATION_MS"] [--stream-file "$STREAM_FILE"]`
-   — omit `--stream-file` entirely if this command's own dispatch ran inline / had no capturable
-   stream; the helper's own logic then prints `telemetry: unavailable (interactive session)`
-   deterministically, never composed by the agent. Full contract:
-   `commands/references/phase-transition-observability.md` § "Helper mechanism". This is a
-   situated, concrete action — not a duplicate of the global pointer in `agent-instructions.md`.
 
 ## Optional flags (lazy-loaded)
 

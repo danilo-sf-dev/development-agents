@@ -203,7 +203,7 @@ When `/sdd.go` is invoked:
 2. **DO dispatch each standard command as its own model-pinned call** (see "Model Routing" above — never execute a phase's content inline in this turn)
 3. **DO apply express rules as overrides**
 
-### Phase Transition Logging & Observability (mandatory, never pause)
+### Phase Transition Logging (mandatory, never pause)
 
 Before dispatching each step, print one line:
 
@@ -213,30 +213,12 @@ Before dispatching each step, print one line:
 
 Full example sequence per `commands/references/phase-transition-observability.md` § `/sdd.go`.
 
-**Contract, executable — applies to each of the 7 phases, when reached**: at Step 0 (before
-dispatching Step 1), run `SDD_TELEMETRY_STATE="$(mktemp)"` once — local, disposable, never
-versioned, reused for every phase call below and passed once more to the final `total` call.
-Immediately after each dispatched phase's own call returns (whether it completed cleanly or
-round-tripped through one or more `NEEDS_USER_INPUT` gates), before dispatching the next phase, run
-`bash framework/tools/emit-phase-observability.sh phase --harness <claude-code|codex> [--model "$RESOLVED_MODEL" --stream-file "$STREAM_FILE"] --phase-label "Phase <N> — /sdd.<phase>" --state-file "$SDD_TELEMETRY_STATE"`
-(omit `--model`/`--stream-file` together if that phase's dispatch produced no capturable stream —
-the helper then deterministically prints `unavailable`, never composed by the agent). Its stdout
-**is** that phase's Usage block. This mirrors the per-phase mechanism `/sdd.reverse-eng.md` uses
-for its own 8 phases; `/sdd.go`'s 7 phases follow the same rule — one `phase` call per phase
-closure, never a single end-of-run summary in its place. Full contract:
-`commands/references/phase-transition-observability.md` § "Helper mechanism".
-
 After the pipeline completes:
 
 ```
 ✓ concluído: /sdd.finish
 Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓
 ```
-
-Immediately after, run
-`bash framework/tools/emit-phase-observability.sh total --harness <claude-code|codex> --state-file "$SDD_TELEMETRY_STATE"`
-once — its stdout is the `Usage Total` + `coverage: N/7 measured phases` block, summing only the
-phases whose dispatch was actually measurable.
 
 Never pause or gate on these lines — output only.
 

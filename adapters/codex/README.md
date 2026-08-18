@@ -44,11 +44,10 @@ happens to be running. Note the value is quoted inside the `-c` argument (`-c
 quotes; a bare `-c model_reasoning_effort=high` has been reported to work in most shells too, but the
 quoted form is the one shown in official examples and is what this adapter uses.
 
-**`--json` is mandatory on every `codex exec` dispatch, not optional.** It is the only source of
-the `turn.completed` usage event that `adapters/codex/tools/parse-telemetry.sh` reads — see
-"Telemetry" below. Capture stdout to a temp file (`... --json > "$STREAM_FILE"`) so the parser can
-read it after the call completes; never omit `--json` "for simplicity" on a dispatch whose usage
-should be observable.
+**`--json` is used on `codex exec` dispatches that need reliable, structured parsing of the
+result** (the JSONL event stream, captured to a temp file) — e.g. the `NEEDS_USER_INPUT` status
+line and the validator's JSON verdict below. This pipeline does not track token/cost usage
+itself; for that, use Codex's own native tooling, outside this pipeline.
 
 **Sandbox — read vs. write dispatch, confirmed via current docs, corrected this round**:
 `codex exec` is **read-only by default** (no network access, no writes outside temp — confirmed in
@@ -67,35 +66,17 @@ actually writes files, and withholds it from everything else:
 `--sandbox workspace-write --ask-for-approval never` is granted per-dispatch based on what that
 specific Skill/phase does, never blanket-applied to every call.
 
-**`OFFLOAD_READ` / `sdd-explorer` — desambiguation (corrected this round).** `harness-capabilities.md`
-describes this capability for Codex as "real subagents where available" — a phrase that, before this
-correction, was ambiguous between two structurally different mechanisms: (a) a genuine child process
-this session shells out to via `codex exec --json` (the "Read-only / analysis" row above — a real
-OS-level subprocess whose stdout this session captures), and (b) a native, in-session subagent tool
-that Codex CLI itself may expose inside an already-running interactive session (structurally
-analogous to Claude Code's `Task()` tool) — which, if that is what actually runs, produces no
-separate JSONL stream this session's own scripts can intercept, because it never leaves the parent
-process. This is now resolved explicitly:
-
-- **Preferred**: dispatch `sdd-explorer` (and every other `OFFLOAD_READ` Skill) as the child
-  `codex exec --model "<resolved>" -c 'model_reasoning_effort="<level>"' --json "<task>"` form from
-  the table above. This is what "real subagents" in `harness-capabilities.md` means for
-  `OFFLOAD_READ`, and it is what makes the delegation's token usage measurable —
-  `adapters/codex/tools/parse-telemetry.sh` can read its captured stream. Requires no extra
-  operator action beyond the harness's normal command-approval flow — the calling session
-  dispatches it the same way it dispatches any other child `codex exec` call.
-- **Fallback**: if a genuinely fresh child process cannot be used for some reason and the delegation
-  runs via Codex's own native in-session subagent mechanism instead, that is still an acceptable way
-  to satisfy `OFFLOAD_READ` **behaviorally** (a compact result still comes back, context is still
-  saved) — but its telemetry is **not** available, because there is no captured stream for
-  `parse-telemetry.sh` to read. Report it as such (`telemetry: unavailable (interactive session)` —
-  see `commands/references/phase-transition-observability.md`); never estimate a token count for it,
-  and never try to scrape it from any UI or status output.
-- The choice between these two is made at dispatch time by whether a child process was actually
-  used — not declared in advance by this document, and not something a command file should decide
-  by naming a mechanism; the command asks for `OFFLOAD_READ`, this adapter satisfies it via whichever
-  of the two above actually happened, and whichever one it was determines whether telemetry exists
-  for that call.
+**`OFFLOAD_READ` / `sdd-explorer` — two valid mechanisms.** `harness-capabilities.md` describes
+this capability for Codex as "real subagents where available," which covers two structurally
+different mechanisms: (a) a genuine child process this session shells out to via `codex exec
+--json` (the "Read-only / analysis" row above), and (b) a native, in-session subagent tool that
+Codex CLI itself may expose inside an already-running interactive session (structurally analogous
+to Claude Code's `Task()` tool). Both satisfy `OFFLOAD_READ` behaviorally — a compact result comes
+back, context is saved either way. This adapter does not force one over the other: a child process
+gives a genuinely fresh, isolated context (relevant for `VALIDATOR_ISOLATED`); a native subagent
+avoids the overhead of spawning a whole new CLI process when that isolation isn't specifically
+needed. Which one actually runs is the harness's own runtime behavior, not something this document
+or a command file dictates in advance.
 
 **This upgrades `DELEGATE_ISOLATED`/`VALIDATOR_ISOLATED` from manual to automatic.** The previous
 version of this adapter (before Model Routing) described the isolation procedure as "the operator
@@ -177,32 +158,10 @@ codex exec --model gpt-5.6-luna -c 'model_reasoning_effort="xhigh"' --sandbox wo
 codex exec resume --last "Looks good, proceed."
 ```
 
-## Telemetry
-
-Every `codex exec` dispatch that should be observable captures `--json` output to a temp file, then
-`adapters/codex/tools/parse-telemetry.sh --model "<resolved>" --effort "<level>" --file "$STREAM_FILE"`
-extracts the `turn.completed` usage event — full mechanics in `adapters/codex/references/
-telemetry-display.md`. Display and aggregation (the actual per-phase Usage block, the Total/coverage
-line at command end) are defined once, harness-agnostically, in `commands/references/
-phase-transition-observability.md` — this adapter's contribution is only the capture step (`--json`
-on every measurable dispatch) and the parser. No cost/dollar figure is ever shown for Codex (see
-`parse-telemetry.sh`'s own header for why). A dispatch that ran via the native in-session subagent
-fallback (see "OFFLOAD_READ" above) has no stream to parse — that phase's Usage block reads
-`telemetry: unavailable (interactive session)`, never a guess.
-
-**This capture/parse step only produces data — it does not, by itself, guarantee the Usage block
-gets printed.** Printing it at each phase closure is the calling command's job. Two rounds of
-this were needed: round 1 added a textual, situated "must print" instruction to every command
-file, which a real Codex smoke test of `/sdd.reverse-eng` showed was still not enough — the run
-used the native in-session subagent path documented above, and even the `unavailable` fallback
-never printed, because a markdown instruction to compose a fallback string is not a verifiable
-action. Round 2 replaced that with `framework/tools/emit-phase-observability.sh` — a real Bash
-step every command runs, whose own deterministic logic prints `telemetry: unavailable
-(interactive session)` whenever the command omits `--stream-file` (the honest thing to do when
-the native-subagent path was used), rather than the LLM writing that string itself. This
-adapter's job stops at documenting that the native-subagent fallback has no stream to parse;
-`commands/references/phase-transition-observability.md` § "Helper mechanism" is the concrete
-mechanism that turns that fact into printed output.
+This pipeline does not track token/cost usage itself. Earlier rounds built a custom per-phase
+Usage/Total system for this; two consecutive real smoke tests showed it never actually fired in
+practice, so it was removed. For usage/cost visibility, use Codex's own native tooling — outside
+this pipeline.
 
 ## Known gaps (do not silently degrade past these — tell the user)
 
