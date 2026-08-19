@@ -15,7 +15,14 @@
 #
 # Options:
 #   --json  Output as JSON: {"project_mode":"...","freshly_scaffolded":true|false,
-#                             "technology":"...","reason":"..."}
+#                             "technology":"...","reason":"...","has_baseline":true|false}
+#
+# `has_baseline` (used by /sdd.project's navigation rule, commands/sdd.project.md): true if
+# sdd/specs/ (promoted specs) OR sdd/extracted/ (a reverse-eng run's own working output, even if
+# never promoted) has any content. This is the "does a reverse-eng/spec baseline already exist"
+# signal — distinct from `project_mode`, which only asks greenfield-vs-brownfield. A brownfield
+# project with `has_baseline:false` (real application code, but never reverse-engineered or
+# spec'd) is the one case /sdd.project routes to `/sdd.reverse-eng` instead of `/sdd.start`.
 
 set -e
 
@@ -56,6 +63,20 @@ if [ -d "$PROJECT_PATH/sdd/specs" ] && [ -n "$(ls -A "$PROJECT_PATH/sdd/specs" 2
     HAS_SPECS_OR_FEATURES=true
 elif [ -d "$PROJECT_PATH/sdd/features" ] && [ -n "$(ls -A "$PROJECT_PATH/sdd/features" 2>/dev/null)" ]; then
     HAS_SPECS_OR_FEATURES=true
+fi
+
+# ============================================
+# Baseline presence (sdd/specs/ OR sdd/extracted/ non-empty) — see header comment.
+# Deliberately a separate signal from HAS_SPECS_OR_FEATURES above: sdd/features/ (archived,
+# completed work) does NOT imply a reverse-eng/spec baseline exists, only sdd/specs/ does;
+# sdd/extracted/ (a reverse-eng run's own raw output) counts even if never promoted to specs/.
+# ============================================
+
+HAS_BASELINE=false
+if [ -d "$PROJECT_PATH/sdd/specs" ] && [ -n "$(ls -A "$PROJECT_PATH/sdd/specs" 2>/dev/null)" ]; then
+    HAS_BASELINE=true
+elif [ -d "$PROJECT_PATH/sdd/extracted" ] && [ -n "$(ls -A "$PROJECT_PATH/sdd/extracted" 2>/dev/null)" ]; then
+    HAS_BASELINE=true
 fi
 
 # ============================================
@@ -122,9 +143,10 @@ fi
 # ============================================
 
 if [ "$JSON_OUTPUT" = true ]; then
-    echo "{\"project_mode\":\"$PROJECT_MODE\",\"freshly_scaffolded\":$FRESHLY_SCAFFOLDED,\"technology\":\"$TECHNOLOGY\",\"reason\":\"$REASON\"}"
+    echo "{\"project_mode\":\"$PROJECT_MODE\",\"freshly_scaffolded\":$FRESHLY_SCAFFOLDED,\"technology\":\"$TECHNOLOGY\",\"reason\":\"$REASON\",\"has_baseline\":$HAS_BASELINE}"
 else
     echo "🔍 Scaffolding Status: $PROJECT_MODE (freshly_scaffolded=$FRESHLY_SCAFFOLDED)"
     echo "   Technology: $TECHNOLOGY"
     echo "   Reason: $REASON"
+    echo "   Baseline (sdd/specs or sdd/extracted): $HAS_BASELINE"
 fi

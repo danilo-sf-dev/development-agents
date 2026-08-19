@@ -53,6 +53,35 @@ Output is one JSON object:
 - `relevant_changed_files` already excludes this pipeline's own output (`sdd/`) — never treat a
   previous extraction's own artifacts as "the repo changed."
 
+### Deterministic vs. judgment-based filtering — do not conflate the two
+
+`relevant_changed_files` filters out **only** a small, static, path-prefix list of known
+SDD/harness tooling: `sdd/`, `.git/`, `development-agents/`, `.claude/`, `.cursor/`,
+`graphify-out/`, plus root-level `CLAUDE.md`/`AGENTS.md` **only when currently untracked**
+(created by this SDD flow's own bootstrap, never committed — see
+`commands/references/project-instructions-sync.md`). This is a **deterministic, script-level**
+filter — no judgment involved, exact prefixes only.
+
+**A modified real test file is never part of this filter and always stays in
+`relevant_changed_files`.** `.devcontainer/`, `src/test/`, any `*Test.java`/`*_test.py`/etc.,
+and any real application file (regardless of extension — `.json`/`.yaml`/`.xml` config included)
+are ordinary application content to this script, filtered by nothing. A real E2E run found
+`CotacaoResidencialProducerJavaTypeTest.java` in the delta; the correct behavior — and what this
+script's filter is designed to preserve — was to **read that file** (§ 2.2 below) and let the
+agent's own analysis decide whether it affects any spec, not to discard it unread because it
+"looked like tooling noise." That decision is judgment, made after reading, never a
+grep-time exclusion:
+
+```
+tooling-only (sdd/, .git/, development-agents/, .claude/, .cursor/, graphify-out/,
+untracked CLAUDE.md/AGENTS.md)
+  → filtered deterministically by reverse-eng-delta.sh, never reaches the target set
+
+any other changed file, including a modified real test
+  → always enters relevant_changed_files / the target set (§ 2.1)
+  → read it (§ 2.2) — the agent's analysis, not the filter, decides whether it affects a spec
+```
+
 ## Step 1: Zero-Delta Protocol (`delta_empty: true`)
 
 ```

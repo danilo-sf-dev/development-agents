@@ -25,6 +25,15 @@
 #   9.  Multiple relevant files changed -> all present in relevant_changed_files, none lost
 #  10.  Script always exits 0 regardless of scenario (never aborts the calling command)
 #  11.  bash -n syntax check on the script and this test file
+#  12.  Tooling directories (development-agents/, .claude/, .cursor/, graphify-out/) are
+#       filtered out of relevant_changed_files, individually and combined
+#  13.  Untracked, newly-created CLAUDE.md/AGENTS.md at repo root are filtered out
+#  14.  A TRACKED, pre-existing CLAUDE.md/AGENTS.md that gets modified is NOT filtered —
+#       real edits to committed project docs must still surface as delta
+#  15.  .devcontainer/ is never filtered — a real devcontainer config change stays relevant
+#  16.  src/test/ and a *Test.java file are never filtered — real test changes stay relevant
+#  17.  Real application files with .json/.yaml/.xml extensions are never filtered just
+#       because of their extension
 #
 # Usage: bash reverse-eng-delta.test.sh
 # Exit: 0 if all pass, nonzero otherwise
@@ -226,6 +235,132 @@ if bash -n "$DELTA" 2>/tmp/reverse_eng_delta_syntax_err && bash -n "$SCRIPT_DIR/
     ok "Both the script and this test file have valid bash syntax"
 else
     fail "Syntax error: $(cat /tmp/reverse_eng_delta_syntax_err)"
+fi
+
+# ── Fixture: fresh repo for the tooling-filter tests (12-17) ──────────────
+TREPO="$WORKDIR/tooling-repo"
+mkdir -p "$TREPO/src/main" "$TREPO/src/test/java/com/example" "$TREPO/sdd/extracted" \
+    "$TREPO/development-agents/commands" "$TREPO/.claude/commands" "$TREPO/.cursor/rules" \
+    "$TREPO/.devcontainer" "$TREPO/config"
+git -C "$TREPO" init -q
+git -C "$TREPO" config user.email test@test.com
+git -C "$TREPO" config user.name test
+echo "app v1" > "$TREPO/src/main/App.java"
+git -C "$TREPO" add src/main/App.java
+git -C "$TREPO" -c commit.gpgsign=false commit -qm "initial"
+TSHA1=$(git -C "$TREPO" rev-parse HEAD)
+cat > "$TREPO/sdd/extracted/DETECTION_REPORT.md" <<EOF
+# Detection Report
+## Extraction History
+| Date | Mode | Focus | Summary | Git SHA |
+|------|------|-------|---------|---------|
+| 2026-08-18 | FULL | - | Initial extraction | $TSHA1 |
+EOF
+
+# ── Test 12: tooling directories filtered out, individually and combined ──
+echo ""
+echo "Test 12: tooling dirs (development-agents/, .claude/, .cursor/, graphify-out/) filtered"
+echo "pack file"   > "$TREPO/development-agents/commands/sdd.reverse-eng.md"
+echo "claude cmd"  > "$TREPO/.claude/commands/foo.md"
+echo "cursor rule" > "$TREPO/.cursor/rules/sdd-workflow.mdc"
+mkdir -p "$TREPO/graphify-out"
+echo '{"nodes":[]}' > "$TREPO/graphify-out/graph.json"
+OUT=$(bash "$DELTA" --detection-report "$TREPO/sdd/extracted/DETECTION_REPORT.md" --repo-root "$TREPO")
+EMPTY=$(json_field "$OUT" delta_empty)
+RELEVANT=$(json_field "$OUT" relevant_changed_files)
+if [[ "$EMPTY" == "true" ]] \
+    && ! printf '%s' "$RELEVANT" | grep -q "development-agents/" \
+    && ! printf '%s' "$RELEVANT" | grep -q "\.claude/" \
+    && ! printf '%s' "$RELEVANT" | grep -q "\.cursor/" \
+    && ! printf '%s' "$RELEVANT" | grep -q "graphify-out/"; then
+    ok "All four tooling directories correctly filtered — zero relevant delta"
+else
+    fail "Expected all tooling dirs filtered, delta_empty=true. Got: $OUT"
+fi
+rm -rf "$TREPO/development-agents" "$TREPO/.claude" "$TREPO/.cursor" "$TREPO/graphify-out"
+
+# ── Test 13: untracked, newly-created CLAUDE.md/AGENTS.md filtered out ────
+echo ""
+echo "Test 13: untracked (newly-created) CLAUDE.md/AGENTS.md filtered out of relevant delta"
+echo "## SDD Kit" > "$TREPO/CLAUDE.md"
+echo "## SDD Kit" > "$TREPO/AGENTS.md"
+OUT=$(bash "$DELTA" --detection-report "$TREPO/sdd/extracted/DETECTION_REPORT.md" --repo-root "$TREPO")
+EMPTY=$(json_field "$OUT" delta_empty)
+RELEVANT=$(json_field "$OUT" relevant_changed_files)
+if [[ "$EMPTY" == "true" ]] \
+    && ! printf '%s' "$RELEVANT" | grep -q "CLAUDE.md" \
+    && ! printf '%s' "$RELEVANT" | grep -q "AGENTS.md"; then
+    ok "Untracked CLAUDE.md/AGENTS.md correctly excluded from relevant delta"
+else
+    fail "Expected CLAUDE.md/AGENTS.md excluded (untracked). Got: $OUT"
+fi
+rm -f "$TREPO/CLAUDE.md" "$TREPO/AGENTS.md"
+
+# ── Test 14: a TRACKED CLAUDE.md that gets modified IS relevant ──────────
+echo ""
+echo "Test 14: a tracked, pre-existing CLAUDE.md modified afterward stays in relevant delta"
+echo "# Project instructions" > "$TREPO/CLAUDE.md"
+git -C "$TREPO" add CLAUDE.md
+git -C "$TREPO" -c commit.gpgsign=false commit -qm "add tracked CLAUDE.md"
+TSHA2=$(git -C "$TREPO" rev-parse HEAD)
+cat > "$TREPO/sdd/extracted/DETECTION_REPORT.md" <<EOF
+# Detection Report
+## Extraction History
+| Date | Mode | Focus | Summary | Git SHA |
+|------|------|-------|---------|---------|
+| 2026-08-18 | FULL | - | Initial extraction | $TSHA2 |
+EOF
+echo "# Project instructions, updated" > "$TREPO/CLAUDE.md"
+OUT=$(bash "$DELTA" --detection-report "$TREPO/sdd/extracted/DETECTION_REPORT.md" --repo-root "$TREPO")
+EMPTY=$(json_field "$OUT" delta_empty)
+RELEVANT=$(json_field "$OUT" relevant_changed_files)
+if [[ "$EMPTY" == "false" ]] && printf '%s' "$RELEVANT" | grep -q "CLAUDE.md"; then
+    ok "Tracked CLAUDE.md edit correctly stays in relevant delta — real doc changes are never hidden"
+else
+    fail "Expected CLAUDE.md present (tracked file, real edit). Got: $OUT"
+fi
+
+# ── Test 15: .devcontainer/ is NEVER filtered ──────────────────────────────
+echo ""
+echo "Test 15: .devcontainer/ config change is never filtered (not a tooling dir)"
+mkdir -p "$TREPO/.devcontainer"
+echo '{"image":"foo"}' > "$TREPO/.devcontainer/devcontainer.json"
+OUT=$(bash "$DELTA" --detection-report "$TREPO/sdd/extracted/DETECTION_REPORT.md" --repo-root "$TREPO")
+RELEVANT=$(json_field "$OUT" relevant_changed_files)
+if printf '%s' "$RELEVANT" | grep -q "\.devcontainer/devcontainer.json"; then
+    ok ".devcontainer/ change correctly NOT filtered — stays in relevant delta"
+else
+    fail "Expected .devcontainer/devcontainer.json present (must never be filtered). Got: $OUT"
+fi
+rm -rf "$TREPO/.devcontainer"
+
+# ── Test 16: src/test/ and *Test.java are NEVER filtered ─────────────────
+echo ""
+echo "Test 16: src/test/ dir and a *Test.java file are never filtered as tooling"
+echo "test v1" > "$TREPO/src/test/java/com/example/FooTest.java"
+OUT=$(bash "$DELTA" --detection-report "$TREPO/sdd/extracted/DETECTION_REPORT.md" --repo-root "$TREPO")
+RELEVANT=$(json_field "$OUT" relevant_changed_files)
+if printf '%s' "$RELEVANT" | grep -q "src/test/java/com/example/FooTest.java"; then
+    ok "src/test/*Test.java correctly NOT filtered — real test changes stay relevant"
+else
+    fail "Expected FooTest.java present (real test file, must never be filtered). Got: $OUT"
+fi
+rm -f "$TREPO/src/test/java/com/example/FooTest.java"
+
+# ── Test 17: real app files are never filtered just by extension ─────────
+echo ""
+echo "Test 17: .json/.yaml/.xml application files are never filtered by extension alone"
+echo '{"key":"value"}'        > "$TREPO/config/app.json"
+echo 'key: value'             > "$TREPO/config/app.yaml"
+echo '<config><a/></config>'  > "$TREPO/config/app.xml"
+OUT=$(bash "$DELTA" --detection-report "$TREPO/sdd/extracted/DETECTION_REPORT.md" --repo-root "$TREPO")
+RELEVANT=$(json_field "$OUT" relevant_changed_files)
+if printf '%s' "$RELEVANT" | grep -q "config/app.json" \
+    && printf '%s' "$RELEVANT" | grep -q "config/app.yaml" \
+    && printf '%s' "$RELEVANT" | grep -q "config/app.xml"; then
+    ok "JSON/YAML/XML application files correctly NOT filtered by extension"
+else
+    fail "Expected all three config files present. Got: $OUT"
 fi
 
 # ── Summary ──────────────────────────────────────────────────────────────────

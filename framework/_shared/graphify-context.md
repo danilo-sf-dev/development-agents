@@ -209,6 +209,41 @@ test is the real `extract . --code-only` call the user authorizes in Step 4.2 �
 code is ground truth, confirmed or refuted in real time, never assumed in advance from static
 `--help` text.
 
+### HTML / visualization output — UNVERIFIED, not implemented
+
+A real corporate E2E confirmed Graphify 0.9.45 and the working `extract . --code-only` path
+(378 files, 2339 nodes, no API key). It did **not** confirm any HTML/visualization flag or
+subcommand — no session with a real Graphify install has yet run `graphify --help` or `graphify
+extract --help` to see whether `--html` (or any visualization flag) actually exists on that
+version, on `extract`, on a separate subcommand, or at all.
+
+**Status: UNVERIFIED.** This mechanism deliberately does not implement, document as available,
+or offer HTML/visualization support until a session with real Graphify access runs those two
+`--help` commands and records the actual output here. Do not guess a flag name from the CLI
+conventions of other tools, from what a user request describes wanting, or from what "seems
+likely" for a 0.9.x CLI — every other command in this file is grounded in a real, observed
+`--help`/`--version` response (§ 1's detection cascade, § 3's tri-state above); this is the one
+capability where that evidence does not yet exist, so it stays undocumented rather than invented.
+
+When a future session verifies the real syntax, wire it in following the same shape already
+established here, not a new mechanism:
+- If Graphify can render HTML **from the existing `graph.json`** (no re-extraction) — e.g. a
+  separate `graphify visualize`/`graphify render`-style subcommand, or an `extract` flag that
+  operates on cached output — prefer that path exclusively. **Never run a second full `extract`
+  call just to obtain HTML** — `graph.json` from the one `--code-only` extraction already run
+  (§ 4 Step 4.2) is the only extraction this mechanism performs per flow.
+- Add the confirmed flag/subcommand to `detect-graphify.sh`'s capability probes (same tri-state
+  pattern as `GRAPHIFY_CODE_ONLY` if the real behavior turns out to need one) — never invoke it
+  from `graphify-context.md` prose directly without a corresponding detection field, the same
+  discipline every other capability here already follows.
+- Keep `graphify-out/graph.json` as the one deterministic readiness signal (§ 4 below) — an HTML
+  artifact, if one is ever produced, is an optional additional output alongside it, never a
+  replacement for it and never itself checked for readiness.
+
+Until then: **the proven `extract . --code-only` → `graph.json` path is the only supported
+mechanism.** No command file, skill, or reference should mention `--html` or any other
+visualization flag as if it were confirmed working.
+
 ---
 
 ## 4. Preflight — the only place ASK_USER happens for setup decisions
@@ -282,9 +317,24 @@ Graphify in Step 4.1 (then Scenario B)
   ↓
 bash framework/tools/graphify-run.sh extract . --code-only
   ↓
-validate graphify-out/graph.json exists and is non-empty
-  success → GRAPHIFY_MODE=active, GRAPHIFY_GRAPH=ready; write graphify-out/.sdd-managed
-  failure → one short warning; GRAPHIFY_MODE=disabled, GRAPHIFY_GRAPH=missing; continue normally
+CRITICAL: bash framework/tools/graphify-readiness.sh — deterministic check, not a narrated
+one; never assume readiness from the extract call's exit code alone (a real-machine run found
+`extract` exit 0 with a corrupted/partial graph.json)
+  
+  ✓ success (GRAPH_READY=true):
+    → GRAPHIFY_MODE=active
+    → GRAPHIFY_GRAPH=ready
+    → write graphify-out/.sdd-managed (marks this run as creator)
+    → continue with Graphify-active exploration
+  
+  ✗ failure (GRAPH_READY=false — graphify-out/graph.json missing, empty, or malformed):
+    → Print one short diagnostic: "Graphify extraction failed or produced invalid graph"
+    → GRAPHIFY_MODE=disabled (not "stale" — stale implies a valid prior graph)
+    → GRAPHIFY_GRAPH=missing (remain at missing, not flip to ready)
+    → Treat graph.json as false/unreliable (do not use a partial/invalid graph)
+    → Continue pipeline normally WITHOUT Graphify
+    → Never auto-retry extraction
+    → Never block the wider SDD pipeline on Graphify's success
 ```
 **Graph missing, option 2**: `GRAPHIFY_MODE=disabled`, `GRAPHIFY_GRAPH=missing`. **Option 3**:
 free text, degrade to option 2 unless clearly otherwise.
@@ -295,9 +345,21 @@ run the guard (§ 2)
   ↓
 bash framework/tools/graphify-run.sh update .
   ↓
-validate graphify-out/graph.json still present/non-empty
-  success → GRAPHIFY_MODE=active, GRAPHIFY_GRAPH=ready
-  failure → one short warning; GRAPHIFY_MODE=disabled, GRAPHIFY_GRAPH=stale; continue normally
+CRITICAL: bash framework/tools/graphify-readiness.sh — same deterministic check as above,
+run again after update since a failed update can corrupt a previously-valid graph.json
+  
+  ✓ success (GRAPH_READY=true):
+    → GRAPHIFY_MODE=active
+    → GRAPHIFY_GRAPH=ready (updated successfully)
+    → continue with Graphify-active exploration
+  
+  ✗ failure (GRAPH_READY=false — graph.json removed, became empty, or corrupted during update):
+    → Print one short diagnostic: "Graphify update failed or produced invalid graph"
+    → GRAPHIFY_MODE=disabled (not "active" — update didn't succeed)
+    → GRAPHIFY_GRAPH=stale (prior graph was destroyed/invalidated, not viable to use)
+    → Continue pipeline normally WITHOUT Graphify
+    → The file graphify-out/graph.json MUST NOT be trusted
+    → Consider the prior extraction compromised; fall back to full read/grep
 ```
 **Graph exists, option 2 (usar o grafo atual)**: `GRAPHIFY_MODE=active`, `GRAPHIFY_GRAPH=ready`
 — **no `update` call is made.** "Not updating" is different from "not using" — using the

@@ -93,12 +93,38 @@ AskUserQuestion(
 
 ---
 
+## Graphify Preflight (MANDATORY — before subagent delegation)
+
+> **Before ANY subagent delegation, Graphify preflight MUST happen.** This is the **first gate**
+> for both FULL EXTRACTION and UPDATE MODE (if available).
+>
+> **Tool**: `AskUserQuestion` per `framework/_shared/harness-capabilities.md` — the same
+> ASK_USER gate for graphify decisions. Use ASK_USER to gate preflight, never skip.
+> **Reference**: `framework/_shared/graphify-context.md` § 4 ("Standalone case").
+>
+> **Two ASK_USER questions asked in sequence** (skip both if local no-ask preference already set):
+>
+> **Question 1 — Graphify Availability**:
+> - If Graphify not available: offer install/continue-without/don't-ask-again/others
+> - If available: proceed to Question 2
+>
+> **Question 2 — Graph Existence**:
+> - Graph missing: offer to generate now (code-only mode) / skip Graphify
+> - Graph exists: offer to update / use as-is / skip for this run
+>
+> **Resolved state** (`GRAPHIFY_MODE`/`GRAPHIFY_GRAPH`) persists for this entire run — no
+> re-asking mid-execution. Never run extraction without this preflight completing first.
+
+---
+
 ## Subagent Delegation (MANDATORY for FULL EXTRACTION / ENHANCE SPECS)
 
-> **⚠️ MANDATORY for FULL EXTRACTION and ENHANCE SPECS**: See
+> **⚠️ MANDATORY for FULL EXTRACTION and ENHANCE SPECS ONLY**: See
 > [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle)
 > for the central principle. These two modes MUST delegate exploration work to the `sdd-explorer`
 > Skill — unchanged by this round.
+>
+> **CRITICAL**: Use ONLY `sdd-explorer` for Phase 0-3 delegation. sdd-explorer is not a generic `general-purpose` agent — it has specialized scope guardrails for exploration only. Never delegate to open-ended generic agents. FULL's phases 0-3 are read-only exploration; synthesis (Phase 4), promotion gate, and human decisions stay in the main agent.
 >
 > **UPDATE MODE (without `--focus`) does NOT inherit this block automatically** — see
 > `references/reverse-eng-update-delta.md` § "2.3 Delegate only on genuine ambiguity". UPDATE
@@ -116,15 +142,27 @@ AskUserQuestion(
 │  per DELEGATE_OFFLOAD — see harness-capabilities.md +                │
 │  adapters/<harness>/README.md for the concrete dispatch              │
 │                                                                      │
+│  SCOPE OF DELEGATION: Read-only exploration only (Phases 0-3)       │
+│  ✗ Do NOT delegate: synthesis (Phase 4+), promotion gate, decisions   │
+│  ✗ Never use general-purpose agents for FULL; always sdd-explorer  │
+│  ✓ Always: return results to main agent for Phase 4 onwards         │
+│                                                                      │
 │  WHY: Reduces tokens 30-40%, isolates read-only operations,          │
 │       preserves main context for synthesis.                          │
 │       (DELEGATE_OFFLOAD — context-saving, no bias-protection         │
 │       requirement; see framework/_shared/harness-capabilities.md)    │
 │                                                                      │
 │  WORKFLOW:                                                           │
-│  1. Main agent coordinates phases and writes final specs             │
-│  2. sdd-explorer subagent performs all read-only exploration        │
-│  3. Results returned to main agent for synthesis (Phase 4)           │
+│  1. Main agent: Graphify preflight, mode selection, coordination     │
+│  2. Main agent: Pass scoped target set to sdd-explorer               │
+│  3. sdd-explorer subagent performs all read-only exploration         │
+│     (Phase 0-3 only — returns results, does not continue further)    │
+│  4. Main agent: Phase 4 synthesis, 4.5 ownership, 5 PATTERNS.md,      │
+│     6 consistency check — all in the main agent, none delegated      │
+│  5. Main agent: Phase 7 promotion gate (see reverse-eng-phase7.md —   │
+│     the ONE canonical gate; PROMOTE NOW/REVIEW FIRST/SHOW DIFF/       │
+│     SKIP PROMOTION — never redefined here)                           │
+│  6. Main agent: Executes promotion only if PROMOTE NOW was chosen     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -375,10 +413,19 @@ sdd/
 > Validate functional ↔ technical alignment before promotion.
 > Read `references/reverse-eng-phase6.md` when executing Phase 6.
 
-### Phase 7: Spec Promotion (lazy-loaded)
+### Phase 7: Spec Promotion (lazy-loaded, MANDATORY gate — main agent only)
 
 > Promote `extracted/` → `sdd/specs/` (+ PATTERNS.md) with merge confirmation when specs already exist.
-> Read `references/reverse-eng-phase7.md` before writing to `sdd/specs/`.
+> Read `references/reverse-eng-phase7.md` before writing to `sdd/specs/` — its Step 1
+> `AskUserQuestion` (PROMOTE NOW / REVIEW FIRST / SHOW DIFF / SKIP PROMOTION) is the **single,
+> canonical promotion gate** for `/sdd.reverse-eng` — never redefine or duplicate it elsewhere in
+> this file.
+>
+> **This gate runs in the main agent only.** The `sdd-explorer` subagent delegated for Phase 0-3
+> (§ "Subagent Delegation" above) never reaches Phase 7 and never promotes on its own — it
+> returns its exploration results to the main agent, which runs Phase 4 onward (synthesis,
+> `PATTERNS.md`, consistency check) and only then presents this gate itself. **Never automatic
+> promotion from a subagent; never a silent copy to `sdd/specs/`.**
 
 ## Anti-Truncation (CRITICAL — short)
 

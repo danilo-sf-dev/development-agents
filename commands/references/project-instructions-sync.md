@@ -21,22 +21,66 @@ If more than one of `.claude/`/`.agents/` exists (multi-adapter project), sync *
 
 ## Procedure (idempotent, section-scoped merge — same for every target file)
 
+The merge mechanics (create vs. append vs. replace-section) are 100% deterministic — no LLM
+judgment needed — so they run through a real script rather than being narrated by hand. This is
+what makes the merge idempotency independently testable (`framework/tools/
+project-instructions-sync.test.sh`) instead of resting only on prose:
+
 ```pseudocode
 FOR EACH target_file IN applicable files (per table above):
     spec_lang = resolved from Step 8 (/sdd.start) or read from sdd/PROJECT.md language.specs (/sdd.project)
     lang_names = { "en": "English", "es": "Spanish (Español)", "pt": "Portuguese (Português)" }
     lang_name = lang_names[spec_lang] or "English"
 
-    IF target_file does NOT exist:
-        → Create target_file with the SDD Kit section (template below) as its entire content
-    ELSE IF target_file exists but does NOT contain "## SDD Kit":
-        → Append the SDD Kit section to the end of the file — preserve 100% of existing content
+    render the SDD Kit section template (below) with lang_name/spec_lang substituted,
+    write it to a temp file (section_file) — this rendering step IS LLM/template work, unlike
+    the merge itself
+    file_existed_before = target_file exists on disk right now, checked BEFORE the call below
+
+    bash development-agents/framework/tools/project-instructions-sync.sh \
+      --file target_file --section-file section_file
+    → SYNC_ACTION=created   (target_file did not exist; now created verbatim from section_file)
+    → SYNC_ACTION=appended  (target_file existed, had no "## SDD Kit" section; appended to end,
+                             100% of existing content preserved)
+    → SYNC_ACTION=replaced  (target_file existed, already had "## SDD Kit"; only that section's
+                             body was replaced, byte-for-byte everything else preserved)
+
+    IF NOT file_existed_before AND SYNC_ACTION == "created":
+        → Run the git protection guard (§ "Git protection" below) — this is the ONLY case it
+          is ever called, because it is the only case this procedure is the sole reason the
+          file exists at all
     ELSE:
-        → Replace only the existing "## SDD Kit" section (from that header to the next `##` header
-          or end of file) with the updated version — e.g. when the spec language changed
+        → Do NOT run the git protection guard — the file predates this run (or the script
+          appended/replaced into something already on disk); its tracked/untracked status is
+          not this procedure's decision to make
 ```
 
-**Section replacement rule (governs every target file, every adapter — this is what B-16 in `framework/standards/boundaries.md` permits)**: the SDD Kit section is the _only_ content this framework owns in `target_file`. Never touch anything else in the file. If the user ran `/init` (Claude Code) or otherwise already has project instructions, that content is preserved — this procedure only ever creates, appends, or replaces its own marked section.
+**Section replacement rule (governs every target file, every adapter — this is what B-16 in `framework/standards/boundaries.md` permits)**: the SDD Kit section is the _only_ content this framework owns in `target_file`. Never touch anything else in the file. If the user ran `/init` (Claude Code) or otherwise already has project instructions, that content is preserved — the merge script only ever creates, appends, or replaces its own marked section, verified byte-for-byte in `project-instructions-sync.test.sh`.
+
+## Git protection (new-file branch only)
+
+A real corporate E2E run found `/sdd.install` creating `CLAUDE.md` for local harness
+configuration, and that file showing up as untracked noise in `git status` — polluting the
+target repo with a file nobody asked to commit. When (and only when) the `target_file does NOT
+exist` branch above just created the file from nothing, run:
+
+```bash
+bash development-agents/framework/tools/project-instructions-git-guard.sh \
+  --file <CLAUDE.md-or-AGENTS.md> --repo-root .
+```
+
+This mirrors the same local-only philosophy already used for `graphify-out/`
+(`framework/tools/graphify-git-guard.sh`, `framework/_shared/graphify-context.md` § 2): it adds
+the file to **`.git/info/exclude` only** — never the project's shared `.gitignore` — because a
+per-developer harness config file is not something to impose on the whole team's ignore rules
+the way an explicit, user-authorized tool like Graphify might be. If the file is somehow already
+tracked at call time (e.g. a concurrent `git add`), the guard is a strict no-op — it never
+removes tracking from a tracked file. It also never runs on the append/replace branches above:
+a file that existed before this procedure touched it keeps whatever tracked/untracked status it
+already had — that decision was never this procedure's to make.
+
+This guard never blocks the wider `/sdd.start` or `/sdd.install` flow — a failed protection
+attempt is a soft warning (the file may show up untracked), never a reason to abort.
 
 ## SDD Kit section template (same for `CLAUDE.md` and `AGENTS.md`)
 

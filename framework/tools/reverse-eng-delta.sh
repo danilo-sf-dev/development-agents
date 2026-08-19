@@ -37,6 +37,22 @@
 # `relevant_changed_files` excludes this pipeline's own output (`sdd/`) and `.git/` — a
 # change only under `sdd/` (e.g. from a previous run) must never be read back as "the repo
 # changed," which would create a self-triggering non-empty delta forever.
+#
+# It also excludes a small, deterministic, path-prefix set of known SDD/harness tooling
+# directories that real E2E runs showed appearing as noisy "delta" even though they are never
+# part of the target application: `development-agents/` (the pack itself, when vendored inside
+# the target repo), `.claude/`, `.cursor/` (harness config dirs), `graphify-out/` (Graphify's own
+# disposable cache, already root-level per framework/_shared/graphify-context.md). These are
+# EXACT path prefixes, not extension/content-based guesses — `.devcontainer/`, `src/test/`, and
+# any `*Test.java`/real application file are never touched by this list, on purpose: a filter
+# broad enough to catch those would silently hide real application changes, which is worse than
+# not filtering at all.
+#
+# Root-level `CLAUDE.md`/`AGENTS.md` get one narrow, STATEFUL exception on top of the static
+# list: excluded only when they are currently untracked (`git status` `??`) — i.e. created by
+# this SDD flow's own installer/bootstrap and never committed. A tracked/committed `CLAUDE.md`
+# or `AGENTS.md` (pre-existing project documentation, or one the team already committed) is never
+# excluded — a real edit to it must still surface as delta.
 
 set -u
 
@@ -142,13 +158,38 @@ fi
 # ---------------------------------------------------------------------------
 
 COMMITTED_CHANGED=$(git -C "$REPO_ROOT" diff --name-only "$BASELINE_SHA" -- . 2>/dev/null || echo "")
-WORKING_TREE_CHANGED=$(git -C "$REPO_ROOT" status --porcelain --untracked-files=normal -- . 2>/dev/null \
-    | sed -E 's/^.. //' || echo "")
+
+# Full porcelain (status codes kept) so untracked entries (`??`) can be told apart from
+# tracked-but-modified ones below — needed for the CLAUDE.md/AGENTS.md stateful exception.
+STATUS_PORCELAIN=$(git -C "$REPO_ROOT" status --porcelain --untracked-files=all -- . 2>/dev/null || echo "")
+WORKING_TREE_CHANGED=$(printf '%s\n' "$STATUS_PORCELAIN" | sed -E 's/^.. //' || echo "")
+UNTRACKED_ONLY=$(printf '%s\n' "$STATUS_PORCELAIN" | grep -E '^\?\? ' | sed -E 's/^\?\? //' || echo "")
 
 ALL_CHANGED=$(printf '%s\n%s\n' "$COMMITTED_CHANGED" "$WORKING_TREE_CHANGED" | sed '/^$/d' | sort -u)
 
-RELEVANT_CHANGED=$(printf '%s\n' "$ALL_CHANGED" | grep -vE '^(sdd/|\.git/)' || true)
+# Static, exact path-prefix exclusion — deliberately narrow (see header comment). Never
+# extension-based, never content-based, never a wildcard broad enough to catch .devcontainer/,
+# src/test/, or a real *Test.java change.
+TOOLING_PREFIX_REGEX='^(sdd/|\.git/|development-agents/|\.claude/|\.cursor/|graphify-out/)'
+
+RELEVANT_CHANGED=$(printf '%s\n' "$ALL_CHANGED" | grep -vE "$TOOLING_PREFIX_REGEX" || true)
 RELEVANT_CHANGED=$(printf '%s\n' "$RELEVANT_CHANGED" | sed '/^$/d')
+
+# Stateful exception: root-level CLAUDE.md/AGENTS.md excluded ONLY when currently untracked
+# (created by this SDD flow's own bootstrap, never committed). Exact filename match, root only
+# — a nested docs/CLAUDE.md or similar is real project content, never touched by this rule.
+if [[ -n "$RELEVANT_CHANGED" ]]; then
+    FILTERED=""
+    while IFS= read -r f; do
+        [[ -z "$f" ]] && continue
+        if { [[ "$f" == "CLAUDE.md" ]] || [[ "$f" == "AGENTS.md" ]]; } \
+            && printf '%s\n' "$UNTRACKED_ONLY" | grep -qxF "$f"; then
+            continue
+        fi
+        FILTERED+="$f"$'\n'
+    done <<< "$RELEVANT_CHANGED"
+    RELEVANT_CHANGED=$(printf '%s' "$FILTERED" | sed '/^$/d')
+fi
 
 DELTA_EMPTY="false"
 [[ -z "$RELEVANT_CHANGED" ]] && DELTA_EMPTY="true"

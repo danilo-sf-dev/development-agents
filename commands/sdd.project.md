@@ -119,6 +119,36 @@ Steps: detect stack → architecture (backend) → testing standards → team co
 
 `/sdd.start` loads PROJECT.md when present. Missing file → recommend `/sdd.project` (then continue with defaults if user opts in).
 
+## Next-Command Navigation (MANDATORY — real decision, not a footnote)
+
+After PROJECT.md is created/updated (any mode), run the real, deterministic signal check before
+recommending the next command — never guess from code presence alone:
+
+```bash
+bash development-agents/framework/tools/detect-scaffolding-status.sh . --json
+```
+
+```
+project_mode == "greenfield"
+  → recommend /sdd.start
+
+project_mode == "brownfield" AND has_baseline == false
+  → recommend /sdd.reverse-eng
+    (real application code exists, but no sdd/specs/ or sdd/extracted/ yet —
+     /sdd.start would have nothing to build on top of)
+
+project_mode == "brownfield" AND has_baseline == true
+  → recommend /sdd.start
+    (a reverse-eng/spec baseline already exists — proceed straight to feature work)
+```
+
+This is the actual next-step recommendation shown to the user — not the Model Routing footnote
+below, which only states which `model_role` each of those two commands runs at. Do not hardcode
+this purely on "code exists" — `has_baseline` is what distinguishes "needs `/sdd.reverse-eng`
+first" from "already has a baseline, go straight to `/sdd.start`." See
+`framework/tools/detect-scaffolding-status.test.sh` for the real, executable contract this rule
+implements.
+
 ## Validation (short)
 
 After write: file exists under `sdd/PROJECT.md`; required sections present for chosen stack; YAML/MD well-formed.
@@ -140,8 +170,8 @@ Missing permissions / invalid YAML → show error, do not overwrite silently. Ba
 1. Flag/subcommand-first — load matching ref; do not run full wizard when `patterns`/`profile`/`vision`/`--hub`/`--view`.
 2. Never invent stack defaults; use detection + user answers.
 3. PROJECT.md = team conventions only; write overrides, not a novel.
-4. After create/update, confirm path `sdd/PROJECT.md` and next step (`/sdd.start` if starting a feature).
-5. **Model Routing (automatic, informational only)**: the next command (`/sdd.reverse-eng` → `STRONG` for brownfield, or `/sdd.start` → `EXECUTION` for greenfield/next feature) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
+4. After create/update, run § "Next-Command Navigation" above (real `detect-scaffolding-status.sh` signals, not a guess) and confirm path `sdd/PROJECT.md` + the recommended next command.
+5. **Model Routing (automatic, informational only)**: whichever command § "Next-Command Navigation" recommends (`/sdd.reverse-eng` → `STRONG`, `/sdd.start` → `EXECUTION`) is resolved and dispatched automatically — no confirmation needed. This line is about which model runs it, not about which command to recommend — that decision is § "Next-Command Navigation" above. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ## Optional flags (lazy-loaded)
 
