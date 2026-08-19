@@ -11,20 +11,25 @@ SDD Kit follows a **four-phase workflow** with flexible execution modes. This do
 
 ### Execution Modes
 
-| Mode | Commands | Best For |
-|------|----------|----------|
-| **Express** | `/sdd.go` (1 command) | Simple features with clear requirements |
-| **Standard** | 4-5 commands | Most features, balanced control **(DEFAULT)** |
+| Mode         | Commands              | Set With                                             | Best For                                      |
+| ------------ | --------------------- | ---------------------------------------------------- | --------------------------------------------- |
+| **Express**  | `/sdd.go` (1 command) | `/sdd.go "desc"` or `/sdd.start "feature" --express` | Simple features with clear requirements       |
+| **Standard** | 4-5 commands          | (none — **DEFAULT**)                                 | Most features, balanced control **(DEFAULT)** |
 
 > **Default**: `/sdd.start "feature"` without flags uses Standard mode.
 
+```bash
+/sdd.start "feature"              # Uses Standard mode (default)
+/sdd.start "feature" --express    # Start in express mode
+```
+
 ### Project Modes
 
-| Mode | Detected By | Description |
-|------|-------------|-------------|
-| **Greenfield** | (default) | Building new features from scratch |
-| **Brownfield** | `sdd/specs/` exists | Modifying existing documented systems |
-| **Reverse Engineering** | `/sdd.reverse-eng` | Documenting existing codebases |
+| Mode                    | Detected By         | Description                           |
+| ----------------------- | ------------------- | ------------------------------------- |
+| **Greenfield**          | (default)           | Building new features from scratch    |
+| **Brownfield**          | `sdd/specs/` exists | Modifying existing documented systems |
+| **Reverse Engineering** | `/sdd.reverse-eng`  | Documenting existing codebases        |
 
 ---
 
@@ -37,6 +42,7 @@ For simple features with clear requirements:
 ```
 
 **What happens**:
+
 1. AI asks 3-5 critical questions
 2. Auto-generates functional + technical specs
 3. Auto-generates and approves tasks
@@ -56,7 +62,7 @@ For most features, balanced control and quality:
 > Canonical diagram and gates: [`framework/PIPELINE.md`](./PIPELINE.md#diagram)
 
 ```
-/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.finish
+/sdd.start → /sdd.spec → /sdd.plan → /sdd.test → /sdd.build → /sdd.check → /sdd.finish
 ```
 
 ### Phase 0: Initialize
@@ -64,6 +70,7 @@ For most features, balanced control and quality:
 **Command**: `/sdd.start "feature-name"`
 
 **What happens**:
+
 - **Assigns date prefix** (YYYYMMDD) to the feature directory
 - **Creates feature branch** `feature/<name>` from master/main
 - Creates folder structure in `sdd/wip/[YYYYMMDD-feature-name]/`
@@ -84,12 +91,14 @@ For most features, balanced control and quality:
 **What happens**:
 
 **Functional Spec** (WHAT to build):
+
 - AI interviews about problem, objectives
 - Builds user stories with acceptance criteria
 - Defines success metrics
 - Asks: "Ready to approve functional spec?" [Y/n]
 
 **Technical Spec** (HOW to build):
+
 - AI loads functional spec
 - Interviews about architecture
 - Queries your internal service directory/registry for project services, if one exists
@@ -109,6 +118,7 @@ For most features, balanced control and quality:
 **Command**: `/sdd.plan`
 
 **What happens**:
+
 - AI analyzes specs
 - Generates 15-30 granular tasks
 - Creates dependency graph
@@ -133,6 +143,7 @@ For most features, balanced control and quality:
 **Command**: `/sdd.test`
 
 **What happens**:
+
 - AI reads functional + technical specs and approved tasks
 - Writes unit/integration tests from acceptance criteria and edge cases
 - Verifies **red phase** — new tests fail before any feature implementation
@@ -152,6 +163,7 @@ For most features, balanced control and quality:
 **Command**: `/sdd.build`
 
 **What happens**:
+
 - Reads execution strategy
 - Implements tasks in order/parallel — **does not write new unit/integration tests**
 - Runs approved tests after each task until green
@@ -172,6 +184,7 @@ For most features, balanced control and quality:
 **Command**: `/sdd.finish`
 
 **What happens**:
+
 - Runs all validators:
   - Task completion check
   - code compliance (MANDATORY)
@@ -201,6 +214,8 @@ For finer control within Standard mode:
 /sdd.spec functional --approve
 /sdd.spec technical
 /sdd.spec technical --approve
+/sdd.spec --include "url/path"    # Add external context (Jira, Confluence, file)
+/sdd.spec --iterate "change"      # Modify/update spec (refine requirements)
 
 # Explicit plan refinement
 /sdd.plan --refine
@@ -211,20 +226,29 @@ For finer control within Standard mode:
 # Targeted implementation
 /sdd.build task TASK-001
 /sdd.build phase 2
+/sdd.build --resume               # Resume interrupted session
+/sdd.build --next                 # Auto-continue with next task
+
+# Status and consistency checks
+/sdd.check task TASK-001          # Task details
+/sdd.check --sync                 # Verify layer consistency (+ fix y/n)
+/sdd.check --compliance           # Verify /tests/lint (+ fix y/n)
+/sdd.check --resume               # List resumable sessions
+/sdd.check --resume --last        # Resume last session
 ```
 
 ---
 
 ## Workflow Comparison
 
-| Aspect | Express | Standard |
-|--------|---------|----------|
-| Commands | 1 | 5-6 |
-| Interaction | Low | Medium |
-| Control | Minimal | Balanced |
-| Questions | 3-5 critical | Full interview |
-| Confirmations | None | At key points |
-| Best for | Simple features | Most features |
+| Aspect        | Express         | Standard       |
+| ------------- | --------------- | -------------- |
+| Commands      | 1               | 5-6            |
+| Interaction   | Low             | Medium         |
+| Control       | Minimal         | Balanced       |
+| Questions     | 3-5 critical    | Full interview |
+| Confirmations | None            | At key points  |
+| Best for      | Simple features | Most features  |
 
 ---
 
@@ -234,10 +258,10 @@ For teams working with ecosystems of multiple apps that collaborate in a domain.
 
 ### Execution modes
 
-| Mode | Command | Best for |
-|------|---------|----------|
-| **Express** | `/sdd.hub go "description"` | Simple cross-app features, clear requirements |
-| **Standard** | 6 separate sub-commands | Most features, balanced control |
+| Mode         | Command                     | Best for                                      |
+| ------------ | --------------------------- | --------------------------------------------- |
+| **Express**  | `/sdd.hub go "description"` | Simple cross-app features, clear requirements |
+| **Standard** | 6 separate sub-commands     | Most features, balanced control               |
 
 ### Standard flow
 
@@ -264,14 +288,14 @@ A **hub** is a central repo that coordinates specs, planning, and implementation
 
 ### Hub flow
 
-| Step | Command | What happens |
-|------|---------|--------------|
-| 1 | `/sdd.hub start` | Select target members, create hub feature |
-| 2 | `/sdd.hub spec functional` | Cross-app functional spec |
-| 3 | `/sdd.hub spec technical` | Tech spec with `## {app}` scope sections |
-| 4 | `/sdd.hub plan` | Export child specs to apps, run `/sdd.plan` per app |
-| 5 | `/sdd.hub build` | Orchestrate `/sdd.build` per app (respects dependency layers) |
-| 6 | `/sdd.hub finish` | Archive hub and all child specs |
+| Step | Command                    | What happens                                                  |
+| ---- | -------------------------- | ------------------------------------------------------------- |
+| 1    | `/sdd.hub start`           | Select target members, create hub feature                     |
+| 2    | `/sdd.hub spec functional` | Cross-app functional spec                                     |
+| 3    | `/sdd.hub spec technical`  | Tech spec with `## {app}` scope sections                      |
+| 4    | `/sdd.hub plan`            | Export child specs to apps, run `/sdd.plan` per app           |
+| 5    | `/sdd.hub build`           | Orchestrate `/sdd.build` per app (respects dependency layers) |
+| 6    | `/sdd.hub finish`          | Archive hub and all child specs                               |
 
 ### Child spec export
 
@@ -283,18 +307,21 @@ The hub generates a `tasks.json` with `"type": "coordination"` that defines depe
 
 ### Utility commands
 
-| Command | Purpose |
-|---------|---------|
-| `/sdd.hub check` | Drift detection, per-app status |
-| `/sdd.hub sync` | Verify git status of member repos |
-| `/sdd.hub list` | Tree display with features |
-| `/sdd.hub cancel` | Cancel and clean up |
+| Command           | Purpose                           |
+| ----------------- | --------------------------------- |
+| `/sdd.hub check`  | Drift detection, per-app status   |
+| `/sdd.hub sync`   | Verify git status of member repos |
+| `/sdd.hub list`   | Tree display with features        |
+| `/sdd.hub cancel` | Cancel and clean up               |
 
 ### Compatibility
 
 - Existing app-level commands are not modified
 - `/sdd.go` detects hubs and redirects to `/sdd.hub`
-- Hub hooks available via `/sdd.skill connect --phases hub-*`
+- **No third-party hook command exists yet.** An earlier draft referenced `/sdd.skill connect
+--phases hub-*` for third-party hub hooks — no such command is implemented in this pack
+  (confirmed: no `commands/sdd.skill.md`). Treat hub hooks as **not available** until a real
+  command ships; do not instruct a user to run `/sdd.skill`.
 
 ---
 
@@ -308,6 +335,7 @@ After `/sdd.finish`, you may need to iterate on a completed feature. Use `--reop
 ```
 
 **What happens**:
+
 1. Validates feature exists in `sdd/features/`
 2. Checks for reverse dependencies (features that override/extend/deprecate this one)
 3. Asks target phase (or uses `--phase` flag)
@@ -325,18 +353,18 @@ After `/sdd.finish`, you may need to iterate on a completed feature. Use `--reop
 
 Available at any point in the workflow:
 
-| Command | Purpose |
-|---------|---------|
-| `/sdd.check` | View status, progress, metrics |
-| `/sdd.check --sync` | Verify layer consistency + propose fixes |
-| `/sdd.check --compliance` | Verify /tests/lint + propose fixes |
-| `/sdd.check --resume` | List all resumable sessions |
-| `/sdd.list` | List all features |
-| `/sdd.backlog` | Manage backlog (TODOs, Debt, Ideas) |
-| `/sdd.rollback` | Revert to previous phase |
-| `/sdd.rollback --task` | Revert specific task |
-| `/sdd.cancel` | Cancel feature |
-| `/sdd.fix` | Fix errors with horizontal consistency |
+| Command                   | Purpose                                  |
+| ------------------------- | ---------------------------------------- |
+| `/sdd.check`              | View status, progress, metrics           |
+| `/sdd.check --sync`       | Verify layer consistency + propose fixes |
+| `/sdd.check --compliance` | Verify /tests/lint + propose fixes       |
+| `/sdd.check --resume`     | List all resumable sessions              |
+| `/sdd.list`               | List all features                        |
+| `/sdd.backlog`            | Manage backlog (TODOs, Debt, Ideas)      |
+| `/sdd.rollback`           | Revert to previous phase                 |
+| `/sdd.rollback --task`    | Revert specific task                     |
+| `/sdd.cancel`             | Cancel feature                           |
+| `/sdd.fix`                | Fix errors with horizontal consistency   |
 
 ---
 
@@ -347,6 +375,7 @@ When modifying existing systems with documented specs:
 **Detection**: Automatic if `sdd/specs/` exists
 
 **Same structure as greenfield** - the specs themselves ARE the delta:
+
 ```
 sdd/wip/[feature]/
 ├── 1-functional/spec.md     # NEW requirements (delta)
@@ -357,12 +386,13 @@ sdd/wip/[feature]/
 ```
 
 **Differences from greenfield**:
-| Phase | Greenfield | Brownfield |
-|-------|------------|------------|
-| `/sdd.start` | Creates structure | + Records affected system specs in meta.md |
-| `/sdd.spec` | Design freely | Specs describe CHANGES to existing system |
-| `/sdd.build` | Implement | Respect existing patterns |
-| `/sdd.finish` | Archive | Archive + update `sdd/specs/` |
+
+| Phase         | Greenfield        | Brownfield                                 |
+| ------------- | ----------------- | ------------------------------------------ |
+| `/sdd.start`  | Creates structure | + Records affected system specs in meta.md |
+| `/sdd.spec`   | Design freely     | Specs describe CHANGES to existing system  |
+| `/sdd.build`  | Implement         | Respect existing patterns                  |
+| `/sdd.finish` | Archive           | Archive + update `sdd/specs/`              |
 
 **Key principle**: In brownfield, your functional and technical specs describe what's NEW or CHANGED. They are inherently delta documentation.
 
@@ -385,14 +415,15 @@ For undocumented existing codebases:
 
 ### Reverse Engineering Phases
 
-| Phase | Name | Output |
-|-------|------|--------|
-| 1 | Extraction | `raw/` folder with  + code data |
-| 2 | Basic Cross-Validation | `DOCUMENTATION_GAPS.md` with coverage % |
-| 2.5 | Deep Cross-Validation | `DISCREPANCIES_REPORT.md` with field-level diffs |
-| 3 | Synthesis | Specs with 5-level confidence (VERIFIED/PARTIAL/CODE_ONLY/DOCS_ONLY/UNKNOWN) |
+| Phase | Name                   | Output                                                                       |
+| ----- | ---------------------- | ---------------------------------------------------------------------------- |
+| 1     | Extraction             | `raw/` folder with + code data                                               |
+| 2     | Basic Cross-Validation | `DOCUMENTATION_GAPS.md` with coverage %                                      |
+| 2.5   | Deep Cross-Validation  | `DISCREPANCIES_REPORT.md` with field-level diffs                             |
+| 3     | Synthesis              | Specs with 5-level confidence (VERIFIED/PARTIAL/CODE_ONLY/DOCS_ONLY/UNKNOWN) |
 
 After reverse engineering, use standard workflow:
+
 ```bash
 /sdd.start "new-feature"    # Brownfield mode auto-enabled
 /sdd.spec
@@ -405,20 +436,21 @@ After reverse engineering, use standard workflow:
 
 Each phase has validation requirements:
 
-| Phase | Validation | Blocking |
-|-------|------------|----------|
-| Functional | User stories, acceptance criteria, metrics | Yes |
-| Technical | Architecture, APIs, data model, testing | Yes |
-| Tasks | Estimations, criteria, dependencies | Yes |
-| Completion | Tests passing, code compliance | Yes |
+| Phase      | Validation                                 | Blocking |
+| ---------- | ------------------------------------------ | -------- |
+| Functional | User stories, acceptance criteria, metrics | Yes      |
+| Technical  | Architecture, APIs, data model, testing    | Yes      |
+| Tasks      | Estimations, criteria, dependencies        | Yes      |
+| Completion | Tests passing, code compliance             | Yes      |
 
 **Validators**:
+
 ```bash
-.development-agents/tools/validation/validate-functional.sh
-.development-agents/tools/validation/validate-technical.sh
-.development-agents/tools/validation/validate-tasks.sh
-.development-agents/tools/validation/validate-code.sh
-.development-agents/tools/validation/validate-tests.sh
+development-agents/framework/tools/validate-functional.sh
+development-agents/framework/tools/validate-technical.sh
+development-agents/framework/tools/validate-tasks.sh
+development-agents/framework/tools/validate-code.sh
+development-agents/framework/tools/validate-tests.sh
 ```
 
 ---
@@ -451,16 +483,17 @@ sdd/
 
 ### Naming Rules
 
-| Rule | Description |
-|------|-------------|
-| **Format** | Date prefix with hyphen: `YYYYMMDD-feature-name` |
-| **Organizational** | Date is for chronological ordering only, NOT an identifier |
-| **Permanent** | Date prefix never changes when moving between directories |
-| **No shared state** | No counter file needed — date comes from system clock |
+| Rule                | Description                                                |
+| ------------------- | ---------------------------------------------------------- |
+| **Format**          | Date prefix with hyphen: `YYYYMMDD-feature-name`           |
+| **Organizational**  | Date is for chronological ordering only, NOT an identifier |
+| **Permanent**       | Date prefix never changes when moving between directories  |
+| **No shared state** | No counter file needed — date comes from system clock      |
 
 ### Feature Reference
 
 Features are identified by name (the date prefix is NOT an identifier):
+
 - **Name**: `/sdd.check user-auth`
 - **Full name**: `/sdd.check 20260120-user-auth`
 
@@ -525,11 +558,13 @@ sdd/
 ## Common Patterns
 
 ### Quick Feature
+
 ```bash
 /sdd.go "add user avatar upload"
 ```
 
 ### Standard Feature
+
 ```bash
 /sdd.start payment-gateway
 /sdd.spec
@@ -540,6 +575,7 @@ sdd/
 ```
 
 ### Resume Work
+
 ```bash
 /sdd.check                # See where you left off
 /sdd.build                # Continue
@@ -548,6 +584,7 @@ sdd/
 ```
 
 ### Need More Control
+
 ```bash
 /sdd.build task TASK-007  # Specific task
 /sdd.build phase 2        # Specific phase
@@ -555,8 +592,11 @@ sdd/
 ```
 
 ### Fix Issues
+
 ```bash
-/sdd.check --validate         # See failures
+/sdd.check --sync             # Verify layer consistency
+/sdd.check --compliance       # Verify /tests/lint
+/sdd.fix "error output"       # Fix runtime errors
 /sdd.rollback 2               # Go back to technical phase
 /sdd.rollback --task TASK-XXX # Revert specific task
 /sdd.rollback --phase N       # Revert to phase N

@@ -1,7 +1,7 @@
 ---
 name: sdd.rollback
 description: Rollback feature to a previous workflow phase, preserving git history. Use when user needs to redo a phase.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[feature-name] [target-phase]"
 ---
 
@@ -103,7 +103,8 @@ Phase 1 (Func)  → Cannot rollback
 
 **Detect Current Phase from meta.md**:
 
-The `meta.md` file uses `Current Stage:` field (not `current_phase:`). Map stage to phase number:
+The `meta.md` file uses a `Current Stage` field (not `current_phase:`) — canonical format is bold
+markdown, `**Current Stage**: <stage>` (see `framework/templates/meta.md`). Map stage to phase number:
 
 | Stage Name | Phase Number |
 |------------|--------------|
@@ -133,18 +134,14 @@ stages:
 
 ```bash
 FEATURE_PATH="sdd/wip/[feature-name]"
-# Read stage from meta.md (e.g., "implementation")
-CURRENT_STAGE=$(grep "Current Stage:" "$FEATURE_PATH/meta.md" | cut -d: -f2 | tr -d ' ')
-
-# Map stage name to phase number
-case "$CURRENT_STAGE" in
-    functional) CURRENT_PHASE=1 ;;
-    technical)  CURRENT_PHASE=2 ;;
-    tasks)      CURRENT_PHASE=3 ;;
-    tests)      CURRENT_PHASE=4 ;;
-    implementation) CURRENT_PHASE=5 ;;
-    *) echo "Unknown stage"; exit 1 ;;
-esac
+# Reuse detect-phase.sh (single source of truth for stage/phase detection —
+# reads the canonical bold "**Current Stage**:" field, with the same stages:
+# YAML fallback used everywhere else in the pipeline) instead of re-parsing
+# meta.md by hand here.
+phase_result=$(bash development-agents/framework/tools/detect-phase.sh "$FEATURE_PATH" --json)
+CURRENT_STAGE=$(echo "$phase_result" | grep -o '"stage":"[^"]*"' | cut -d'"' -f4)
+CURRENT_PHASE=$(echo "$phase_result" | grep -o '"phase":[0-9]*' | cut -d: -f2)
+[ -z "$CURRENT_PHASE" ] && { echo "Unknown stage"; exit 1; }
 
 TARGET_PHASE=$1
 
@@ -235,12 +232,6 @@ ls -la sdd/wip/[feature-name]/.rollback-history/
 
 ---
 
-## Telemetry on Rollback
-
-> **Note**: Telemetry is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor). Not available for optional Agent CLI.
-
----
-
 ## Optional flags (lazy-loaded)
 
 | Flag | Reference |
@@ -309,11 +300,9 @@ ELSE:
 1. **Always create snapshot** before rollback
 2. **Require confirmation** for destructive operations
 3. **Document reason** in rollback record
-4. **Never delete** - archive instead (applies to logs/ too!)
-5. **Update telemetry** - Record rollback event and affected phases
-6. **Add rollback_marker** - Never delete token log entries, add marker instead
-7. **Increment runs counter** - Track re-executions in telemetry
-8. **Accurate phase detection** - NEVER assume phase based on file count alone; check meta.md stages
+4. **Never delete** - archive instead
+5. **Add rollback_marker** - Never delete prior rollback-history entries, add marker instead
+6. **Accurate phase detection** - NEVER assume phase based on file count alone; check meta.md stages
 
 ---
 

@@ -63,12 +63,6 @@ detect_mobile() {
         return 0
     fi
 
-    # Android: optional org-specific gradle plugins — detect via PROJECT.md / standard com.android
-    fi
-
-    # Android: optional org-specific gradle plugins — detect via PROJECT.md / standard com.android
-    fi
-
     # Android: your team-specific - mobile SDK platform catalog in libs.versions.toml
     if [ -f "$PROJECT_PATH/gradle/libs.versions.toml" ] && grep -q "composeBomVersion" "$PROJECT_PATH/gradle/libs.versions.toml" 2>/dev/null; then
         LANGUAGE="kotlin"
@@ -85,9 +79,6 @@ detect_mobile() {
         BUILD_TOOL="gradle"
         PLATFORM="android"
         return 0
-    fi
-
-    # Android: optional org-specific gradle plugins — detect via PROJECT.md / standard com.android
     fi
 
     # Android: settings.gradle.kts with include(":app") (Kotlin DSL - generic modern Android)

@@ -8,9 +8,16 @@
 
 **CRITICAL**: This phase ensures specs are in the **correct location** for the SDD workflow.
 
+**Main agent only.** When Phase 0-3 was delegated to the `sdd-explorer` subagent (FULL
+EXTRACTION / ENHANCE SPECS — see `sdd.reverse-eng.md` § "Subagent Delegation"), that subagent's
+job ends when it returns exploration results. It never reaches Phase 7, never sees this dialog,
+and never writes to `sdd/specs/`. Phase 4 (synthesis) through this gate always run in the main
+agent, after the subagent's results are back.
+
 #### Step 1: Present Promotion Dialog (ALWAYS)
 
-After Phase 6 completes, **ALWAYS** ask user before promoting:
+After Phase 6 completes, **ALWAYS** ask user before promoting — this is the one and only
+promotion gate for `/sdd.reverse-eng`; do not introduce a second one elsewhere:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -107,7 +114,7 @@ AskUserQuestion(
    - Start feature work with: /sdd.start
    ```
 
-**Model advisory** (before next-step AskUserQuestion if shown): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `reverse-eng→start`.
+**Model Routing (automatic, informational only)** (before next-step AskUserQuestion if shown): `/sdd.start` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 #### Update Mode Behavior
 

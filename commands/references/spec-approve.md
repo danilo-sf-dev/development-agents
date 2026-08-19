@@ -13,14 +13,12 @@
    - If already approved: Show message "Spec already approved" and offer next steps
 5. **Run validation** (same as Step 3a/6a depending on phase):
    - Functional: `bash development-agents/framework/tools/validation/validate-functional.sh sdd/wip/[feature]`
-   - Technical: `bash development-agents/framework/tools/validation/validate-technical.sh sdd/wip/[feature]`
+   - Technical: `bash development-agents/framework/tools/validate-technical.sh sdd/wip/[feature]`
    - If validation fails: Show errors, do NOT proceed
 6. **Show concise summary** (same as Step 3b/6b depending on phase)
 7. **Ask for approval** via AskUserQuestion (same as Step 3c/6c depending on phase)
 8. **On approval**: Update `meta.md` with `status: approved`, `approved_by: <git config user.name>`, `approved_at: <ISO-8601>`
-9. **Model advisory**: Read `references/model-suggestion-advisory.md` and show the full box:
-   - `functional --approve` → `phase_key`: `functional→technical`
-   - `technical --approve` → `phase_key`: `technical→plan`
+9. **Model Routing (automatic, informational only)**: the next step (`functional --approve` → `/sdd.spec technical` at `STRONG`; `technical --approve` → `/sdd.plan` at `EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 10. **Context advisory** (optional): Estimate context usage. If > 50%, show:
    ```
    ╔═══════════════════════════════════════════════════════╗

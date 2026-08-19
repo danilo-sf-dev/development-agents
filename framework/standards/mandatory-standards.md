@@ -17,13 +17,13 @@
 
 ### What to Validate
 
-| Technology | Build Command | Test Command |
-|------------|---------------|--------------|
-| **Java/Maven** | `mvn compile` | `mvn test` |
-| **Java/Gradle** | `./gradlew build` | `./gradlew test` |
-| **Node.js** | `npm run build` | `npm test` |
-| **Go** | `go build ./...` | `go test -race ./...` |
-| **Python** | N/A | `pytest` |
+| Technology      | Build Command     | Test Command          |
+| --------------- | ----------------- | --------------------- |
+| **Java/Maven**  | `mvn compile`     | `mvn test`            |
+| **Java/Gradle** | `./gradlew build` | `./gradlew test`      |
+| **Node.js**     | `npm run build`   | `npm test`            |
+| **Go**          | `go build ./...`  | `go test -race ./...` |
+| **Python**      | N/A               | `pytest`              |
 
 ### Anti-Skip Rule
 
@@ -38,21 +38,21 @@
 
 ### Prohibited Hallucinations
 
-| Anti-Pattern | Example |
-|--------------|---------|
-| Inferring fields from entity names | "PaymentTransaction probably has: transactionId..." |
-| Assuming standard patterns | "Like most JPA entities, it has id, createdAt..." |
-| Filling enum gaps | "The status enum likely includes: PENDING, COMPLETED..." |
+| Anti-Pattern                       | Example                                                  |
+| ---------------------------------- | -------------------------------------------------------- |
+| Inferring fields from entity names | "PaymentTransaction probably has: transactionId..."      |
+| Assuming standard patterns         | "Like most JPA entities, it has id, createdAt..."        |
+| Filling enum gaps                  | "The status enum likely includes: PENDING, COMPLETED..." |
 
 ### Five-Level Confidence System
 
-| Level | Icon | Criteria |
-|-------|------|----------|
-| **VERIFIED** | ✅✅ | Found in BOTH  AND code, fields MATCH |
-| **PARTIAL** | ✅⚠️ | Found in both, but fields DIFFER |
-| **CODE_ONLY** | 🔸 | Found ONLY in code (reliable) |
-| **DOCS_ONLY** | ⚠️ | Found ONLY in  (may be stale) |
-| **UNKNOWN** | ❓ | Insufficient information |
+| Level         | Icon | Criteria                             |
+| ------------- | ---- | ------------------------------------ |
+| **VERIFIED**  | ✅✅ | Found in BOTH AND code, fields MATCH |
+| **PARTIAL**   | ✅⚠️ | Found in both, but fields DIFFER     |
+| **CODE_ONLY** | 🔸   | Found ONLY in code (reliable)        |
+| **DOCS_ONLY** | ⚠️   | Found ONLY in (may be stale)         |
+| **UNKNOWN**   | ❓   | Insufficient information             |
 
 ---
 
@@ -62,15 +62,16 @@
 
 ### Prohibited Patterns
 
-| Anti-Pattern | Example |
-|--------------|---------|
-| Truncating fields | "TokenUsage has 7 main fields..." |
-| "And others" | "Fields: id, name, and others" |
-| Selecting "important" | "Key fields are..." |
+| Anti-Pattern          | Example                           |
+| --------------------- | --------------------------------- |
+| Truncating fields     | "TokenUsage has 7 main fields..." |
+| "And others"          | "Fields: id, name, and others"    |
+| Selecting "important" | "Key fields are..."               |
 
 ### Required Verification
 
 Before outputting ANY entity/model:
+
 1. Count fields in code
 2. Count fields in your output
 3. Counts MUST match
@@ -83,12 +84,12 @@ Before outputting ANY entity/model:
 
 ### Prohibited Patterns
 
-| Anti-Pattern | Example |
-|--------------|---------|
-| Simulated success | `return {"status": "success"}` without doing work |
-| TODO in production | `# TODO: implement this` in main code |
-| Pass statements | `def process(): pass` |
-| Hardcoded responses | `return "mock data"` in production |
+| Anti-Pattern        | Example                                           |
+| ------------------- | ------------------------------------------------- |
+| Simulated success   | `return {"status": "success"}` without doing work |
+| TODO in production  | `# TODO: implement this` in main code             |
+| Pass statements     | `def process(): pass`                             |
+| Hardcoded responses | `return "mock data"` in production                |
 
 ### Required Behavior
 
@@ -116,21 +117,21 @@ Write Code → code review tool → Fix ALL Findings → Repeat until ZERO findi
 
 ### All Severities Must Be Fixed
 
-| Severity | Action |
-|----------|--------|
-| **CRITICAL** | Fix immediately |
-| **MAJOR** | Fix before proceeding |
-| **MINOR** | **Fix before task completion** (NOT optional) |
+| Severity     | Action                                        |
+| ------------ | --------------------------------------------- |
+| **CRITICAL** | Fix immediately                               |
+| **MAJOR**    | Fix before proceeding                         |
+| **MINOR**    | **Fix before task completion** (NOT optional) |
 
 ### When Required
 
-| Action | Code Review Required |
-|--------|---------------------|
-| New file created | ✅ YES |
-| Existing file modified | ✅ YES |
-| Bug fix applied | ✅ YES |
-| Test file created/modified | ✅ YES |
-| Documentation only | ❌ NO |
+| Action                     | Code Review Required |
+| -------------------------- | -------------------- |
+| New file created           | ✅ YES               |
+| Existing file modified     | ✅ YES               |
+| Bug fix applied            | ✅ YES               |
+| Test file created/modified | ✅ YES               |
+| Documentation only         | ❌ NO                |
 
 ---
 
@@ -146,23 +147,23 @@ Write Code → code review tool → Fix ALL Findings → Repeat until ZERO findi
 
 ### The Solution (Context Isolation)
 
-Invoke `sdd-validator-runner` subagent which runs in isolated context:
+**MANDATORY**: delegate via `DELEGATE_ISOLATED` (see `framework/_shared/harness-capabilities.md` for how this resolves per harness) to the `sdd-validator` Skill — a task whose context is deliberately scrubbed of the delegator's own reasoning, so it validates the code without being biased by knowing why decisions were made.
 
-```python
-Task(
-    subagent_type="sdd-validator-runner",
-    prompt="Validate files: [list]. Run: build, tests...",
-    model="sonnet"
-)
-```
+On every harness, `DELEGATE_ISOLATED` resolves to a fresh-context execution of `sdd-validator`
+(isolated mode), given only a scrubbed prompt (file paths + rules — never the implementer's
+rationale), always at `model_role: STRONG` — see `adapters/<harness>/README.md` for the concrete
+dispatch on the installed harness.
+
+`sdd-validator` always declares `model_role: STRONG` (see `framework/_shared/model-routing.md`),
+independently of isolation — the two are separate guarantees, neither substitutes for the other.
 
 ### Verdict Rules
 
-| Verdict | Action |
-|---------|--------|
-| `APPROVED` | Proceed |
-| `CAN_PROCEED_WITH_WARNINGS` | Proceed, note warnings |
-| `CANNOT_PROCEED` | Fix issues, re-invoke subagent |
+| Verdict                     | Action                         |
+| --------------------------- | ------------------------------ |
+| `APPROVED`                  | Proceed                        |
+| `CAN_PROCEED_WITH_WARNINGS` | Proceed, note warnings         |
+| `CANNOT_PROCEED`            | Fix issues, re-invoke subagent |
 
 ### Prohibited Actions
 
@@ -179,33 +180,32 @@ Task(
 
 ### Thresholds
 
-| Usage | Status | Required Action |
-|-------|--------|-----------------|
-| 0-40% | `NORMAL` | All operations inline OK |
-| 40-60% | `ELEVATED` | Prefer subagents |
+| Usage  | Status          | Required Action               |
+| ------ | --------------- | ----------------------------- |
+| 0-40%  | `NORMAL`        | All operations inline OK      |
+| 40-60% | `ELEVATED`      | Prefer subagents              |
 | 60-80% | `DELEGATE_MODE` | MANDATORY subagent delegation |
-| 80%+ | `CRITICAL` | Invoke compactor |
+| 80%+   | `CRITICAL`      | Invoke compactor              |
 
 ### Context Costs
 
-| Operation | Est. Tokens | Delegation |
-|-----------|-------------|------------|
-| Small file (<100 lines) | ~200 | Inline OK |
-| Large file (500+ lines) | ~10,000 | Explore agent |
-| MCP SDK docs | ~1,500 |  |
-| PROJECT.md wizard | ~15,000 | sdd-project-wizard |
+| Operation               | Est. Tokens | Delegation         |
+| ----------------------- | ----------- | ------------------ |
+| Small file (<100 lines) | ~200        | Inline OK          |
+| Large file (500+ lines) | ~10,000     | Explore agent      |
+| MCP SDK docs            | ~1,500      |                    |
+| PROJECT.md wizard       | ~15,000     | sdd-project-wizard |
 
 ### Monitoring & Compaction
 
 ```python
 # Check status
 Skill(skill="context-guardian")
-
-# Compact when critical
-bash ~/.development-agents/tools/genai/genai-compact-state.sh sdd/wip/[feature] --level STANDARD
 ```
 
-**Full documentation**: See `CONTEXT_STEWARD.md`
+When status is `CRITICAL`, compact the state directly instead of shelling out to a script: re-read `sdd/wip/[feature]/4-implementation/progress.md` and the active task's files, then write a condensed summary (completed tasks, current task, key decisions, open blockers) back into `progress.md`, dropping superseded exploration detail from context. There is no packaged compaction script — this summarization is a reasoning step the agent performs itself.
+
+**Full documentation**: See `skills/context-guardian/SKILL.md`
 
 ---
 
@@ -240,24 +240,11 @@ class PaymentService:
 
 ---
 
-## Automatic Telemetry System
+## Telemetry
 
-> **Telemetry is captured AUTOMATICALLY** via hooks. NO manual logging required.
-
-### What Is Captured
-
-- Tokens (input/output per tool call)
-- Tool calls with timing
-- User interactions
-- Sessions (start/end, durations)
-- Costs (calculated from model pricing)
-
-### Data Location
-
-| Tool | Location |
-|------|----------|
-| Claude Code | `~/.claude/logs/` |
-| Cursor | `~/.cursor/logs/` |
+This framework does not capture token/cost/session telemetry itself. For usage/cost visibility,
+use your harness's own native tooling (Claude Code, Cursor, Codex CLI each expose their own) —
+outside this pipeline, never something this framework tracks or promises to capture.
 
 ---
 

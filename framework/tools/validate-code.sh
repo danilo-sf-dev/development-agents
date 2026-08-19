@@ -1,7 +1,7 @@
 #!/bin/bash
 # SDD SDD Kit - Deterministic Code Validator
 # Pattern-based security, performance, and quality scanning
-# Replaces LLM-based pattern detection in sdd-validator-runner, sdd-code-reviewer, sdd-performance-expert
+# Replaces LLM-based pattern detection in sdd-validator, sdd-code-reviewer, sdd-performance-expert
 #
 # Usage: validate-code.sh [path] [--json] [--security] [--performance] [--quality] [--all]
 # Returns: JSON with findings organized by category and severity

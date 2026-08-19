@@ -2,6 +2,19 @@
 
 **Used by**: `/sdd.start` Step 9.5 and `/sdd.reverse-eng` CLAUDE.md integration, when `platform = android` or `platform = ios`.
 
+> **Status: Project-Provided Extension Point (optional, not bundled)**. `mobile-android-expert`
+> and `mobile-ios-expert` are **not** skills shipped with this pack — `ls skills/` will not find
+> them. They are a documented convention: if a project wants mobile-SDK/design-system guidance to
+> override pretraining, the project team authors these skills locally (with their own internal
+> SDK/design-system docs) and the pack's mobile workflow references them by name. This is not a
+> broken path — it is an extension point a project may or may not fill in.
+>
+> **If the skill is absent when this rule fires**: the agent MUST say so explicitly to the user
+> (e.g. "`mobile-android-expert` skill not found — proceeding on pretrained knowledge only, which
+> may be stale for internal/private SDKs; add the skill locally for authoritative guidance") and
+> proceed with general Android/iOS knowledge rather than blocking. Do not silently treat the
+> `Skill(...)` call below as if it always succeeds.
+
 Append this platform-specific section **after** the base `## SDD Kit` block in `CLAUDE.md`.
 Read `$platform` from the `$IS_MOBILE` flag or `detect-stack.sh` output (already resolved in Step 2).
 Do NOT append for backend, web, or empty platform.
@@ -32,11 +45,13 @@ This project is **Android** — MANDATORY before any Kotlin/Android code:
 
 **For subagents**: include as step 0 in the prompt of any subagent that works on Android code:
 ```
+
 ⚠️ STEP 0 — MANDATORY:
 Skill("mobile-android-expert")
 cat "$SKILL_PATH/SKILL.md"
 Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK libraries and design system components.
 Build Confirmed Imports Registry. Only then read the task and write code.
+
 ```
 
 `mobile-android-expert` is the ONLY authoritative source for mobile SDK library APIs and design system
@@ -59,11 +74,13 @@ This project is **iOS** — MANDATORY before any Swift/iOS code:
 
 **For subagents**: include as step 0 in the prompt of any subagent that works on iOS code:
 ```
+
 ⚠️ STEP 0 — MANDATORY:
 Skill("mobile-ios-expert")
 cat "$SKILL_PATH/SKILL.md"
 Follow the documentation navigation workflows referenced in SKILL.md for mobile SDK libraries and design system components.
 Build Confirmed Imports Registry. Only then read the task and write code.
+
 ```
 
 `mobile-ios-expert` is the ONLY authoritative source for mobile SDK library APIs and design system

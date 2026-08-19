@@ -6,13 +6,13 @@ Guia linear para **primeira feature real** no projeto alvo. Pipeline canônico: 
 
 ## Antes de começar
 
-| Pré-requisito | Quem faz | Notas |
-|---------------|----------|-------|
-| Repo git inicializado | Dev | `main`/`master` estável |
-| Card Jira (ou equivalente) | Dev | Link ou ID para `/sdd.spec --include` |
-| IDE com agent (Cursor / Claude Code) | Dev | Chat onde roda `/sdd.*` |
-| `gh` instalado e logado (opcional) | Dev | Só necessário para `/sdd.pr` |
-| Branch `master`/`main` atualizada | Dev | **Manual** — pull antes do `/sdd.start` |
+| Pré-requisito                        | Quem faz | Notas                                   |
+| ------------------------------------ | -------- | --------------------------------------- |
+| Repo git inicializado                | Dev      | `main`/`master` estável                 |
+| Card Jira (ou equivalente)           | Dev      | Link ou ID para `/sdd.spec --include`   |
+| IDE com agent (Cursor / Claude Code) | Dev      | Chat onde roda `/sdd.*`                 |
+| `gh` instalado e logado (opcional)   | Dev      | Só necessário para `/sdd.pr`            |
+| Branch `master`/`main` atualizada    | Dev      | **Manual** — pull antes do `/sdd.start` |
 
 O pack **não** commita sozinho. Pastas `development-agents/`, `.cursor/`, `.claude/`, `sdd/` ficam **gitignored** no projeto alvo.
 
@@ -20,23 +20,11 @@ O pack **não** commita sozinho. Pastas `development-agents/`, `.cursor/`, `.cla
 
 ## Passo 0 — Instalar o pack (uma vez por projeto)
 
-**Opção A — Script** (se a máquina permite):
-
-```powershell
-# Windows
-.\install.ps1 -TargetDir "E:\Projects\meu-app"
-```
-
-```bash
-# Git Bash / WSL / macOS / Linux
-bash install.sh /path/to/meu-app
-```
-
-**Opção B — Agente** (script bloqueado):
-
 ```
 /sdd.install
 ```
+
+O agente `sdd-installer` cria as pastas do pack usando as próprias ferramentas do harness (sem script, sem `.sh`/`.ps1`). Funciona em qualquer harness compatível com agentes/skills Markdown, não só Claude Code.
 
 Verificar: pastas `development-agents/`, `.cursor/` ou `.claude/`, `sdd/wip`, `sdd/features`.
 
@@ -138,7 +126,7 @@ Gera `tasks.json`. Aprovar antes de testes.
 - Implementa até testes aprovados passarem (green)
 - **Não** cria testes unitários novos (salvo E2E deferido)
 - **Não** altera testes aprovados — se errado, escalar `/sdd.test --refine`
-- Validação via `sdd-validator-runner` (qualidade + Process Compliance)
+- Validação via `sdd-validator` (qualidade + Process Compliance)
 
 Commits: skill `commit-workflow` (4 opções; sempre **Outros** disponível).
 
@@ -195,35 +183,35 @@ Atalho express (features simples): `/sdd.go "descrição"` — inclui test gate 
 
 ## Onde ler mais
 
-| Tópico | Arquivo |
-|--------|---------|
-| Pipeline e gates | [`PIPELINE.md`](./PIPELINE.md) |
-| Todos os commands | [`COMMANDS.md`](./COMMANDS.md) |
-| Process gates / validator | [`HARD_GATES.md`](./HARD_GATES.md) |
-| Tutorial detalhado | [`TUTORIAL.md`](./TUTORIAL.md) |
-| FAQ / recovery | [`FAQ.md`](./FAQ.md), [`RECOVERY.md`](./RECOVERY.md) |
-| MCP / Jira opcional | [`MCP_SETUP_GUIDE.md`](./MCP_SETUP_GUIDE.md) · `/sdd.mcp` |
-| Papéis do time | [`../AGENTS.md`](../AGENTS.md) |
+| Tópico                    | Arquivo                                                   |
+| ------------------------- | --------------------------------------------------------- |
+| Pipeline e gates          | [`PIPELINE.md`](./PIPELINE.md)                            |
+| Todos os commands         | [`COMMANDS.md`](./COMMANDS.md)                            |
+| Process gates / validator | [`HARD_GATES.md`](./HARD_GATES.md)                        |
+| Tutorial detalhado        | [`TUTORIAL.md`](./TUTORIAL.md)                            |
+| FAQ / recovery            | [`FAQ.md`](./FAQ.md), [`RECOVERY.md`](./RECOVERY.md)      |
+| MCP / Jira opcional       | [`MCP_SETUP_GUIDE.md`](./MCP_SETUP_GUIDE.md) · `/sdd.mcp` |
+| Papéis do time            | [`../AGENTS.md`](../AGENTS.md)                            |
 
 ---
 
 ## Problemas comuns
 
-| Situação | Ação |
-|----------|------|
-| `PROJECT.md` ausente | `/sdd.project` |
-| Jira URL sem auto-fetch | `/sdd.mcp` ou colar conteúdo no `--include` |
-| Teste aprovado foi alterado no build | STOP → `/sdd.test --refine` |
-| `gh` não funciona | Copiar `pr-draft.md` e abrir PR manual no GitHub |
-| Pack no commit por engano | Nunca add `sdd/`, `development-agents/` — revisar `.gitignore` |
-| Quer reabrir feature fechada | `/sdd.start --reopen [feature]` |
+| Situação                             | Ação                                                           |
+| ------------------------------------ | -------------------------------------------------------------- |
+| `PROJECT.md` ausente                 | `/sdd.project`                                                 |
+| Jira URL sem auto-fetch              | `/sdd.mcp` ou colar conteúdo no `--include`                    |
+| Teste aprovado foi alterado no build | STOP → `/sdd.test --refine`                                    |
+| `gh` não funciona                    | Copiar `pr-draft.md` e abrir PR manual no GitHub               |
+| Pack no commit por engano            | Nunca add `sdd/`, `development-agents/` — revisar `.gitignore` |
+| Quer reabrir feature fechada         | `/sdd.start --reopen [feature]`                                |
 
 ---
 
 ## Decisões explícitas deste playbook
 
-| Item | Decisão |
-|------|---------|
-| Profiles de stack | **Não usar** — evita confusão; stack via detection + `PROJECT.md` |
-| PR automático sem revisão | **Não** — `/sdd.pr` sempre pausa para aprovação |
-| Hard gates OS (bash/jq/hooks) | **Não** — Process Compliance via `sdd-validator-runner` |
+| Item                          | Decisão                                                           |
+| ----------------------------- | ----------------------------------------------------------------- |
+| Profiles de stack             | **Não usar** — evita confusão; stack via detection + `PROJECT.md` |
+| PR automático sem revisão     | **Não** — `/sdd.pr` sempre pausa para aprovação                   |
+| Hard gates OS (bash/jq/hooks) | **Não** — Process Compliance via `sdd-validator`           |

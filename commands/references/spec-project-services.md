@@ -4,12 +4,13 @@
 
 ### Project Services with Code Snippets
 
-> When documenting project services, auto-include code examples by delegating to the `sdd-implementer` skill, which fetches live documentation for the actual service/library in use.
+> When documenting project services, auto-include code examples by delegating to the `sdd-implementation` **Skill** (`DELEGATE_OFFLOAD`, see `framework/_shared/harness-capabilities.md`), which fetches live documentation for the actual service/library in use.
 
 **Workflow**:
+
 1. After `sdd-explorer` identifies services
-2. For each service, invoke: `Skill("sdd-implementer")` passing the service name and detected project language
-3. The skill fetches live documentation and returns ready-to-use snippets
+2. For each service, delegate to the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`, `model_role: EXECUTION` — see `adapters/<harness>/README.md` for the concrete dispatch on the installed harness), passing the service name and detected project language
+3. The agent fetches live documentation and returns ready-to-use snippets
 4. Include the returned snippet in the spec under the service entry
 
 **Format in Technical Spec**:
@@ -22,24 +23,26 @@
 - **TTL**: 3600s (1 hour)
 - **Criticality**: HIGH
 
-**Implementation Example** (via `sdd-implementer`):
-[snippet returned by Skill("sdd-implementer")]
+**Implementation Example** (via `sdd-implementation`):
+[snippet returned by sdd-implementation agent]
 
 ### Message Queue - Order Events
 - **Topic**: `order-events`
 - **Visibility**: private
 - **Consumer**: `order-processor`
 
-**Implementation Example** (via `sdd-implementer`):
-[snippet returned by Skill("sdd-implementer")]
+**Implementation Example** (via `sdd-implementation`):
+[snippet returned by sdd-implementation agent]
 ```
 
 **Automatic Detection**:
+
 - Detect project language from `.platform-config` file or file extensions
 - Select appropriate snippet language variant
 - If multiple languages detected, use primary (Java > Go > Node > Python)
 
 **When to Skip Snippets**:
+
 - Context budget is CRITICAL (>80%) - use concise format
 - Service is simple (single-line usage)
 - User explicitly requests minimal spec
@@ -66,16 +69,17 @@
 > your org has no such tooling — just document the service in the spec.
 
 FOR EACH project service type identified:
-  1. Check `sdd/PROJECT.md` for any declared CLI or skill used to list existing instances
-     of this service type
-  2. If a CLI is declared → run it to list existing instances
-  3. If a discovery skill is declared instead → invoke it with the service type and app name
-  4. If neither is declared → inform user: "Manage this service manually — see your org's platform console (referenced in sdd/PROJECT.md)"
-  5. If CLI/skill call fails (not logged in, VPN) → inform user to fix
-     and retry
-  6. If instances found → AskUserQuestion: select existing or "Create new"
-  7. If no instances found → auto-select "Create new"
-  8. Record in spec with `(EXISTING)` or `(NEW)` marker
+
+1. Check `sdd/PROJECT.md` for any declared CLI or skill used to list existing instances
+   of this service type
+2. If a CLI is declared → run it to list existing instances
+3. If a discovery skill is declared instead → invoke it with the service type and app name
+4. If neither is declared → inform user: "Manage this service manually — see your org's platform console (referenced in sdd/PROJECT.md)"
+5. If CLI/skill call fails (not logged in, VPN) → inform user to fix
+   and retry
+6. If instances found → AskUserQuestion: select existing or "Create new"
+7. If no instances found → auto-select "Create new"
+8. Record in spec with `(EXISTING)` or `(NEW)` marker
 
 **Technical Spec Format**:
 
@@ -103,9 +107,17 @@ If ANY services are marked `(NEW)`, add section to spec:
 
 **Profile-Aware Behavior**:
 
-| Profile | Behavior |
-|---------|----------|
-| `technical` | Full interactive selection via AskUserQuestion |
+| Profile         | Behavior                                            |
+| --------------- | --------------------------------------------------- |
+| `technical`     | Full interactive selection via AskUserQuestion      |
 | `non-technical` | Auto-select existing if found, create new otherwise |
 
-**Reference**: See `project-cli-expert/SKILL.md` for the complete Service Discovery Protocol.
+**Reference**: See `project-cli-expert/SKILL.md` for the complete Service Discovery Protocol, **if
+the project has provided this skill**.
+
+> **Status: Project-Provided Extension Point (optional, not bundled)**. `project-cli-expert` is
+> not part of this pack and is not created by `/sdd.install` — `ls skills/` will not find it.
+> It is a documented convention for projects that want live CLI-based service discovery: the
+> project team may author this skill locally with their own CLI documentation. If it is absent,
+> fall back to the technical spec + PROJECT.md for the service inventory and skip live discovery
+> — do not treat its absence as an error, and do not tell the user to reinstall the pack to get it.

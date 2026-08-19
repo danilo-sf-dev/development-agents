@@ -9,6 +9,7 @@ Frequently Asked Questions about Specification-Driven Development and the SDD Ki
 ### What is SDD (Specification-Driven Development)?
 
 SDD is a methodology where development follows a structured flow:
+
 1. **Spec** - Define what to build (functional & technical specifications)
 2. **Plan** - Break down into tasks
 3. **Build** - Implement with Platform AI docs assistance
@@ -27,6 +28,7 @@ It emphasizes documentation-first development, ensuring features are well-define
 ### Is SDD only for new projects?
 
 No. SDD works for:
+
 - **Greenfield**: New projects from scratch
 - **Brownfield**: Existing projects (use `/sdd.reverse-eng` to document first)
 - **Features**: Individual features in any project
@@ -35,11 +37,11 @@ No. SDD works for:
 
 Yes! When you register a DEBT or TODO item (e.g., adding an adapter, updating dependencies, migrating a provider) and run `/sdd.backlog pick`, the framework detects it's purely technical work and offers 3 workflow modes:
 
-| Mode | What it does | Best for |
-|------|-------------|----------|
-| **Pipeline completo** | Full spec interviews | Complex changes needing discovery |
-| **Solo spec técnica** | Auto-generates functional spec, you do technical interview | Most technical work |
-| **Directo a tareas** | Auto-generates both specs, you only approve tasks | Simple, well-defined changes |
+| Mode                  | What it does                                               | Best for                          |
+| --------------------- | ---------------------------------------------------------- | --------------------------------- |
+| **Pipeline completo** | Full spec interviews                                       | Complex changes needing discovery |
+| **Solo spec técnica** | Auto-generates functional spec, you do technical interview | Most technical work               |
+| **Directo a tareas**  | Auto-generates both specs, you only approve tasks          | Simple, well-defined changes      |
 
 The key principle: **specs are never skipped, just auto-generated**. This preserves full traceability — `/sdd.check`, `/sdd.finish`, and all validation scripts work normally. The difference is how much interaction is needed from you.
 
@@ -52,6 +54,7 @@ The key principle: **specs are never skipped, just auto-generated**. This preser
 ### What is `/sdd.reverse-eng` and when should I use it?
 
 `/sdd.reverse-eng` analyzes existing code and generates specifications from it. Use it when:
+
 - Joining a project without documentation
 - Starting SDD on an existing codebase (brownfield)
 - Need to understand legacy code before modifying it
@@ -60,6 +63,7 @@ The key principle: **specs are never skipped, just auto-generated**. This preser
 ### How does reverse engineering work?
 
 The agent:
+
 1. Scans the codebase structure
 2. Identifies patterns, APIs, data models
 3. Generates functional and technical specs
@@ -67,13 +71,13 @@ The agent:
 
 ### What are confidence levels?
 
-| Level | Meaning | Action |
-|-------|---------|--------|
-| 5 | Certain (from code/tests) | Trust as-is |
-| 4 | High confidence (clear patterns) | Minor review |
-| 3 | Moderate (inferred) | Verify with team |
-| 2 | Low (assumptions) | Needs validation |
-| 1 | Speculation | Requires confirmation |
+| Level | Meaning                          | Action                |
+| ----- | -------------------------------- | --------------------- |
+| 5     | Certain (from code/tests)        | Trust as-is           |
+| 4     | High confidence (clear patterns) | Minor review          |
+| 3     | Moderate (inferred)              | Verify with team      |
+| 2     | Low (assumptions)                | Needs validation      |
+| 1     | Speculation                      | Requires confirmation |
 
 ### Should I review the generated specs?
 
@@ -82,6 +86,7 @@ Yes, always. Reverse engineering is a starting point, not the final truth. Revie
 ### Can I reverse-engineer only part of a project?
 
 Yes. You can scope it:
+
 ```
 /sdd.reverse-eng --scope src/payments/
 ```
@@ -100,14 +105,15 @@ This focuses on a specific module instead of the entire codebase.
 
 ### What modes are available?
 
-| Mode | Command | Best For |
-|------|---------|----------|
-| **Express** | `/sdd.go` | Simple features, familiar patterns (full pipeline, fewer pauses) |
-| **Standard** | `/sdd.start "feature"` | Most features, balanced control (DEFAULT) |
+| Mode         | Command                | Best For                                                         |
+| ------------ | ---------------------- | ---------------------------------------------------------------- |
+| **Express**  | `/sdd.go`              | Simple features, familiar patterns (full pipeline, fewer pauses) |
+| **Standard** | `/sdd.start "feature"` | Most features, balanced control (DEFAULT)                        |
 
 ### When should I use Express mode (`/sdd.go`)?
 
 Use Express when:
+
 - The feature is straightforward and well-understood
 - You trust the agent to make reasonable decisions with fewer pauses
 - Speed of interaction matters more than stepping through every gate manually
@@ -118,6 +124,7 @@ Express mode still runs **spec → plan → test → build → finish**. It does
 ### Can I switch modes mid-feature?
 
 No. Mode is set at `/sdd.start` and is immutable. If you need to switch:
+
 1. `/sdd.cancel` the current feature
 2. Restart with the desired mode
 
@@ -131,17 +138,20 @@ No. The kit has a **single delivery path**. Every feature goes through the same 
 
 ### How do I install the framework?
 
-```bash
-pip install sdd-kit
-sdd-kit init claude  # or cursor, codex, project
+Clone or copy `development-agents/` into your project, open it in Claude Code, Cursor, or another compatible harness, and run in chat:
+
 ```
+/sdd.install
+```
+
+The `sdd-installer` Skill creates the pack folders using Read/Write/Bash — no separate CLI tool, no pip package. See [README.md](../README.md).
 
 ### What Platform AI docs tools are supported?
 
-| Tool | Command | Skills Location |
-|------|---------|-----------------|
-| Claude Code | `sdd-kit init claude` | `~/.claude/skills/` |
-| Cursor | `sdd-kit init cursor` | `~/.cursor/skills/` |
+| Tool        | Adapter created by `/sdd.install`                                      |
+| ----------- | ---------------------------------------------------------------------- |
+| Claude Code | `.claude/commands/`, `.claude/skills/`              |
+| Cursor      | `.cursor/skills/`, `.cursor/rules/sdd-workflow.mdc` |
 
 ### Do I need to be on VPN?
 
@@ -171,21 +181,22 @@ None of these MCP servers are required by the framework itself — they're optio
 
 ### What's the difference between `/sdd.start` and `/sdd.go`?
 
-| Command | Mode | Use Case |
-|---------|------|----------|
+| Command      | Mode     | Use Case                         |
+| ------------ | -------- | -------------------------------- |
 | `/sdd.start` | Standard | Balanced control, phase-by-phase |
-| `/sdd.go` | Express | Autonomous, minimal interaction |
+| `/sdd.go`    | Express  | Autonomous, minimal interaction  |
 
 Use `/sdd.start` when you want to review each phase. Use `/sdd.go` when you want fewer pauses — both still run the full pipeline including `/sdd.test`.
 
 ### What's the difference between `/sdd.project` and `/sdd.check --project`?
 
-| Command | Purpose | When to use |
-|---------|---------|-------------|
-| `/sdd.project` | **Create/initialize** PROJECT.md | When it doesn't exist or you want to configure team conventions |
-| `/sdd.check --project` | **Validate** existing PROJECT.md | Verify configuration is valid and consistent |
+| Command                | Purpose                          | When to use                                                     |
+| ---------------------- | -------------------------------- | --------------------------------------------------------------- |
+| `/sdd.project`         | **Create/initialize** PROJECT.md | When it doesn't exist or you want to configure team conventions |
+| `/sdd.check --project` | **Validate** existing PROJECT.md | Verify configuration is valid and consistent                    |
 
 They are complementary, not overlapping:
+
 ```
 /sdd.project          → Creates PROJECT.md (interactive wizard)
 /sdd.check --project  → Validates it's properly configured
@@ -194,7 +205,8 @@ They are complementary, not overlapping:
 ### I ran `/sdd.start` but nothing happened
 
 Check:
-1. Are you in the project root? (not inside `.development-agents/`)
+
+1. Are you in the project root? (not inside `development-agents/`)
 2. If your org requires app registration, is the app created? (check per `sdd/PROJECT.md`)
 3. Are you logged in / authenticated with any required internal tooling?
 4. Is VPN connected (if your org's internal services require it)?
@@ -206,6 +218,7 @@ Check:
 ```
 
 Shows features in:
+
 - `sdd/wip/` - Work in progress
 - `sdd/features/` - Completed features
 - `sdd/cancelled/` - Cancelled features
@@ -260,34 +273,35 @@ The functional spec is built through a **structured Platform AI docs interview**
 
 The technical spec phase is where the framework actively consults **both sources**:
 
-1. **Existing code** (brownfield only): the Plan Mode step (Step 4.5) launches the `sdd-explorer` agent to scan endpoints, data models, architectural patterns,  SDK imports, and service configurations.
+1. **Existing code** (brownfield only): the Plan Mode step (Step 4.5) launches the `sdd-explorer` Skill to scan endpoints, data models, architectural patterns, SDK imports, and service configurations.
 2. **Previous feature specs**: in the same step, the framework reads all specs in `sdd/features/` and `sdd/wip/` to extract data models, business rules, services, and endpoints — and to detect potential conflicts (duplicate tables, overlapping endpoints, etc.).
-3. **Post-approval conflict detection**: after you approve the technical spec, `genai-resolve-conflicts.sh` cross-checks the new spec against all existing specs.
+3. **Post-approval conflict detection**: after you approve the technical spec, the agent re-reads all specs in `sdd/features/` and `sdd/wip/` and cross-checks the new spec against them directly, flagging any conflicts (duplicate tables, overlapping endpoints, etc.) in the conversation.
 
 #### Summary of knowledge sources by phase
 
-| Phase | Reads existing code | Reads previous specs | Mechanism |
-|-------|:-------------------:|:--------------------:|-----------|
-| Functional spec (greenfield) | No | No | AI interview only |
-| Functional spec (brownfield) | Yes (structure) | No | `analyze-structure.sh` via `sdd.start` |
-| Technical spec — Plan Mode | **Yes** (full scan) | **Yes** (all features) | `sdd-explorer` agent |
-| Technical spec — generation | No | Yes (current feature) | `sdd-system-designer` agent |
-| Post technical approval | No | **Yes** (cross-check) | `genai-resolve-conflicts.sh` |
-| `/sdd.reverse-eng` | **Yes** (8-phase scan) | **Yes** (all sources) | `sdd-explorer` +  |
+| Phase                        |  Reads existing code   |  Reads previous specs  | Mechanism                              |
+| ---------------------------- | :--------------------: | :--------------------: | -------------------------------------- |
+| Functional spec (greenfield) |           No           |           No           | AI interview only                      |
+| Functional spec (brownfield) |    Yes (structure)     |           No           | `analyze-structure.sh` via `sdd.start` |
+| Technical spec — Plan Mode   |  **Yes** (full scan)   | **Yes** (all features) | `sdd-explorer` Skill                   |
+| Technical spec — generation  |           No           | Yes (current feature)  | `sdd-system-design` Skill            |
+| Post technical approval      |           No           | **Yes** (cross-check)  | Agent re-reads existing specs directly |
+| `/sdd.reverse-eng`           | **Yes** (8-phase scan) | **Yes** (all sources)  | `sdd-explorer` +                       |
 
 #### Source priority when conflicts exist
 
 When the framework finds contradictions between sources, the priority order is:
 
-**Code > Previous specs >  documentation > README**
+**Code > Previous specs > documentation > README**
 
 #### Bootstrapping brownfield projects
 
-For projects with existing code but no specs, run `/sdd.reverse-eng` first. This command performs an exhaustive 8-phase analysis that reads code,  documentation, and any existing documentation to generate initial functional and technical specs. Those generated specs then serve as "previous specs" for future features.
+For projects with existing code but no specs, run `/sdd.reverse-eng` first. This command performs an exhaustive 8-phase analysis that reads code, documentation, and any existing documentation to generate initial functional and technical specs. Those generated specs then serve as "previous specs" for future features.
 
 ### My spec is too long, is that a problem?
 
 Long specs are fine. The framework handles them. However, consider:
+
 - Breaking into smaller features
 - Using ADRs for complex decisions
 - Referencing external docs instead of copying
@@ -298,14 +312,14 @@ Long specs are fine. The framework handles them. However, consider:
 
 ### What's the difference between PROJECT.md and governance.md?
 
-| File | Location | Purpose | Editable? |
-|------|----------|---------|-----------|
-| `governance.md` | `~/.development-agents/standards/` | Framework **principles** (philosophy) | No |
-| `PROJECT.md` | `sdd/` | Project **configuration** (values) | Yes |
+| File            | Location                                  | Purpose                               | Editable? |
+| --------------- | ----------------------------------------- | ------------------------------------- | --------- |
+| `governance.md` | `development-agents/framework/standards/` | Framework **principles** (philosophy) | No        |
+| `PROJECT.md`    | `sdd/`                                    | Project **configuration** (values)    | Yes       |
 
-**governance.md** defines the *philosophy*: spec-first, testing mandatory, AI-human collaboration, etc.
+**governance.md** defines the _philosophy_: spec-first, testing mandatory, AI-human collaboration, etc.
 
-**PROJECT.md** defines your *preferences*: coverage threshold, tech choices, team conventions, etc.
+**PROJECT.md** defines your _preferences_: coverage threshold, tech choices, team conventions, etc.
 
 > **Coming from SpecKit?** `PROJECT.md` is equivalent to SpecKit's `constitution.md`.
 
@@ -341,6 +355,7 @@ Run `/sdd.check --project` to validate your configuration.
 ### `/sdd.build` is taking too long
 
 The agent validates specs before coding. If stuck:
+
 1. Check for spec ambiguities
 2. Run `/sdd.check` to diagnose
 3. Ensure dependencies are clear
@@ -361,6 +376,7 @@ Do **not** skip `/sdd.test`. Fix the environment or refine tests, then re-approv
 ```
 
 This analyzes the failure and attempts to fix it. If it persists:
+
 ```
 /sdd.rollback build
 ```
@@ -374,6 +390,7 @@ Then review specs and try again.
 ### "App not found" error
 
 If your organization requires app/project registration on an internal platform before using the framework:
+
 1. Go to your platform's console (referenced in `sdd/PROJECT.md`)
 2. Create/register the application
 3. Run `/sdd.start` again
@@ -388,6 +405,7 @@ authentication. After login, retry your command.
 
 During `/sdd.spec technical`, when the architecture recommends project services
 (key-value store, message queue, cache, etc.), the framework:
+
 1. If your org declares a discovery CLI/skill in `sdd/PROJECT.md`, runs it to list existing instances
 2. Shows you existing instances (if any tooling is available)
 3. Lets you choose: use existing or create new
@@ -397,11 +415,11 @@ If no discovery tooling is declared, this step is skipped and services are docum
 
 ### Which project services should I use?
 
-Use the **`sdd-system-designer`** skill, which classifies your capability needs (async processing,
+Use the **`sdd-system-design`** agent (delegate via `DELEGATE_OFFLOAD` — see `framework/_shared/harness-capabilities.md`), which classifies your capability needs (async processing,
 key-value storage, caching, object storage, etc.) and recommends candidates with trade-offs based
 on what's declared in `sdd/PROJECT.md` and detected in the repo.
 
-For code implementation snippets, invoke `Skill("sdd-implementer")` to get ready-to-use examples
+For code implementation snippets, delegate to the **`sdd-implementation`** agent (`DELEGATE_OFFLOAD`) to get ready-to-use examples
 for the services actually chosen.
 
 ### How do I run tests in CI?
@@ -415,15 +433,12 @@ declared in `sdd/PROJECT.md`). This framework does not assume a specific CI tool
 
 ### Framework files are missing
 
-```bash
-sdd-kit init <tool> --force
-```
+Run `/sdd.install` again — it's idempotent and safe to re-run; it overwrites the pack/adapters without touching `sdd/PROJECT.md` or `sdd/backlog.md`.
 
-This reinstalls the framework.
+### "Working directory inside development-agents" error
 
-### "Working directory inside .sdd-kit" error
+You're inside the pack folder. Run:
 
-You're inside the framework folder. Run:
 ```bash
 cd ..
 ```
@@ -433,11 +448,13 @@ Then retry your command.
 ### Specs were edited manually, now validation fails
 
 Run:
+
 ```
 /sdd.check
 ```
 
 This validates and reports issues. Fix them or use:
+
 ```
 /sdd.fix
 ```
@@ -460,6 +477,7 @@ Rule of thumb: enough to capture intent, constraints, acceptance criteria, and e
 ### Should I commit `sdd/` folder?
 
 Yes! The `sdd/` folder contains:
+
 - Specifications (documentation)
 - Progress tracking
 - Feature history
@@ -476,6 +494,7 @@ It's valuable project documentation.
 ### Can I use SDD for bug fixes?
 
 Yes, for complex bugs. For simple fixes:
+
 1. Quick fix directly, or
 2. Create a mini-spec for traceability
 
@@ -486,6 +505,7 @@ Yes, for complex bugs. For simple fixes:
 ### Does SDD work with CI/CD?
 
 Yes. The framework generates:
+
 - Test files (unit, integration)
 - OpenAPI specs
 - Deployment configs
@@ -495,6 +515,7 @@ These integrate with standard CI/CD pipelines.
 ### Can I use SDD with existing tests?
 
 Yes. The framework:
+
 - Respects existing test structure
 - Adds new tests alongside
 - Doesn't modify existing tests without asking
@@ -519,7 +540,7 @@ Yes. The framework:
 
 ### How do I report bugs?
 
-1. GitHub Issues: `github.com/your-org/sdd-kit`
+1. GitHub Issues: `github.com/danilo-sf-dev/development-agents`
 2. Include: error message, steps to reproduce, framework version
 
 ### How do I request features?

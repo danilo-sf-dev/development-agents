@@ -1,7 +1,7 @@
 ---
 name: sdd.import
 description: Import external specifications or existing code into the SDD workflow. Use when user has existing specs or wants to onboard existing code.
-model: sonnet
+model_role: EXECUTION
 argument-hint: "[source]"
 ---
 
@@ -12,6 +12,7 @@ argument-hint: "[source]"
 **Description**: Import existing specifications (OpenAPI, architecture docs) into a new feature
 
 **Usage**:
+
 - `/sdd.import [path]` → Import specs from path
 - `/sdd.import` → Interactive mode, prompts for path
 
@@ -23,16 +24,17 @@ argument-hint: "[source]"
 
 **Syntax**: `/sdd.import [path] [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Interactive mode, prompts for path |
-| `[path]` | Import specs from specific path |
-| `--from <url>` | Import from URL |
-| `--type <T>` | Force type (openapi/markdown) |
+| Flag           | Description                        |
+| -------------- | ---------------------------------- |
+| (none)         | Interactive mode, prompts for path |
+| `[path]`       | Import specs from specific path    |
+| `--from <url>` | Import from URL                    |
+| `--type <T>`   | Force type (openapi/markdown)      |
 
 **Supported**: OpenAPI 3.x, Markdown, JSON Schema
 
 **Example**:
+
 ```bash
 /sdd.import ./api-spec.yaml    # Import OpenAPI spec
 ```
@@ -49,12 +51,12 @@ Allows teams to import existing specifications (OpenAPI specs, architecture docu
 
 ## Supported Formats
 
-| Format | Extensions | Auto-Detection |
-|--------|------------|----------------|
+| Format      | Extensions               | Auto-Detection             |
+| ----------- | ------------------------ | -------------------------- |
 | OpenAPI 3.x | `.yaml`, `.yml`, `.json` | Yes (looks for `openapi:`) |
-| Markdown | `.md` | Yes |
-| JSON Schema | `.json` | Yes (looks for `$schema`) |
-| Plain text | `.txt` | Manual classification |
+| Markdown    | `.md`                    | Yes                        |
+| JSON Schema | `.json`                  | Yes (looks for `$schema`)  |
+| Plain text  | `.txt`                   | Manual classification      |
 
 ---
 
@@ -67,6 +69,7 @@ Supports file, directory, or URL.
 ### 2. Analyze and Classify Specs
 
 Auto-detects:
+
 - OpenAPI specs
 - Functional documentation (PRDs, requirements)
 - Technical documentation (architecture, design)
@@ -171,18 +174,12 @@ Import all? [Y/n/select]
 
 ---
 
-## Telemetry (Automatic)
-
-> Session stats are captured automatically via hooks. No manual logging required.
-
----
-
 ## AI Agent Instructions
-
 
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.import help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute import logic
 3. Keep response concise (~15 lines)
@@ -199,7 +196,7 @@ Import all? [Y/n/select]
 
 > **MANDATORY**: Always offer interactive selection after import completes.
 
-**⛔ INVOKE TOOL (do not print this, CALL the tool):**
+**⛔ INVOKE TOOL (do not print this, CALL the tool):** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`); fixed to include the mandatory **Outros** option per `references/ask-user-question-outros.md` — it was missing here.
 
 ```
 AskUserQuestion(
@@ -208,7 +205,8 @@ AskUserQuestion(
     "header": "Next",
     "options": [
       {"label": "/sdd.spec (Recommended)", "description": "Review and complete specs"},
-      {"label": "/sdd.check", "description": "View imported structure"}
+      {"label": "/sdd.check", "description": "View imported structure"},
+      {"label": "Outros", "description": "Describe what you'll do or suggest another path (free text)"}
     ],
     "multiSelect": false
   }]
@@ -217,11 +215,11 @@ AskUserQuestion(
 
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.spec (Recommended) | `Skill(skill="sdd.spec")` |
-| /sdd.check | `Skill(skill="sdd.check")` |
-| Other | User types custom input |
+| Selection               | Action                            |
+| ----------------------- | --------------------------------- |
+| /sdd.spec (Recommended) | `CONTINUE_WORKFLOW("/sdd.spec")`  |
+| /sdd.check              | `CONTINUE_WORKFLOW("/sdd.check")` |
+| Other                   | User types custom input           |
 
 ---
 

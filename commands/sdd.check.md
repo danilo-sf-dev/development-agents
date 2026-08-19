@@ -1,7 +1,7 @@
 ---
 name: sdd.check
 description: View feature status, progress, and validation results. Use when user wants to check feature health or run validations.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[feature-name] [--sync]"
 ---
 
@@ -12,6 +12,7 @@ argument-hint: "[feature-name] [--sync]"
 **Description**: View feature status, run consistency checks, and validate compliance
 
 **Usage**:
+
 - `/sdd.check` → Current feature status overview
 - `/sdd.check [feature]` → Specific feature status (by name, number, or full name)
 - `/sdd.check --sync` → Check consistency between specs/tasks/code + propose fixes
@@ -23,6 +24,7 @@ argument-hint: "[feature-name] [--sync]"
 - `/sdd.check --resume --last` → Resume last interrupted session
 
 **Feature Reference Formats**:
+
 - By name: `/sdd.check user-auth`
 - By full name: `/sdd.check 20260120-user-auth`
 
@@ -34,18 +36,19 @@ argument-hint: "[feature-name] [--sync]"
 
 **Syntax**: `/sdd.check [target] [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Current feature status overview |
-| `[feature]` | Specific feature status |
-| `--sync` | Check specs/tasks/code consistency |
-| `--compliance` | Check tests/lint compliance |
-| `--project` | Validate PROJECT.md against standards |
-| `--version` | Check framework version compatibility |
-| `task TASK-XXX` | Specific task details |
-| `--resume` | List resumable sessions |
+| Flag            | Description                           |
+| --------------- | ------------------------------------- |
+| (none)          | Current feature status overview       |
+| `[feature]`     | Specific feature status               |
+| `--sync`        | Check specs/tasks/code consistency    |
+| `--compliance`  | Check tests/lint compliance           |
+| `--project`     | Validate PROJECT.md against standards |
+| `--version`     | Check framework version compatibility |
+| `task TASK-XXX` | Specific task details                 |
+| `--resume`      | List resumable sessions               |
 
 **Examples**:
+
 ```bash
 /sdd.check                 # Current feature status
 /sdd.check --sync          # Check consistency + propose fixes
@@ -56,32 +59,55 @@ argument-hint: "[feature-name] [--sync]"
 
 ---
 
-
 ## Subagent Delegation (MANDATORY for --sync)
 
 > **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
 > The `--sync` flag MUST delegate analysis to specialized subagents.
 
 ```bash
-# Cross-layer analysis via GenAI Gateway (advisory)
-result=$(bash development-agents/framework/tools/genai/genai-analyze-layers.sh sdd/wip/[feature])
-if [ $? -ne 0 ]; then
-    # Fallback to deterministic analysis
-    result=$(bash development-agents/framework/tools/extraction/analyze-layers.sh sdd/wip/[feature] --json)
-fi
+# Cross-layer analysis (deterministic, advisory input for the subagent below)
+result=$(bash development-agents/framework/tools/extraction/analyze-layers.sh sdd/wip/[feature] --json)
 ```
 
+Always delegate the full `--sync` analysis to the `sdd-layer-analysis` Skill — the deterministic check above is advisory input, not a replacement.
+
+**Code Graph (lazy-loaded, optional)**: **ONLY IF** `graphify-state.sh get
+sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active` — read `framework/_shared/
+graphify-context.md` § 6 before implementing this. Before the graph is consulted for `--sync`:
+
+```
+GRAPHIFY_GRAPH=ready   → use the graph, no question (nothing changed since last build/refresh)
+GRAPHIFY_GRAPH=stale   → ASK_USER once: "Código estrutural mudou e o grafo pode estar
+                          desatualizado. Deseja atualizar o Graphify antes da validação?"
+                          1. Sim, atualizar → git guard → graphify-run.sh update . → validate →
+                             success: GRAPHIFY_GRAPH=ready (persist), use the graph this run
+                             failure: GRAPHIFY_GRAPH stays stale (persist), fall back this run
+                          2. Não, executar CHECK sem Graphify → stays stale (persist), this
+                             run falls back to normal Read/Grep/Glob — graph NOT consulted
+                          3. Outros → degrade to option 2 unless clearly otherwise
+GRAPHIFY_MODE=disabled → normal Read/Grep/Glob, no question
+```
+
+**Mandatory: never consult a graph known to be stale without this question resolving it
+first.** Once resolved (ready, or explicitly skipped), do not ask again until `/sdd.build`
+marks it stale a subsequent time. Query the graph (only when `ready`) for affected
+dependencies, callers, cross-layer impact, and structural drift before/alongside
+`sdd-layer-analysis` — narrows scope, never replaces the deterministic validators or
+`sdd-layer-analysis` itself.
+
 **Skill for --compliance**:
-| Check Type | Skill |
-|------------|-------|
+
+| Check Type          | Skill           |
+| ------------------- | --------------- |
 | Build/lint/coverage | `sdd-validator` |
-| | `sdd-validator` |
+|                     | `sdd-validator` |
 
 ---
 
 ## Purpose
 
 Unified command for:
+
 1. **Status** - View feature progress and metrics
 2. **Sync** - Validate consistency between all framework layers (specs ↔ tasks ↔ code)
 3. **Compliance** - Validate technical requirements (, tests, linting)
@@ -90,16 +116,16 @@ Unified command for:
 
 ## Quick Reference
 
-| Command | What it does |
-|---------|--------------|
-| `/sdd.check` | Status overview (read-only) |
-| `/sdd.check --sync` | Consistency validation + fixes (y/n) |
-| `/sdd.check --compliance` | Technical validation + fixes (y/n) |
-| `/sdd.check --project` | PROJECT.md validation against standards |
-| `/sdd.check --version` | Framework version compatibility |
-| `/sdd.check task TASK-XXX` | Task details |
-| `/sdd.check --resume` | List all resumable sessions |
-| `/sdd.check --resume --last` | Resume last interrupted session |
+| Command                      | What it does                            |
+| ---------------------------- | --------------------------------------- |
+| `/sdd.check`                 | Status overview (read-only)             |
+| `/sdd.check --sync`          | Consistency validation + fixes (y/n)    |
+| `/sdd.check --compliance`    | Technical validation + fixes (y/n)      |
+| `/sdd.check --project`       | PROJECT.md validation against standards |
+| `/sdd.check --version`       | Framework version compatibility         |
+| `/sdd.check task TASK-XXX`   | Task details                            |
+| `/sdd.check --resume`        | List all resumable sessions             |
+| `/sdd.check --resume --last` | Resume last interrupted session         |
 
 ---
 
@@ -112,6 +138,7 @@ Unified command for:
 ```
 
 Shows compact status:
+
 ```
 Feature: payment-gateway
 Stage: implementation (Phase 4/4)
@@ -130,6 +157,7 @@ Next: Continue with /sdd.build
 ```
 
 Shows detailed status with metrics:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Feature Status: payment-gateway
@@ -185,7 +213,14 @@ By Status:
 
 1. Complete in-progress tasks (TASK-014, TASK-015)
 2. Start pending tasks (TASK-016, TASK-017, TASK-018)
-3. When done: /sdd.finish
+3. When all tasks done: `/sdd.build` complete → `/sdd.check` (confirm) → `/sdd.finish`
+
+> **If all tasks are already done** (post-build state), replace items 1-3 with:
+> ```
+> ✓ concluído: /sdd.check
+> ▶ próxima fase: /sdd.finish
+> Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → [FINISH]
+> ```
 
 ────────────────────────────────────────
 📋 Backlog Summary
@@ -208,26 +243,26 @@ When a flag-specific variant is invoked, read `references/check-rare-workflows.m
 
 ## AI Agent Instructions
 
-
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.check help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute check logic
 3. Keep response concise (~15 lines)
 
 ### Command Behavior Summary
 
-| Command | Behavior |
-|---------|----------|
-| `/sdd.check` | Read-only status, no changes |
-| `/sdd.check --sync` | Detect + propose fixes (confirm before applying) |
-| `/sdd.check --compliance` | Detect + propose fixes (confirm before applying) |
-| `/sdd.check --project` | Validate PROJECT.md + propose override registration |
-| `/sdd.check --version` | Compare feature/framework versions + suggest migrations |
-| `/sdd.check task X` | Read-only task details |
-| `/sdd.check --resume` | List resumable sessions (read-only) |
-| `/sdd.check --resume --last` | Resume last session (delegates to appropriate command) |
+| Command                      | Behavior                                                |
+| ---------------------------- | ------------------------------------------------------- |
+| `/sdd.check`                 | Read-only status, no changes                            |
+| `/sdd.check --sync`          | Detect + propose fixes (confirm before applying)        |
+| `/sdd.check --compliance`    | Detect + propose fixes (confirm before applying)        |
+| `/sdd.check --project`       | Validate PROJECT.md + propose override registration     |
+| `/sdd.check --version`       | Compare feature/framework versions + suggest migrations |
+| `/sdd.check task X`          | Read-only task details                                  |
+| `/sdd.check --resume`        | List resumable sessions (read-only)                     |
+| `/sdd.check --resume --last` | Resume last session (delegates to appropriate command)  |
 
 ### Key Rules
 
@@ -241,8 +276,8 @@ When a flag-specific variant is invoked, read `references/check-rare-workflows.m
 
 Read the matching reference **only** when the flag is present:
 
-| Flag / invocation | Workflow | Rules | Output examples |
-|-------------------|----------|-------|-----------------|
+| Flag / invocation                                                      | Workflow                             | Rules                            | Output examples                       |
+| ---------------------------------------------------------------------- | ------------------------------------ | -------------------------------- | ------------------------------------- |
 | `--sync`, `--compliance`, `--project`, `--version`, `task`, `--resume` | `references/check-rare-workflows.md` | `references/check-flag-rules.md` | `references/check-output-examples.md` |
 
 ---
@@ -265,15 +300,15 @@ Read the matching reference **only** when the flag is present:
 
 **Determine options based on current phase**:
 
-| Current Phase | Options to Offer |
-|---------------|------------------|
-| functional | `/sdd.spec`, `/sdd.spec --approve`, `/sdd.start --rename` |
-| technical | `/sdd.spec technical`, `/sdd.spec technical --approve`, `/sdd.check --sync` |
-| tasks | `/sdd.plan`, `/sdd.plan --approve`, `/sdd.check --sync` |
-| implementation | `/sdd.build`, `/sdd.build --next`, `/sdd.finish` |
-| complete | `/sdd.start`, `/sdd.list`, `/sdd.backlog list` |
+| Current Phase  | Options to Offer                                                            |
+| -------------- | --------------------------------------------------------------------------- |
+| functional     | `/sdd.spec`, `/sdd.spec --approve`, `/sdd.start --rename`                   |
+| technical      | `/sdd.spec technical`, `/sdd.spec technical --approve`, `/sdd.check --sync` |
+| tasks          | `/sdd.plan`, `/sdd.plan --approve`, `/sdd.check --sync`                     |
+| implementation | `/sdd.build`, `/sdd.build --next`, `/sdd.finish`                            |
+| complete       | `/sdd.start`, `/sdd.list`, `/sdd.backlog list`                              |
 
-**⛔ INVOKE TOOL (do not print this, CALL the tool)** - options vary by phase:
+**⛔ INVOKE TOOL (do not print this, CALL the tool)** - options vary by phase — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`):
 
 ```
 AskUserQuestion(
@@ -281,9 +316,9 @@ AskUserQuestion(
     "question": "O que deseja fazer agora?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.build", "description": "Continuar a implementação — comando em haiku"},
-      {"label": "/sdd.build --next", "description": "Iniciar a próxima task — comando em haiku"},
-      {"label": "/sdd.finish", "description": "Concluir a feature — comando em sonnet"},
+      {"label": "/sdd.build", "description": "Continuar a implementação — comando em EXECUTION"},
+      {"label": "/sdd.build --next", "description": "Iniciar a próxima task — comando em EXECUTION"},
+      {"label": "/sdd.finish", "description": "Concluir a feature — comando em STRONG"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
     "multiSelect": false
@@ -295,12 +330,12 @@ AskUserQuestion(
 
 **On user selection**:
 
-| Example Selection | Action |
-|-------------------|--------|
-| /sdd.spec | `Skill(skill="sdd.spec")` |
-| /sdd.build | `Skill(skill="sdd.build")` |
-| /sdd.build --next | `Skill(skill="sdd.build", args="--next")` |
-| /sdd.finish | `Skill(skill="sdd.finish")` |
-| Other | User types custom input |
+| Example Selection | Action                                   |
+| ----------------- | ---------------------------------------- |
+| /sdd.spec         | `CONTINUE_WORKFLOW("/sdd.spec")`         |
+| /sdd.build        | `CONTINUE_WORKFLOW("/sdd.build")`        |
+| /sdd.build --next | `CONTINUE_WORKFLOW("/sdd.build --next")` |
+| /sdd.finish       | `CONTINUE_WORKFLOW("/sdd.finish")`       |
+| Other             | User types custom input                  |
 
 ---

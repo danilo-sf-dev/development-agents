@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.help
 description: Show help and documentation for SDD Kit commands and workflow. Use when user asks about available commands or how to use the framework.
-model: haiku
+model_role: EXECUTION
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
@@ -11,6 +11,7 @@ model: haiku
 **Description**: Show available commands and quick reference
 
 **Usage**:
+
 - `/sdd.help` → Show all commands organized by category
 - `/sdd.help [command]` → Show detailed help for specific command
 - `/sdd.help workflow` → Show workflow diagram
@@ -23,13 +24,14 @@ model: haiku
 
 **Syntax**: `/sdd.help [command]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Show all commands organized by category |
+| Flag        | Description                             |
+| ----------- | --------------------------------------- |
+| (none)      | Show all commands organized by category |
 | `[command]` | Show detailed help for specific command |
-| `workflow` | Show workflow diagram |
+| `workflow`  | Show workflow diagram                   |
 
 **Example**:
+
 ```bash
 /sdd.help              # Show all commands
 /sdd.help spec         # Help for /sdd.spec
@@ -116,6 +118,7 @@ When user requests help for specific command:
 ```
 
 Shows:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📖 /sdd.spec
@@ -161,6 +164,7 @@ Full docs: development-agents/commands/sdd.spec.md
 ```
 
 Shows:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔄 SDD Kit Workflow
@@ -174,6 +178,9 @@ Standard Flow:
 │       ▼              ▼              ▼              ▼        │
 │   [meta.md]    [functional]    [tasks.json]    [code +       │
 │                [technical]                    tests]        │
+│                                                     │       │
+│                                                     ▼       │
+│                                              /sdd.check     │
 │                                                     │       │
 │                                                     ▼       │
 │                                              /sdd.finish   │
@@ -210,44 +217,44 @@ Execution Modes:
 
 ## Command Quick Reference Table
 
-| Command | Purpose | Typical Usage |
-|---------|---------|---------------|
-| `/sdd.start` | Initialize feature | `/sdd.start "user-auth"` |
-| `/sdd.start --reopen` | Reopen completed feature | `/sdd.start --reopen user-auth --phase 2` |
-| `/sdd.spec` | Create specifications | `/sdd.spec` |
-| `/sdd.spec --audio` | Voice-enabled spec creation | `/sdd.spec --audio` |
-| `/sdd.spec --include` | Add external context (Jira/Confluence/file) | `/sdd.spec --include "url"` |
-| `/sdd.spec --iterate` | Modify/update spec after creation | `/sdd.spec --iterate "change"` |
-| `/sdd.plan` | Generate tasks | `/sdd.plan` |
-| `/sdd.build` | Implement | `/sdd.build` |
-| `/sdd.finish` | Complete & archive | `/sdd.finish` |
-| `/sdd.pr` | Draft PR → approve → gh create | `/sdd.pr` |
-| `/sdd.go` | Full auto workflow | `/sdd.go "feature"` |
-| `/sdd.check` | View status | `/sdd.check` |
-| `/sdd.check --sync` | Verify layer consistency | `/sdd.check --sync` |
-| `/sdd.check --compliance` | Verify tests/lint | `/sdd.check --compliance` |
-| `/sdd.list` | List features | `/sdd.list` |
-| `/sdd.fix` | Fix errors | `/sdd.fix "error msg"` |
-| `/sdd.backlog` | Manage backlog | `/sdd.backlog list` |
-| `/sdd.doctor` | Diagnose project config | `/sdd.doctor` |
-| `/sdd.doctor --apply` | Apply config fixes | `/sdd.doctor --apply` |
-| `/sdd.project` | Team conventions (PROJECT.md) | `/sdd.project` |
-| `/sdd.install` | Install pack in target project | `/sdd.install` |
-| `/sdd.mcp` | Optional MCP setup (Atlassian read-only) | `/sdd.mcp` |
-| `/sdd.rollback` | Undo/revert to previous phase | `/sdd.rollback 2` |
-| `/sdd.cancel` | Cancel feature | `/sdd.cancel` |
-| `/sdd.import` | Import specs | `/sdd.import` |
-| `/sdd.reverse-eng` | From code | `/sdd.reverse-eng` |
-| `/sdd.help` | Show help | `/sdd.help` |
+| Command                   | Purpose                                     | Typical Usage                             |
+| ------------------------- | ------------------------------------------- | ----------------------------------------- |
+| `/sdd.start`              | Initialize feature                          | `/sdd.start "user-auth"`                  |
+| `/sdd.start --reopen`     | Reopen completed feature                    | `/sdd.start --reopen user-auth --phase 2` |
+| `/sdd.spec`               | Create specifications                       | `/sdd.spec`                               |
+| `/sdd.spec --audio`       | Voice-enabled spec creation                 | `/sdd.spec --audio`                       |
+| `/sdd.spec --include`     | Add external context (Jira/Confluence/file) | `/sdd.spec --include "url"`               |
+| `/sdd.spec --iterate`     | Modify/update spec after creation           | `/sdd.spec --iterate "change"`            |
+| `/sdd.plan`               | Generate tasks                              | `/sdd.plan`                               |
+| `/sdd.build`              | Implement                                   | `/sdd.build`                              |
+| `/sdd.finish`             | Complete & archive                          | `/sdd.finish`                             |
+| `/sdd.pr`                 | Draft PR → approve → gh create              | `/sdd.pr`                                 |
+| `/sdd.go`                 | Full auto workflow                          | `/sdd.go "feature"`                       |
+| `/sdd.check`              | View status                                 | `/sdd.check`                              |
+| `/sdd.check --sync`       | Verify layer consistency                    | `/sdd.check --sync`                       |
+| `/sdd.check --compliance` | Verify tests/lint                           | `/sdd.check --compliance`                 |
+| `/sdd.list`               | List features                               | `/sdd.list`                               |
+| `/sdd.fix`                | Fix errors                                  | `/sdd.fix "error msg"`                    |
+| `/sdd.backlog`            | Manage backlog                              | `/sdd.backlog list`                       |
+| `/sdd.doctor`             | Diagnose project config                     | `/sdd.doctor`                             |
+| `/sdd.doctor --apply`     | Apply config fixes                          | `/sdd.doctor --apply`                     |
+| `/sdd.project`            | Team conventions (PROJECT.md)               | `/sdd.project`                            |
+| `/sdd.install`            | Install pack in target project              | `/sdd.install`                            |
+| `/sdd.mcp`                | Optional MCP setup (Atlassian read-only)    | `/sdd.mcp`                                |
+| `/sdd.rollback`           | Undo/revert to previous phase               | `/sdd.rollback 2`                         |
+| `/sdd.cancel`             | Cancel feature                              | `/sdd.cancel`                             |
+| `/sdd.import`             | Import specs                                | `/sdd.import`                             |
+| `/sdd.reverse-eng`        | From code                                   | `/sdd.reverse-eng`                        |
+| `/sdd.help`               | Show help                                   | `/sdd.help`                               |
 
 ---
 
 ## AI Agent Instructions
 
-
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.help help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute full help listing
 3. Keep response concise (~15 lines)

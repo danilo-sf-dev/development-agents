@@ -32,4 +32,4 @@ AskUserQuestion(
 
 ## Model switch
 
-Gates are a natural pause to switch LLM model (e.g. stronger model for `sdd-validator-runner`). Mention that in the question description when the next step is a validator/process pass.
+Gates are a natural pause to switch LLM model (e.g. stronger model for `sdd-validator`). Mention that in the question description when the next step is a validator/process pass.

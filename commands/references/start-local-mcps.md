@@ -18,7 +18,7 @@ After loading PROJECT.md, check for optional MCP configurations:
      /sdd.mcp
      ```
 
-     That command (agent `sdd-mcp-setup`) detects Cursor / Claude Code / VS Code / JetBrains / other, guides native or generic `.mcp.json`, runs a read-only smoke test, and keeps `PROJECT.md` in sync.
+     That command (Skill `sdd-mcp-setup`) detects Cursor / Claude Code / VS Code / JetBrains / other, guides native or generic `.mcp.json`, runs a read-only smoke test, and keeps `PROJECT.md` in sync.
 
    - Optional shortcut if the user already approved a quick merge in this session: you may merge the generic Atlassian entry into project-root `.mcp.json` using the shapes in `commands/references/mcp-atlassian-hosts.md` / `framework/MCP_SETUP_GUIDE.md`, then still recommend `/sdd.mcp --test "<url>"` for OAuth + smoke test
    - Note: first use usually requires OAuth login to Atlassian in the host UI

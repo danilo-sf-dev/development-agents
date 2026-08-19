@@ -1,7 +1,7 @@
 ---
 name: sdd.spec
 description: Create and approve functional and technical specifications. Use when user needs to define requirements (functional) or design architecture (technical). Supports --approve, --iterate, --summary, and --audio flags.
-model: sonnet
+model_role: STRONG
 argument-hint: "[functional|technical] [--approve]"
 ---
 
@@ -21,19 +21,18 @@ argument-hint: "[functional|technical] [--approve]"
 
 ---
 
-
 ## Subagent Delegation
 
-| Need | Use |
-|------|-----|
-| Gaps after description | `genai-detect-gaps.sh` (inline fallback: async/persist/calc/API/concurrent) |
-| Architecture / services | `sdd-system-designer` then `sdd-implementer` |
-| Service discovery | `sdd-explorer` |
-| Conflicts after technical | `genai-resolve-conflicts.sh` → `validate-spec-conflicts.sh` |
+| Need                      | Use                                                                      |
+| ------------------------- | ------------------------------------------------------------------------ |
+| Gaps after description    | Inline gap detection: scan for async/persist/calc/API/concurrent signals |
+| Architecture / services   | `sdd-system-design` then `sdd-implementation`                             |
+| Service discovery         | `sdd-explorer`                                                           |
+| Conflicts after technical | `validate-spec-conflicts.sh`, agent resolves conflicts found             |
 
 Context before technical: >50% → `/clear`; >80% → `context-guardian`.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:spec`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -53,27 +52,37 @@ Context before technical: >50% → `/clear`; >80% → `context-guardian`.
 
 When the user mentions a technology unfamiliar to the repo, ask which option fits PROJECT.md — do not silently rewrite to a vendor platform.
 
+## Code Graph — query-first exploration (lazy-loaded, optional)
+
+> **ONLY IF** `graphify-state.sh get sdd/wip/<feature>/meta.md` reports `GRAPHIFY_MODE=active`
+> and `GRAPHIFY_GRAPH=ready` (decided once by `/sdd.start`'s preflight — read state here, never
+> re-ask; see `framework/_shared/graphify-context.md` § 5, 7): before broad `Glob`/`Grep`/`Read`
+> exploration for either spec, run the git guard, turn the feature description into a question,
+> and run `graphify-run.sh query "<question>"` (optionally `path`/`explain` for named concepts)
+> to identify the small set of relevant files/services — then `Read` only those. Never
+> `Read graphify-out/graph.json` directly.
+> `disabled` (or state absent) → skip this, proceed with normal exploration exactly as before.
+
 ---
 
 ## Behavior by Mode
 
-| Mode | Behavior |
-|------|----------|
-| **Express** | 3-5 critical questions, auto-generates both specs, auto-approves |
+| Mode         | Behavior                                                            |
+| ------------ | ------------------------------------------------------------------- |
+| **Express**  | 3-5 critical questions, auto-generates both specs, auto-approves    |
 | **Standard** | Interactive interview, section review, confirmation before approval |
 
 ---
 
 ## Skill Hooks (lazy-loaded)
 
-> **ONLY IF** `.claude/skill-hooks.json` or `development-agents/framework/skill-hooks.json` exists,
+> **ONLY IF** the installed adapter's skill-hooks config exists (e.g. `.claude/skill-hooks.json` for Claude Code, `.cursor/skill-hooks.json` for Cursor, `.agents/skill-hooks.json` for Codex) or `development-agents/framework/skill-hooks.json` exists,
 > or installed skills declare `sdd-kit-*` metadata:
-> Read `references/spec-skill-hooks.md` before each extension point in the workflow.
+> Read `references/skill-hooks.md`, phase=`spec-functional`/`spec-technical`, before each extension point in the workflow.
 
 ## Workflow (Steps in Order)
 
-> Extension points (`before-start` / `after-implementation` / `before-approval` × functional|technical): only if skill hooks configured — see `references/spec-skill-hooks.md`.
-
+> Extension points (`before-start` / `after-implementation` / `before-approval` × functional|technical): only if skill hooks configured — see `references/skill-hooks.md`, phase=`spec-functional`/`spec-technical`.
 
 ### Step 1: Detect Phase
 
@@ -119,6 +128,7 @@ Write entire spec in that language; headers/identifiers/tech terms in English.
 ### Step 4: External API Auto-Discovery
 
 After functional approval, before technical:
+
 1. Scan functional spec for integration phrases
 2. Query project docs / service directory (per PROJECT.md) for each detected API
 3. Display findings with status (Found/Partial/Not Found)
@@ -149,14 +159,17 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 
 #### Backend/Web Technical Spec (platform = backend | web | "")
 
-> **BLOCKING — Architect-First**: before ANY DD / service / dependency / diagram, invoke
-> `Skill("sdd-system-designer")` with functional summary + capabilities. Do not invent services from pre-training.
-> Single recommendation → use it. 2–3 options → Architecture Options ref below.
-> Then for each selected service: `Skill("sdd-implementer")` for live SDK details.
+> **BLOCKING — Architect-First**: before ANY DD / service / dependency / diagram, invoke the
+> `sdd-system-design` Skill (`OFFLOAD_REASONING`, `model_role: STRONG` — see
+> `framework/_shared/harness-capabilities.md` and `adapters/<harness>/README.md` for the concrete
+> dispatch) with functional summary + capabilities. Do not invent services from pre-training. Single
+> recommendation → use it. 2–3 options → Architecture Options ref below.
+> Then for each selected service: invoke the `sdd-implementation` Skill (`DELEGATE_OFFLOAD`,
+> `model_role: EXECUTION`) for live SDK details.
 
 #### Architecture Options (lazy-loaded)
 
-> **ONLY IF** `sdd-system-designer` returns 2–3 viable approaches AND profile is `technical` AND Standard mode:
+> **ONLY IF** `sdd-system-design` returns 2–3 viable approaches AND profile is `technical` AND Standard mode:
 > Read `references/spec-architecture-options.md`.
 > Otherwise auto-select the recommended approach and continue.
 
@@ -193,7 +206,7 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 
 ### Step 6: Technical Approval Gate
 
-> **BLOCKING**: (1) Architect self-check (`sdd-system-designer` before DD/Services; `sdd-implementer` per service).
+> **BLOCKING**: (1) Architect self-check (`sdd-system-design` before DD/Services; `sdd-implementation` per service).
 > (2) `validate-technical.sh` then `validate-security.sh` (security always mandatory).
 > (3) Short summary + ASCII diagram (shapes: `references/spec-architecture-diagram.md`).
 > (4) AskUserQuestion Approve / View full / Request changes.
@@ -202,7 +215,7 @@ platform=$(grep "^\*\*Platform\*\*:" sdd/wip/[feature]/meta.md | awk '{print $2}
 
 ### Step 7: Conflict Detection
 
-After technical approval: `genai-resolve-conflicts.sh` (fallback `validate-spec-conflicts.sh`).
+After technical approval: run `validate-spec-conflicts.sh` to surface spec cross-reference conflicts, then the agent reviews and proposes resolutions directly.
 Present conflicts; user confirms resolve action; annotate spec.
 
 ### Step 8: Post-Approval Context Compaction
@@ -211,9 +224,9 @@ After technical approval + conflicts: run `/sdd.check --compact` if context >40%
 
 ### Step 9: Next Steps (both specs approved)
 
-**Model advisory**: Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `spec→plan`.
+**Model Routing (automatic, informational only)**: `/sdd.plan` next runs at `model_role: EXECUTION` — resolved and dispatched automatically, no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
-AskUserQuestion: `/sdd.plan` (recomendado — comando em sonnet) | `/sdd.spec --iterate` | `/sdd.check`.
+AskUserQuestion: `/sdd.plan` (recomendado — comando em EXECUTION) | `/sdd.spec --iterate` | `/sdd.check`.
 
 ## Key Rules
 
@@ -227,10 +240,10 @@ AskUserQuestion: `/sdd.plan` (recomendado — comando em sonnet) | `/sdd.spec --
 
 ## Output Files
 
-| Phase | Path |
-|-------|------|
-| Functional | `sdd/wip/[feature]/1-functional/spec.md` |
-| Technical | `sdd/wip/[feature]/2-technical/spec.md` |
+| Phase        | Path                                            |
+| ------------ | ----------------------------------------------- |
+| Functional   | `sdd/wip/[feature]/1-functional/spec.md`        |
+| Technical    | `sdd/wip/[feature]/2-technical/spec.md`         |
 | Architecture | `sdd/wip/[feature]/2-technical/architecture.md` |
 
 Validation is owned by `validate-functional.sh` / `validate-technical.sh` / `validate-security.sh` at approval gates.
@@ -259,30 +272,30 @@ Pipeline: `framework/PIPELINE.md`. Shared instructions: `framework/_shared/agent
 
 Read the matching reference **ONLY IF** the flag/condition is present. Never load all refs.
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| `--iterate` | `references/spec-iterate.md` |
-| `--summary` | `references/spec-summary.md` |
-| `--audio` | `references/spec-audio.md` |
-| `--include` | `references/spec-include-context.md` |
-| `functional --approve` or `technical --approve` | `references/spec-approve.md` |
-| `platform = android \| ios` (technical) | `references/spec-mobile-technical.md` |
-| Frontend Web stack | `references/spec-frontend-web-agents.md` |
-| Profile adapt (tech vs non-tech) | `references/spec-profile-aware.md` |
-| Skill hooks configured | `references/spec-skill-hooks.md` |
-| Critical gaps in Step 2.5 | `references/spec-completeness-checklist.md` |
-| Full interview tables needed | `references/spec-interview.md` |
-| Functional approval UX payloads | `references/spec-functional-approval.md` |
-| Technical approval UX payloads | `references/spec-technical-approval.md` |
-| Vision missing / alignment | `references/spec-vision.md` |
-| Brownfield + technical (Step 4.5) | `references/spec-plan-mode-brownfield.md` |
-| Multiple architecture options | `references/spec-architecture-options.md` |
-| Brownfield infra sections | `references/spec-brownfield-infra.md` |
-| Project services in tech spec | `references/spec-project-services.md` |
-| Over-engineering review | `references/spec-anti-patterns.md` |
-| Migration signals in tech spec | `references/spec-migration-detection.md` |
-| ASCII diagram shapes/examples | `references/spec-architecture-diagram.md` |
-| Frontend architecture section | `references/frontend-web-architecture.md` |
+| Flag / condition                                | Reference                                                             |
+| ----------------------------------------------- | --------------------------------------------------------------------- |
+| `--iterate`                                     | `references/spec-iterate.md`                                          |
+| `--summary`                                     | `references/spec-summary.md`                                          |
+| `--audio`                                       | `references/spec-audio.md`                                            |
+| `--include`                                     | `references/spec-include-context.md`                                  |
+| `functional --approve` or `technical --approve` | `references/spec-approve.md`                                          |
+| `platform = android \| ios` (technical)         | `references/spec-mobile-technical.md`                                 |
+| Frontend Web stack                              | `references/spec-frontend-web-agents.md`                              |
+| Profile adapt (tech vs non-tech)                | `references/spec-profile-aware.md`                                    |
+| Skill hooks configured                          | `references/skill-hooks.md`, phase=`spec-functional`/`spec-technical` |
+| Critical gaps in Step 2.5                       | `references/spec-completeness-checklist.md`                           |
+| Full interview tables needed                    | `references/spec-interview.md`                                        |
+| Functional approval UX payloads                 | `references/spec-functional-approval.md`                              |
+| Technical approval UX payloads                  | `references/spec-technical-approval.md`                               |
+| Vision missing / alignment                      | `references/spec-vision.md`                                           |
+| Brownfield + technical (Step 4.5)               | `references/spec-plan-mode-brownfield.md`                             |
+| Multiple architecture options                   | `references/spec-architecture-options.md`                             |
+| Brownfield infra sections                       | `references/spec-brownfield-infra.md`                                 |
+| Project services in tech spec                   | `references/spec-project-services.md`                                 |
+| Over-engineering review                         | `references/spec-anti-patterns.md`                                    |
+| Migration signals in tech spec                  | `references/spec-migration-detection.md`                              |
+| ASCII diagram shapes/examples                   | `references/spec-architecture-diagram.md`                             |
+| Frontend architecture section                   | `references/frontend-web-architecture.md`                             |
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: sdd.start
 description: Initialize new feature in SDD Kit framework. Use when user wants to begin a new feature, set up the sdd/wip/ directory structure, and configure project metadata. Supports --reopen for archived features.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[feature-description] [--express|--lite|--audio|--from-backlog|--reopen]"
 ---
 
@@ -12,6 +12,7 @@ argument-hint: "[feature-description] [--express|--lite|--audio|--from-backlog|-
 **Description**: Initialize new feature in SDD Kit framework
 
 **Usage**:
+
 - `/sdd.start "feature-description"` → Standard mode (default)
 - `/sdd.start "feature-description" --express` → Express mode (minimal interaction)
 
@@ -31,15 +32,12 @@ Infer kebab name → detect stack → create `sdd/wip/YYYYMMDD-name/` + meta.md 
 Modes: Standard (confirm) | Express (minimal). Templates: standard | `--lite` (combined short spec).
 App name ≠ feature name. See `/sdd.help start`.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — **BLOCKING** entry model-confirm for `phase_key`: `entry:start` **before Step 0.5** (full box + AskUserQuestion; do not skip).
+**Model Routing (automatic, informational only)**: this command runs at `model_role: EXECUTION`,
+resolved and dispatched automatically per `adapters/<harness>/README.md` § Model Routing — no
+confirmation needed. Optionally print the one-line observability format from
+`references/model-suggestion-advisory.md` (`ℹ️ Model Routing: EXECUTION → <resolved model> (auto)`).
 
 ## Workflow (Steps in Order)
-
-### Step 0: Model Confirm (BLOCKING)
-
-> **Before profile, validation, or any file creation.** Session header may still show Sonnet — do not proceed without this gate.
-> Read `references/model-suggestion-advisory.md` → **Command entry — model confirm** for `entry:start`.
-> If user selects **Não estou em haiku — parar** → STOP entirely (no WIP, no branch, no profile write).
 
 ### Step 0.5: User Profile Check (BLOCKING)
 
@@ -61,9 +59,9 @@ App name ≠ feature name. See `/sdd.help start`.
 
 2. **Check uniqueness**: Feature must not exist in `sdd/wip/`
 
-### Step 2: Platform + Frontend Skills
+### Step 2: Platform Detection
 
-> Run `detect-stack.sh` → set `IS_MOBILE`. Then `check-frontend-skill.sh`. If output has `❌`, STOP.
+> Run `detect-stack.sh` → set `IS_MOBILE`.
 > **ONLY IF** needing exact bash:
 > Read `references/start-platform-detect.md`.
 
@@ -88,6 +86,7 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 ### Step 4: Detect Project Mode
 
 `freshly_scaffolded` or empty → greenfield; else if `sdd/specs|features` or real code → brownfield.
+
 > Brownfield path: Read `references/start-brownfield.md` (ONLY IF brownfield).
 
 ### Step 5: User Profile Selection
@@ -100,7 +99,7 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 ### Step 6: Load PROJECT.md
 
 > Always load/validate PROJECT.md when present (or offer creation). Never skip this step for a lighter “mode”.
-> Read `references/start-project-md.md` (load, GenAI validate, doctor tip).
+> Read `references/start-project-md.md` (load, deterministic script validation, doctor tip).
 > Missing PROJECT.md → recommend `/sdd.project` then continue with framework defaults if user opts in.
 
 ### Step 6.5: Configure Local MCPs (lazy-loaded)
@@ -114,12 +113,14 @@ No `.git` → AskUserQuestion to init or relocate. Full scenario table: `referen
 1. Uniqueness across wip/features/cancelled (name without date). On collision: derive better name or `-v2`, show warning, proceed.
 2. Folder: `YYYYMMDD-feature-name` (never legacy `001-` prefixes).
 3. Create WIP tree (1-functional … 5-implementation, meta.md placeholder).
+
 > **ONLY IF** needing mkdir tree / collision bash:
 > Read `references/start-feature-structure.md`.
 
 ### Step 8: Create meta.md
 
 Write meta from template: name, mode, profile, stack, testing flags from PROJECT.md, `spec_language` from PROJECT.md (default `en`), stages pending.
+
 > **ONLY IF** needing field checklist:
 > Read `references/start-meta.md`.
 
@@ -127,13 +128,30 @@ Write meta from template: name, mode, profile, stack, testing flags from PROJECT
 
 If on default branch (master/main/develop per PROJECT.md): create/checkout `feature/<name>` (or project gitflow pattern).
 If already on feature branch: keep it. See `framework/standards/boundaries.md` — B-03, `/sdd.start`.
+
 > **ONLY IF** needing gitflow variants:
 > Read `references/start-git-branch.md`.
+
+### Step 9.x: Optional Code Graph Preflight (lazy-loaded)
+
+> Only after the feature branch exists (Step 9). Graphify is an optional, disposable local
+> accelerator — never a dependency. Read `framework/_shared/graphify-context.md` § 4 (Preflight)
+> for the full ASK_USER flow before implementing this step.
+>
+> Short version: `detect-graphify.sh` → if unavailable/incapable, check the local no-ask
+> preference (`graphify-state.sh pref-get`) — if not set, ASK_USER once (install / continue
+> without / continue without + don't ask again / outros); never install without explicit
+> per-command confirmation. If available: run the git guard, then ASK_USER once more depending
+> on whether `graphify-out/graph.json` already exists (offer to generate, or offer to
+> update/use-as-is/skip). Persist the result via `graphify-state.sh set sdd/wip/<feature>/meta.md
+> --mode <active|disabled> --graph <missing|ready|stale>` so `/sdd.spec`, `/sdd.plan`,
+> `/sdd.build`, `/sdd.check` read it instead of re-asking. Any failure at any point → one short
+> warning, `GRAPHIFY_MODE=disabled`, continue normally — never block feature creation.
 
 ### Step 9.5: CLAUDE.md (lazy-loaded)
 
 > **ONLY IF** Claude Code session and CLAUDE.md integration needed:
-> Read `references/start-claude-md.md`. Mobile CLAUDE extras: `references/start-mobile-claude.md`.
+> Read `references/project-instructions-sync.md` (writes CLAUDE.md/AGENTS.md per adapter). Mobile extras: `references/start-mobile-claude.md`.
 
 ### Step 10: Load PATTERNS.md (lazy-loaded)
 
@@ -151,6 +169,7 @@ If already on feature branch: keep it. See `framework/standards/boundaries.md` �
 ```
 
 **Conditional (only for Prototype projects)**:
+
 ```
    💡 For rapid prototyping: /sdd.go --resume (switches to express mode)
 ```
@@ -170,7 +189,7 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 ## AI Agent Instructions
 
 1. Flag-first: if `--help`/`--reopen`/`--rename`/`--from-backlog`/`--audio` → load matching ref, do not run full happy path.
-2. Order: Step 0 (model confirm) → Steps 0.5→12; never skip model confirm (Step 0) or profile (Step 0.5) or input validation (Step 1).
+2. Order: Steps 0.5→12 (Model Routing resolves automatically before Step 0.5, no gate); never skip profile (Step 0.5) or input validation (Step 1).
 3. Infer kebab-case feature name from description; confirm only if ambiguous.
 4. Critical: Application name ≠ feature name; never invent external app registration; stack from detection + PROJECT.md.
 
@@ -178,22 +197,23 @@ Shared: `framework/_shared/agent-instructions.md`. Pipeline: `framework/PIPELINE
 
 Read the matching reference **ONLY IF** the flag/condition is present. Never load all refs.
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| `--reopen` | `references/reopen-workflow.md` |
-| `--rename` | `references/start-rename.md` |
-| `--from-backlog` | `references/start-from-backlog.md` |
-| `--audio` | `references/start-audio.md` / `audio-capture-flow.md` |
-| CLAUDE.md (Claude Code) | `references/start-claude-md.md` |
-| Mobile CLAUDE extras | `references/start-mobile-claude.md` |
-| Platform/frontend detect bash | `references/start-platform-detect.md` |
-| Scaffolding/stack detect bash | `references/start-stack-detect.md` |
-| Feature folder creation | `references/start-feature-structure.md` |
-| Git branch variants | `references/start-git-branch.md` |
-| `freshly_scaffolded=true` | `references/start-scaffolding-cleanup.md` |
-| `project_mode == brownfield` | `references/start-brownfield.md` |
-| Profile AskUserQuestion / yaml | `references/start-user-profile.md` |
-| Load/validate PROJECT.md | `references/start-project-md.md` |
-| Local MCP setup needed | `references/start-local-mcps.md` |
-| `sdd/PATTERNS.md` exists | `references/start-patterns.md` |
-| Next-steps UX | `references/start-next-steps.md` |
+| Flag / condition                           | Reference                                             |
+| ------------------------------------------ | ----------------------------------------------------- |
+| `--reopen`                                 | `references/reopen-workflow.md`                       |
+| `--rename`                                 | `references/start-rename.md`                          |
+| `--from-backlog`                           | `references/start-from-backlog.md`                    |
+| `--audio`                                  | `references/start-audio.md` / `audio-capture-flow.md` |
+| Project instructions (CLAUDE.md/AGENTS.md) | `references/project-instructions-sync.md`             |
+| Mobile CLAUDE extras                       | `references/start-mobile-claude.md`                   |
+| Platform/frontend detect bash              | `references/start-platform-detect.md`                 |
+| Scaffolding/stack detect bash              | `references/start-stack-detect.md`                    |
+| Feature folder creation                    | `references/start-feature-structure.md`               |
+| Git branch variants                        | `references/start-git-branch.md`                      |
+| `freshly_scaffolded=true`                  | `references/start-scaffolding-cleanup.md`             |
+| `project_mode == brownfield`               | `references/start-brownfield.md`                      |
+| Profile AskUserQuestion / yaml             | `references/start-user-profile.md`                    |
+| Load/validate PROJECT.md                   | `references/start-project-md.md`                      |
+| Local MCP setup needed                     | `references/start-local-mcps.md`                      |
+| `sdd/PATTERNS.md` exists                   | `references/start-patterns.md`                        |
+| Code graph bootstrap (Step 9.x)            | `framework/_shared/graphify-context.md`                |
+| Next-steps UX                              | `references/start-next-steps.md`                      |

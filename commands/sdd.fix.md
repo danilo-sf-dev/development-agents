@@ -1,7 +1,7 @@
 ---
 name: sdd.fix
 description: Fix validation errors and horizontal consistency issues across spec layers. Use when /sdd.check reports errors, specs are misaligned, or tasks don't match the technical spec.
-model: opus
+model_role: STRONG
 argument-hint: "[feature-name]"
 ---
 
@@ -43,7 +43,7 @@ argument-hint: "[feature-name]"
 
 **See also**: `/sdd.help fix` · flags lazy-loaded at bottom.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:fix`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG` (folds the former Opus/EXTREMO tier — see `framework/_shared/model-routing.md`), resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -95,7 +95,7 @@ Phase-aware: only edit layers that exist/are active for current stage.
 
 ## Subagent Delegation (short)
 
-Complex/multi-file investigation → Task() subagents. `--batch` → one subagent per fix (`references/fix-batch.md`).
+Complex/multi-file investigation → delegate to subagents. `--batch` → one subagent per fix (`references/fix-batch.md`).
 > **ONLY IF** full decision tree / invocation templates:
 > Read `references/fix-subagent.md`.
 

@@ -1,7 +1,7 @@
 ---
 name: sdd.reverse-eng
 description: Reverse engineer existing codebase to generate SDD specifications. Use when user wants to create specs from existing code.
-model: sonnet
+model_role: STRONG
 argument-hint: "[scope]"
 ---
 
@@ -14,6 +14,7 @@ argument-hint: "[scope]"
 **Description**: Reverse engineer an existing codebase to generate specs for spec-driven evolution.
 
 **Usage**:
+
 - `/sdd.reverse-eng` → Analyze current directory
 - `/sdd.reverse-eng [path]` → Analyze specific path
 - `/sdd.reverse-eng --focus api,database` → Focus on specific areas
@@ -27,24 +28,25 @@ argument-hint: "[scope]"
 
 **Syntax**: `/sdd.reverse-eng [path] [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | Analyze current directory |
-| `[path]` | Analyze specific path |
+| Flag                  | Description                                                 |
+| --------------------- | ----------------------------------------------------------- |
+| (none)                | Analyze current directory                                   |
+| `[path]`              | Analyze specific path                                       |
 | `--focus <component>` | Deep-dive into specific component, enriching existing specs |
-| `--focus --audio` | Record component focus description via microphone |
+| `--focus --audio`     | Record component focus description via microphone           |
 
 **Note on `--focus`**: This flag enriches existing specs with more detail about a specific component.
 It does NOT create separate spec files - it updates `functional-spec.md` and `technical-spec.md` directly.
 
 Use cases:
+
 - General extraction first, then `--focus PaymentService` for more detail
 - Re-extract specific component that was too shallow
 - Add detail to existing brownfield specs
 
 **See also**: `/sdd.help reverse-eng` · `--focus` / `--audio` lazy-loaded at bottom.
 
-**Model advisory (entry)**: Read `references/model-suggestion-advisory.md` — compact line for `phase_key`: `entry:reverse-eng`.
+**Model Routing (automatic, informational only)**: this command runs at `model_role: STRONG`, resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 ---
 
@@ -54,7 +56,7 @@ Use cases:
 
 AskUserQuestion first: **FULL** | **UPDATE** | **VIEW STATUS** | (if specs without extracted) **ENHANCE**.
 
-**⛔ INVOKE TOOL (do not print this, CALL the tool):**
+**⛔ INVOKE TOOL (do not print this, CALL the tool):** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`); fixed to include the mandatory **Outros** option per `references/ask-user-question-outros.md` — it was missing here.
 
 ```
 AskUserQuestion(
@@ -65,7 +67,8 @@ AskUserQuestion(
       {"label": "FULL EXTRACTION", "description": "Complete analysis from scratch"},
       {"label": "UPDATE MODE", "description": "Re-analyze and merge with existing specs"},
       {"label": "VIEW STATUS", "description": "Show current extraction summary"},
-      {"label": "ENHANCE SPECS", "description": "Add missing details to existing specs (only if sdd/specs/ exists but sdd/extracted/ doesn't)"}
+      {"label": "ENHANCE SPECS", "description": "Add missing details to existing specs (only if sdd/specs/ exists but sdd/extracted/ doesn't)"},
+      {"label": "Outros", "description": "Describe what you'll do or suggest another path (free text)"}
     ],
     "multiSelect": false
   }]
@@ -74,38 +77,117 @@ AskUserQuestion(
 
 ### Mode Behavior
 
-| Mode | Condition | Behavior |
-|------|-----------|----------|
-| **FULL EXTRACTION** | Any state | Delete existing `sdd/extracted/`, create fresh, run Phase 0-7 |
-| **UPDATE MODE** | `sdd/extracted/` exists | Re-run extraction, compare diffs, update ALL files |
-| **UPDATE MODE + --focus** | `sdd/extracted/` exists + `--focus` flag | **Enrich** existing specs with focused component detail |
-| **VIEW STATUS** | `sdd/extracted/` exists | Show summary of current extraction, no changes |
-| **ENHANCE SPECS** | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs |
+| Mode                      | Condition                                     | Behavior                                                      |
+| ------------------------- | --------------------------------------------- | ------------------------------------------------------------- |
+| **FULL EXTRACTION**       | Any state                                     | Delete existing `sdd/extracted/`, create fresh, run Phase 0-7 |
+| **UPDATE MODE**           | `sdd/extracted/` exists                       | **Delta-first, incremental** (corrected — was "re-run extraction, compare diffs, update ALL files," which made UPDATE cost as much as FULL): detect what changed since the last extraction before touching anything; update only affected files/sections; zero delta → idempotent, no re-extraction. See `references/reverse-eng-update-delta.md` |
+| **UPDATE MODE + --focus** | `sdd/extracted/` exists + `--focus` flag      | **Enrich** existing specs with focused component detail       |
+| **VIEW STATUS**           | `sdd/extracted/` exists                       | Show summary of current extraction, no changes                |
+| **ENHANCE SPECS**         | `sdd/specs/` exists, `sdd/extracted/` missing | Analyze code to add missing details to existing specs         |
 
 > **Lazy-loaded**: When `--focus` is present, Read `references/reverse-eng-focus.md` (includes anti-pattern rules for `-UPDATED` suffixes).
+> **Lazy-loaded**: When Mode = UPDATE and `--focus` is **not** present, Read
+> `references/reverse-eng-update-delta.md` **before** Phase 1 — it governs whether/how Phase 1
+> runs at all for this mode (may short-circuit to a zero-delta idempotent finish, or hand Phase 1
+> a pre-built target set instead of the full-repo protocol).
 
 ---
 
-## Subagent Delegation (MANDATORY)
+## Graphify Preflight (MANDATORY — before subagent delegation)
 
-> **⚠️ MANDATORY**: See [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle) for the central principle.
-> This command MUST delegate exploration work to the `sdd-explorer` subagent.
+> **Before ANY subagent delegation, Graphify preflight MUST happen.** This is the **first gate**
+> for both FULL EXTRACTION and UPDATE MODE (if available).
+>
+> **Tool**: `AskUserQuestion` per `framework/_shared/harness-capabilities.md` — the same
+> ASK_USER gate for graphify decisions. Use ASK_USER to gate preflight, never skip.
+> **Reference**: `framework/_shared/graphify-context.md` § 4 ("Standalone case").
+>
+> **Two ASK_USER questions asked in sequence** (skip both if local no-ask preference already set):
+>
+> **Question 1 — Graphify Availability**:
+> - If Graphify not available: offer install/continue-without/don't-ask-again/others
+> - If available: proceed to Question 2
+>
+> **Question 2 — Graph Existence**:
+> - Graph missing: offer to generate now (code-only mode) / skip Graphify
+> - Graph exists: offer to update / use as-is / skip for this run
+>
+> **Resolved state** (`GRAPHIFY_MODE`/`GRAPHIFY_GRAPH`) persists for this entire run — no
+> re-asking mid-execution. Never run extraction without this preflight completing first.
+
+---
+
+## Subagent Delegation (MANDATORY for FULL EXTRACTION / ENHANCE SPECS)
+
+> **⚠️ MANDATORY for FULL EXTRACTION and ENHANCE SPECS ONLY**: See
+> [warning-hierarchy.md](../framework/standards/warning-hierarchy.md#subagent-delegation-central-principle)
+> for the central principle. These two modes MUST delegate exploration work to the `sdd-explorer`
+> Skill — unchanged by this round.
+>
+> **CRITICAL**: Use ONLY `sdd-explorer` for Phase 0-3 delegation. sdd-explorer is not a generic `general-purpose` agent — it has specialized scope guardrails for exploration only. Never delegate to open-ended generic agents. FULL's phases 0-3 are read-only exploration; synthesis (Phase 4), promotion gate, and human decisions stay in the main agent.
+>
+> **UPDATE MODE (without `--focus`) does NOT inherit this block automatically** — see
+> `references/reverse-eng-update-delta.md` § "2.3 Delegate only on genuine ambiguity". UPDATE
+> starts local/incremental by default and delegates to `sdd-explorer` (never a generic
+> `general-purpose` agent) only when a concrete ambiguity trigger applies, always with an
+> explicit, pre-scoped target set — never an open-ended "explore the codebase" prompt.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  MANDATORY SUBAGENT: sdd-explorer                                   │
+│  MANDATORY SUBAGENT (FULL EXTRACTION / ENHANCE SPECS ONLY):         │
+│  sdd-explorer — UPDATE MODE uses its own conditional rule instead,  │
+│  see reverse-eng-update-delta.md § 2.3, never this box.             │
 │                                                                      │
-│  Use Task(subagent_type="sdd-explorer") for: Phase 0-3             │
+│  Delegate Phase 0-3 to sdd-explorer (model_role: EXECUTION),         │
+│  per DELEGATE_OFFLOAD — see harness-capabilities.md +                │
+│  adapters/<harness>/README.md for the concrete dispatch              │
+│                                                                      │
+│  SCOPE OF DELEGATION: Read-only exploration only (Phases 0-3)       │
+│  ✗ Do NOT delegate: synthesis (Phase 4+), promotion gate, decisions   │
+│  ✗ Never use general-purpose agents for FULL; always sdd-explorer  │
+│  ✓ Always: return results to main agent for Phase 4 onwards         │
 │                                                                      │
 │  WHY: Reduces tokens 30-40%, isolates read-only operations,          │
 │       preserves main context for synthesis.                          │
+│       (DELEGATE_OFFLOAD — context-saving, no bias-protection         │
+│       requirement; see framework/_shared/harness-capabilities.md)    │
 │                                                                      │
 │  WORKFLOW:                                                           │
-│  1. Main agent coordinates phases and writes final specs             │
-│  2. sdd-explorer subagent performs all read-only exploration        │
-│  3. Results returned to main agent for synthesis (Phase 4)           │
+│  1. Main agent: Graphify preflight, mode selection, coordination     │
+│  2. Main agent: Pass scoped target set to sdd-explorer               │
+│  3. sdd-explorer subagent performs all read-only exploration         │
+│     (Phase 0-3 only — returns results, does not continue further)    │
+│  4. Main agent: Phase 4 synthesis, 4.5 ownership, 5 PATTERNS.md,      │
+│     6 consistency check — all in the main agent, none delegated      │
+│  5. Main agent: Phase 7 promotion gate (see reverse-eng-phase7.md —   │
+│     the ONE canonical gate; PROMOTE NOW/REVIEW FIRST/SHOW DIFF/       │
+│     SKIP PROMOTION — never redefined here)                           │
+│  6. Main agent: Executes promotion only if PROMOTE NOW was chosen     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+## Code Graph — preflight + first exploration tool (lazy-loaded, optional)
+
+> `/sdd.reverse-eng` may run **without** an `/sdd.start` feature branch, so it is one of the two
+> commands (with `/sdd.start`) authorized to run the Graphify preflight itself. Before Phase 0
+> exploration, read `framework/_shared/graphify-context.md` § 4 ("Standalone case") and run the
+> same ASK_USER flow as `/sdd.start` Step 9.x: absence → offer install/continue-without/don't-
+> ask-again/outros (skip entirely if the local no-ask preference is already set); available →
+> git guard, then offer to generate (graph missing) or update/use-as-is/skip (graph exists).
+> The resolved `GRAPHIFY_MODE`/`GRAPHIFY_GRAPH` apply for the rest of this single run — no
+> re-asking mid-run, no `meta.md` needed for a standalone invocation.
+>
+> When `GRAPHIFY_MODE=active` and `GRAPHIFY_GRAPH=ready`: this is the **first** tool
+> `sdd-explorer` reaches for in Phase 0-3, ahead of its own Read/Grep — query for modules, entry
+> points, dependencies, services, controllers, repositories, integrations, and cross-layer
+> flows; validate in code only what Phase 4 synthesis actually needs. Every query goes through
+> the git guard first (`graphify-context.md` § 2), same as any other Graphify call.
+> Disabled/unavailable → skip, `sdd-explorer` runs exactly as before.
+
+At the end of the run, if this invocation's own "sim, gerar agora" answer created and marked
+`graphify-out/` (`.sdd-managed` present), prefer removing it to keep the project clean —
+unless the user explicitly asked to keep it. Never remove a `graphify-out/` that predates this
+run (no marker present) — see `graphify-context.md` § 10.
 
 ---
 
@@ -113,18 +195,19 @@ AskUserQuestion(
 
 Performs comprehensive reverse engineering in **eight phases** (0-7):
 
-| Phase | Name | Purpose |
-|-------|------|---------|
-| **0** | Repository State Detection | Identify existing specs/frameworks before extraction |
-| **1** | Parallel Extraction | Extract data from existing docs/specs AND code (both mandatory) |
-| **2** | Basic Cross-Validation | Compare sources, calculate coverage |
-| **3** | Deep Cross-Validation | Field-by-field comparison, detect phantom endpoints |
-| **4** | Synthesis | Generate specs with 6-level confidence indicators |
-| **5** | Generate PATTERNS.md | Extract established patterns from codebase |
-| **6** | Consistency Check | Validate functional ↔ technical alignment |
-| **7** | Spec Promotion | **Copy specs to `sdd/specs/`** for brownfield mode |
+| Phase | Name                       | Purpose                                                         |
+| ----- | -------------------------- | --------------------------------------------------------------- |
+| **0** | Repository State Detection | Identify existing specs/frameworks before extraction            |
+| **1** | Parallel Extraction        | Extract data from existing docs/specs AND code (both mandatory) |
+| **2** | Basic Cross-Validation     | Compare sources, calculate coverage                             |
+| **3** | Deep Cross-Validation      | Field-by-field comparison, detect phantom endpoints             |
+| **4** | Synthesis                  | Generate specs with 6-level confidence indicators               |
+| **5** | Generate PATTERNS.md       | Extract established patterns from codebase                      |
+| **6** | Consistency Check          | Validate functional ↔ technical alignment                       |
+| **7** | Spec Promotion             | **Copy specs to `sdd/specs/`** for brownfield mode              |
 
 **Use Cases**:
+
 1. **Onboarding**: Document existing system for new team members
 2. **Evolution**: Prepare system for spec-driven feature development
 3. **Migration**: Create specs before technology migration
@@ -164,6 +247,7 @@ mkdir -p sdd/wip/
 ## Forbidden File Names (short)
 
 Never write `FOCUSED_ANALYSIS_*`, `*_DEEP_DIVE.md`, standalone use-case files, or anything in `sdd/` root except `PATTERNS.md`.
+
 > **ONLY IF** validating filenames / remapping content:
 > Read `references/reverse-eng-forbidden.md`.
 
@@ -188,6 +272,7 @@ fi
 ```
 
 **Structure Created**:
+
 ```
 sdd/
 ├── specs/           # For promoted global specs
@@ -213,36 +298,37 @@ sdd/
 
 **Detection Matrix** (execute in order):
 
-| Framework | Detection Patterns | Confidence |
-|-----------|-------------------|------------|
-| **SDD Kit** | `sdd/specs/*.md`, `sdd/wip/*/spec.md` | 🟢 High |
-| **OpenSpec** | `openspec/specs/`, `openspec/project.md` | 🟢 High |
-| **GitHub Spec-Kit** | `memory/`, `.markdownlint-cli2.jsonc` | 🟢 High |
-| **Kiro** | `.kiro/` folder OR triplet with Kiro markers | 🟡 Medium |
-| **Tessl** | `.tessl/framework/`, `@generate`/`@test` tags | 🟢 High |
-| **Cursor Rules** | `.cursor/rules/*.md`, `.cursorrules` | 🟡 Medium |
-| **Claude Code** | `CLAUDE.md`, `.claude/settings.json` | 🟡 Medium |
-| **Codex** | `.codex/instructions.md`, `.codex/AGENTS.md` | 🟡 Medium |
-| **SpecStory** | SpecFlow methodology, captured conversation specs | 🟡 Medium |
-| **OpenAPI/Swagger** | `openapi.yaml`, `swagger.json` | 🟢 High |
-| **ADR/RFC** | `docs/adr/`, `docs/rfc/` | 🟡 Medium |
-| **Plain Docs** | `ARCHITECTURE.md`, `DESIGN.md` | 🟡 Medium |
+| Framework           | Detection Patterns                                                                                  | Confidence |
+| ------------------- | --------------------------------------------------------------------------------------------------- | ---------- |
+| **SDD Kit**         | `sdd/specs/*.md`, `sdd/wip/*/spec.md`                                                               | 🟢 High    |
+| **OpenSpec**        | `openspec/specs/`, `openspec/project.md`                                                            | 🟢 High    |
+| **GitHub Spec-Kit** | `memory/`, `.markdownlint-cli2.jsonc`                                                               | 🟢 High    |
+| **Kiro**            | `.kiro/` folder OR triplet with Kiro markers                                                        | 🟡 Medium  |
+| **Tessl**           | `.tessl/framework/`, `@generate`/`@test` tags                                                       | 🟢 High    |
+| **Cursor Rules**    | `.cursor/rules/*.md`, `.cursorrules`                                                                | 🟡 Medium  |
+| **Claude Code**     | `CLAUDE.md`, `.claude/settings.json`                                                                | 🟡 Medium  |
+| **Codex CLI**       | `AGENTS.md` at project root (Codex's native convention — no `.codex/` subfolder), `.agents/skills/` | 🟡 Medium  |
+| **SpecStory**       | SpecFlow methodology, captured conversation specs                                                   | 🟡 Medium  |
+| **OpenAPI/Swagger** | `openapi.yaml`, `swagger.json`                                                                      | 🟢 High    |
+| **ADR/RFC**         | `docs/adr/`, `docs/rfc/`                                                                            | 🟡 Medium  |
+| **Plain Docs**      | `ARCHITECTURE.md`, `DESIGN.md`                                                                      | 🟡 Medium  |
 
-> **Reference**: See `sdd-explorer` agent for complete detection commands.
+> **Reference**: See `sdd-explorer` Skill for complete detection commands.
 
 **Optimization Strategies** (based on detected frameworks):
 
-| Strategy | When to Use | Expected Speedup |
-|----------|-------------|------------------|
-| **INCREMENTAL** | SDD Kit detected | 60-80% faster |
-| **AUGMENTED** | OpenSpec, Spec-Kit, Kiro detected | 40-60% faster |
-| **API_ANCHORED** | OpenAPI/Tessl detected | 30-50% faster |
-| **ASSISTED** | Cursor Rules, ADR, Plain Docs | 10-20% faster |
-| **FULL** | No frameworks detected | Baseline |
+| Strategy         | When to Use                       | Expected Speedup |
+| ---------------- | --------------------------------- | ---------------- |
+| **INCREMENTAL**  | SDD Kit detected                  | 60-80% faster    |
+| **AUGMENTED**    | OpenSpec, Spec-Kit, Kiro detected | 40-60% faster    |
+| **API_ANCHORED** | OpenAPI/Tessl detected            | 30-50% faster    |
+| **ASSISTED**     | Cursor Rules, ADR, Plain Docs     | 10-20% faster    |
+| **FULL**         | No frameworks detected            | Baseline         |
 
 **Output**: `DETECTION_REPORT.md` with findings + selected `optimization_strategy`
 
 **DETECTION_REPORT.md Template**:
+
 ```markdown
 # Detection Report
 
@@ -273,9 +359,9 @@ sdd/
 
 ## Extraction History
 
-| Date | Mode | Focus | Summary |
-|------|------|-------|---------|
-| [ISO-8601] | [mode] | [component or "-"] | [brief description] |
+| Date | Mode | Focus | Summary | Git SHA |
+|------|------|-------|---------|---------|
+| [ISO-8601] | [mode] | [component or "-"] | [brief description] | [full commit SHA at completion — `current_sha` from `reverse-eng-delta.sh`'s output, or `git rev-parse HEAD` for FULL/ENHANCE runs; this is UPDATE MODE's baseline for its next run, see `references/reverse-eng-update-delta.md`] |
 
 ## Recommendations
 
@@ -286,8 +372,14 @@ sdd/
 
 ### Phase 1: Parallel Extraction (lazy-loaded)
 
-> Extract from existing docs/specs **and** code (both mandatory). Prefer Task()-delegated subagents.
-> **ONLY IF** running Phase 1 (full/update/enhance modes that extract):
+> **UPDATE MODE (no `--focus`) — read `references/reverse-eng-update-delta.md` FIRST, not this
+> section.** That file's Step 0-2 decide whether this Phase 1 protocol runs at all (zero delta
+> → skip entirely) and, if it does run, hand it a pre-built target set instead of the full-repo
+> scope below. This paragraph and the rest of Phase 1 describe the FULL EXTRACTION / ENHANCE
+> SPECS protocol, unchanged.
+>
+> Extract from existing docs/specs **and** code (both mandatory). Prefer delegating to subagents.
+> **ONLY IF** running Phase 1 (full/enhance modes, or UPDATE after its own delta-scoping above):
 > Read `references/reverse-eng-phase1.md`.
 
 ### Phase 2: Cross-Validation (lazy-loaded)
@@ -321,23 +413,33 @@ sdd/
 > Validate functional ↔ technical alignment before promotion.
 > Read `references/reverse-eng-phase6.md` when executing Phase 6.
 
-### Phase 7: Spec Promotion (lazy-loaded)
+### Phase 7: Spec Promotion (lazy-loaded, MANDATORY gate — main agent only)
 
 > Promote `extracted/` → `sdd/specs/` (+ PATTERNS.md) with merge confirmation when specs already exist.
-> Read `references/reverse-eng-phase7.md` before writing to `sdd/specs/`.
+> Read `references/reverse-eng-phase7.md` before writing to `sdd/specs/` — its Step 1
+> `AskUserQuestion` (PROMOTE NOW / REVIEW FIRST / SHOW DIFF / SKIP PROMOTION) is the **single,
+> canonical promotion gate** for `/sdd.reverse-eng` — never redefine or duplicate it elsewhere in
+> this file.
+>
+> **This gate runs in the main agent only.** The `sdd-explorer` subagent delegated for Phase 0-3
+> (§ "Subagent Delegation" above) never reaches Phase 7 and never promotes on its own — it
+> returns its exploration results to the main agent, which runs Phase 4 onward (synthesis,
+> `PATTERNS.md`, consistency check) and only then presents this gate itself. **Never automatic
+> promotion from a subagent; never a silent copy to `sdd/specs/`.**
 
 ## Anti-Truncation (CRITICAL — short)
 
 Never stop mid-phase; write partial artifacts to disk; resume from last completed phase.
+
 > **ONLY IF** context pressure or long extraction:
 > Read `references/reverse-eng-anti-truncation.md`.
 
 ## AI Agent Instructions
 
-
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.reverse-eng help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute reverse-eng logic
 3. Keep response concise (~15 lines)
@@ -346,30 +448,21 @@ Never stop mid-phase; write partial artifacts to disk; resume from last complete
 
 Read **ONLY IF** flag/condition present:
 
-| Flag / condition | Reference |
-|------------------|-----------|
-| `--focus` | `references/reverse-eng-focus.md` |
-| `--audio` | `references/audio-capture-flow.md` |
-| `platform = android \| ios` | `references/start-mobile-claude.md` |
-| Full output tree | `references/reverse-eng-output-structure.md` |
-| Forbidden filenames | `references/reverse-eng-forbidden.md` |
-| PROJECT.md / CLAUDE.md bootstrap | `references/reverse-eng-project-config.md` |
-| Phase 1 extraction | `references/reverse-eng-phase1.md` |
-| Phase 2–3 validation | `references/reverse-eng-phase2.md`, `phase3.md` |
-| Phase 4–7 | `references/reverse-eng-phase4.md` … `phase7.md` |
-| Anti-truncation | `references/reverse-eng-anti-truncation.md` |
-| Detailed phase rules | `references/reverse-eng-phase-rules.md` |
-
-## Telemetry
-
-Telemetry is captured **automatically by hooks** during reverse-engineering. No manual tracking required.
-
-**Supported Tools**:
-| Tool | Support |
-|------|---------|
-| Claude Code | ✅ |
-| Cursor | ✅ |
-| optional Agent CLI | ✅ |
+| Flag / condition                 | Reference                                        |
+| -------------------------------- | ------------------------------------------------ |
+| `--focus`                        | `references/reverse-eng-focus.md`                |
+| `--audio`                        | `references/audio-capture-flow.md`               |
+| `platform = android \| ios`      | `references/start-mobile-claude.md`              |
+| Full output tree                 | `references/reverse-eng-output-structure.md`     |
+| Forbidden filenames              | `references/reverse-eng-forbidden.md`            |
+| PROJECT.md / CLAUDE.md bootstrap | `references/reverse-eng-project-config.md`       |
+| Phase 1 extraction               | `references/reverse-eng-phase1.md`               |
+| Phase 2–3 validation             | `references/reverse-eng-phase2.md`, `phase3.md`  |
+| Phase 4–7                        | `references/reverse-eng-phase4.md` … `phase7.md` |
+| Anti-truncation                  | `references/reverse-eng-anti-truncation.md`      |
+| Detailed phase rules             | `references/reverse-eng-phase-rules.md`          |
+| Code graph query-first/lifecycle | `framework/_shared/graphify-context.md`          |
+| UPDATE MODE (no `--focus`)       | `references/reverse-eng-update-delta.md`         |
 
 ---
 
@@ -382,7 +475,7 @@ Telemetry is captured **automatically by hooks** during reverse-engineering. No 
 
 ## References
 
-- **Detection commands**: `sdd-explorer` agent
+- **Detection commands**: `sdd-explorer` Skill
 - **Spec templates**: `templates/reverse-eng/`
 - **Anti-Invention Protocol**: Never invent APIs, endpoints, or config
 - **Consistency validation**: `standards/spec-consistency.md`

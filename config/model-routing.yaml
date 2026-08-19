@@ -1,0 +1,84 @@
+# Model Routing — single source of truth for Model Role → concrete model resolution.
+#
+# Read by: framework/tools/resolve-model.sh (the one authoritative resolution logic —
+# see framework/_shared/model-routing.md § Resolution). Nothing else may hardcode this
+# mapping. Skills and commands only ever declare `model_role: STRONG|EXECUTION` in their
+# own frontmatter; they never read this file directly by name — the adapter's dispatch
+# mechanism (Task() call construction, generated command frontmatter, child CLI
+# invocation) is what looks this up, via the resolver script.
+#
+# To change a model: edit the value below and re-run /sdd.install (or, on harnesses that
+# resolve live at dispatch time — Cursor, Codex — the new value applies on the very next
+# call, no reinstall needed; Claude Code's per-command frontmatter is baked at install
+# time, so a reinstall is what propagates a change there). No Skill, command, adapter
+# README, or installer file needs to change.
+#
+# `generic` has no entry on purpose — that harness has no known automated selection
+# mechanism; see adapters/generic/README.md for its fallback rule.
+
+# Runtime-identifier notes (2026-08 verification pass — see adapters/<harness>/README.md
+# "Model Routing" section for full evidence per value):
+#
+# - claude-code: `claude-sonnet-4-6` is the full model ID for the Sonnet 4.6 session (from
+#   system prompt: "The exact model ID is claude-sonnet-4-6"). `haiku` is a bare alias,
+#   live-verified via a real Task() dispatch (model:"haiku" → claude-haiku-4-5-20251001).
+#   `claude-sonnet-4-6` as a Task() model parameter has not been live-tested in this
+#   environment — if Task() rejects the full ID, fall back to an alias like `sonnet-4.6`
+#   or check `agy models` (oops — for agy; for Claude Code, check the Claude Code changelog
+#   for supported model alias strings). `effort: medium` is an accepted effort level but has
+#   NO execution path in the Task() per-dispatch call (Task() exposes only `model`, not
+#   `effort`) — it only takes effect through install-time subagent frontmatter, not through
+#   ad-hoc `/sdd.go` per-phase Task() dispatch. See adapters/claude-code/README.md for this gap.
+# - codex: `gpt-5.6-sol`/`gpt-5.6-luna` are the documented OpenAI API/Codex model IDs for the
+#   GPT-5.6 family (Sol = flagship/most capable, Luna = fastest/cheapest tier). `sol-5.6`/
+#   `luna-5.6` were marketing shorthand, not real identifiers — corrected. `effort` values are
+#   the `model_reasoning_effort` enum: minimal|low|medium|high|xhigh (NOT "extra-high").
+# - cursor: exact model-ID strings are account/plan-dependent and change as Cursor's catalog
+#   evolves — "grok-4.6-high" and "composer-2.5-fast" below are NOT independently confirmed
+#   against a live catalog (no CLI binary or working WebFetch in this environment; see
+#   adapters/cursor/README.md). Before relying on these in production, run `agent models` (or
+#   `agent --list-models`) once and correct the two values below if they differ — that command
+#   is the actual source of truth for this harness's catalog, this file is not guessing beyond
+#   what could be verified.
+# - antigravity: `gemini-3.7-flash` and `gemini-3.6-flash` are confirmed runtime model IDs
+#   (gemini-skills/SKILL.md lists gemini-3.7-flash as "fast, balanced for agentic tasks";
+#   LibreChat issue #14367 lists gemini-3.6-flash; both corroborated by multiple 2026 sources).
+#   `effort: high` uses the --effort flag (values: low|medium|high, confirmed in Antigravity
+#   CLI v1.1.5 changelog). No live Task()-equivalent dispatch was tested in this session —
+#   see adapters/antigravity/README.md for the `agy --model ... --effort ... -p` dispatch form
+#   and the known gaps around headless sandbox behavior.
+
+version: 1
+
+roles:
+  STRONG:
+    claude-code:
+      # Full model ID — live-verified: `claude -p ... --model claude-sonnet-4-6` accepted,
+      # "model":"claude-sonnet-4-6" confirmed in stream_event and modelUsage output.
+      model: claude-sonnet-4-6
+      effort: medium
+    cursor:
+      # UNCONFIRMED catalog string — verify via `agent models`, see note above.
+      model: grok-4.6-high
+    codex:
+      model: gpt-5.6-sol
+      effort: high
+    antigravity:
+      model: gemini-3.7-flash
+      effort: high
+
+  EXECUTION:
+    claude-code:
+      # Full version-pinned ID; resolves to claude-haiku-4-5-20251001 at runtime
+      # (live-verified: --model claude-haiku-4-5 accepted, canonicalModel: claude-haiku-4-5 in modelUsage)
+      model: claude-haiku-4-5
+      effort: medium
+    cursor:
+      # UNCONFIRMED catalog string — verify via `agent models`, see note above.
+      model: composer-2.5-fast
+    codex:
+      model: gpt-5.6-luna
+      effort: xhigh
+    antigravity:
+      model: gemini-3.6-flash
+      effort: high

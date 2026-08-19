@@ -12,7 +12,7 @@
 | **Incomplete Fix** | Tests still fail | Run `/sdd.fix` again (builds on previous), consider `sdd-debugger` |
 | **Code Review Issues** | Critical findings | Address ALL findings before proceeding - this is a quality gate |
 | **Consistency Fails** | Layer inconsistencies | Update specs/tasks for new behaviors, re-run check |
-| **Too Complex** | Multiple attempts fail | Delegate to `sdd-debugger` subagent for deep analysis |
+| **Too Complex** | Multiple attempts fail | Delegate to `sdd-debugger` Skill for deep analysis |
 
 ### Exit Criteria: When Is a Fix Complete?
 

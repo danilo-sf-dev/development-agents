@@ -131,7 +131,7 @@ grep -rEn "(password|api_key|secret|token|credential)\s*[:=]\s*[\"'][^\"']+[\"']
 
 #### 3. Test Validation (MANDATORY)
 ```bash
-bash development-agents/framework/tools/validation/validate-tests.sh sdd/wip/[feature] .
+bash development-agents/framework/tools/validate-tests.sh sdd/wip/[feature] .
 ```
 
 Checks:
@@ -161,7 +161,7 @@ These changes might introduce NEW conflicts that weren't present during `/sdd.pl
 
 **Validation command**:
 ```bash
-bash development-agents/framework/tools/validation/validate-spec-conflicts.sh sdd/wip/[feature] blocking
+bash development-agents/framework/tools/validate-spec-conflicts.sh sdd/wip/[feature] blocking
 ```
 
 **If NEW conflicts found without annotations**: Feature CANNOT be completed

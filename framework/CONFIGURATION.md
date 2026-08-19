@@ -15,12 +15,17 @@ SDD Kit follows **convention over configuration**. The framework provides sensib
 
 ## The Three Layers
 
+> **Disambiguation**: these are "Configuration Hierarchy Layers" (System D in
+> `framework/_shared/layers-and-gates.md`) — priority order for config resolution. Unrelated to
+> the build-task "Layer 1/2/3" (`skills/sdd-validator/SKILL.md`) despite the shared numbering;
+> note this system's priority direction also runs the opposite way (Layer 1 = lowest priority).
+
 ```mermaid
 graph TD
     subgraph "Configuration Hierarchy"
         A["<b>meta.md</b><br/>(per feature)"]
         B["<b>PROJECT.md</b><br/>(sdd/PROJECT)"]
-        C["<b>Standards</b><br/>(~/.development-agents/standards/)"]
+        C["<b>Standards</b><br/>(development-agents/framework/standards/)"]
     end
 
     A -->|"overrides"| B
@@ -37,16 +42,16 @@ graph TD
 
 ## Layer 1: Framework Standards (Defaults)
 
-**Location**: `~/.development-agents/standards/`
+**Location**: `development-agents/framework/standards/`
 
 These files define the **default values** used when nothing is configured:
 
-| Standard | Default Values |
-|----------|---------------|
+| Standard              | Default Values                            |
+| --------------------- | ----------------------------------------- |
 | `testing-strategy.md` | 80% coverage, unit/integration/e2e ratios |
-| `tech-stack.md` | Recommended libraries per language |
-| `coding-standards.md` | Formatting, naming conventions |
-| `coding-standards.md` |  project service recommendations |
+| `tech-stack.md`       | Recommended libraries per language        |
+| `coding-standards.md` | Formatting, naming conventions            |
+| `coding-standards.md` | project service recommendations           |
 
 **You don't edit these files**. They're part of the framework and get updated when you upgrade.
 
@@ -85,14 +90,14 @@ The template is **empty by default** (all sections commented out):
 
 ### What You Can Configure
 
-| Section | Purpose | Example Override |
-|---------|---------|-----------------|
-| `language` | Spec/comment language | `specs: es` for Spanish |
-| `preferences` | Tech preferences | `orm: mybatis` instead of jpa |
-| `coverage` | Test thresholds | `min_coverage: 60` for legacy |
-| `reviews` | Review requirements | `code_review: optional` |
-| `defaults` | Feature defaults | `e2e_enabled: false` |
-| `forbidden` | Banned libraries | `- lombok` |
+| Section       | Purpose               | Example Override              |
+| ------------- | --------------------- | ----------------------------- |
+| `language`    | Spec/comment language | `specs: es` for Spanish       |
+| `preferences` | Tech preferences      | `orm: mybatis` instead of jpa |
+| `coverage`    | Test thresholds       | `min_coverage: 60` for legacy |
+| `reviews`     | Review requirements   | `code_review: optional`       |
+| `defaults`    | Feature defaults      | `e2e_enabled: false`          |
+| `forbidden`   | Banned libraries      | `- lombok`                    |
 
 ### Registering Overrides
 
@@ -109,6 +114,7 @@ overrides:
 ```
 
 **Why register?**
+
 - Documents the intentional deviation
 - Prevents validation warnings
 - Helps future maintainers understand decisions
@@ -116,6 +122,7 @@ overrides:
 ### Validation
 
 Run `/sdd.check --project` to:
+
 - Detect unregistered conflicts
 - Suggest override registration
 - Verify PROJECT.md syntax
@@ -132,10 +139,10 @@ While PROJECT.md defines **team conventions** (architecture, coverage, language)
 
 ### How PATTERNS.md Works
 
-| Source | When | Section |
-|--------|------|---------|
-| `/sdd.finish` | After completing feature | Technology sections (Go, Java, etc.) |
-| `/sdd.project patterns` | Anytime (manual) | "Team Conventions" section |
+| Source                  | When                     | Section                              |
+| ----------------------- | ------------------------ | ------------------------------------ |
+| `/sdd.finish`           | After completing feature | Technology sections (Go, Java, etc.) |
+| `/sdd.project patterns` | Anytime (manual)         | "Team Conventions" section           |
 
 ### Adding Patterns Manually
 
@@ -164,16 +171,17 @@ Use `/sdd.project patterns` to add team conventions before completing features:
 
 ### When to Use Each
 
-| Need | Use |
-|------|-----|
-| Team prefers specific architecture | `PROJECT.md` → `preferences.architecture` |
-| Team must use internal library X | `PATTERNS.md` → via `/sdd.project patterns --add` |
-| Learned gotcha during feature | `PATTERNS.md` → auto-promoted by `/sdd.finish` |
-| Ban a specific library | `PROJECT.md` → `forbidden` section |
+| Need                               | Use                                               |
+| ---------------------------------- | ------------------------------------------------- |
+| Team prefers specific architecture | `PROJECT.md` → `preferences.architecture`         |
+| Team must use internal library X   | `PATTERNS.md` → via `/sdd.project patterns --add` |
+| Learned gotcha during feature      | `PATTERNS.md` → auto-promoted by `/sdd.finish`    |
+| Ban a specific library             | `PROJECT.md` → `forbidden` section                |
 
 ### Reading Patterns
 
 Patterns are automatically loaded in `/sdd.start` (Step 10) and influence:
+
 - Technical spec generation (`/sdd.spec technical`)
 - Task planning (`/sdd.plan`)
 - Implementation decisions (`/sdd.build`)
@@ -245,13 +253,13 @@ testing:
 
 ## Quick Reference
 
-| I want to... | Where to configure |
-|--------------|-------------------|
+| I want to...                 | Where to configure                         |
+| ---------------------------- | ------------------------------------------ |
 | Change project-wide coverage | `sdd/PROJECT.md` → `coverage.min_coverage` |
-| Enable E2E for one feature | `meta.md` → `testing.e2e_enabled: true` |
-| Ban a library project-wide | `sdd/PROJECT.md` → `forbidden` |
-| Use Spanish for specs | `sdd/PROJECT.md` → `language.specs: es` |
-| See current defaults | `~/.development-agents/standards/` |
+| Enable E2E for one feature   | `meta.md` → `testing.e2e_enabled: true`    |
+| Ban a library project-wide   | `sdd/PROJECT.md` → `forbidden`             |
+| Use Spanish for specs        | `sdd/PROJECT.md` → `language.specs: es`    |
+| See current defaults         | `development-agents/framework/standards/`  |
 
 ---
 
@@ -262,6 +270,7 @@ does not hardcode a specific auth token/proxy — configure whatever your org's 
 servers require (declare it in `sdd/PROJECT.md` if agents need to know about it).
 
 **Typical pattern** (adapt to your org):
+
 1. An auth proxy or CLI handles token injection/refresh automatically, if your org provides one
 2. Otherwise, set the required environment variable(s) per your MCP server's documentation
 3. If authentication fails repeatedly, verify you're logged in with your org's tooling and
@@ -275,4 +284,4 @@ servers require (declare it in `sdd/PROJECT.md` if agents need to know about it)
 - [governance.md](./standards/governance.md) - Framework principles
 - [testing-strategy.md](./standards/testing-strategy.md) - Testing defaults
 - [PROJECT.md Template](./templates/project.md) - Configuration template
-- [genai-validate-project.sh](./tools/genai/genai-validate-project.sh) - PROJECT.md validation
+- `/sdd.check --project` - Validates PROJECT.md against standards (see [Validation](#validation) above)

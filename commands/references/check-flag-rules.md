@@ -21,7 +21,7 @@ For output format examples, also read `references/check-output-examples.md`.
 
 ## `--project` rules
 
-1. **Validate via GenAI**: Use `genai-validate-project.sh`, fallback to `validate-project.sh`
+1. **Validate PROJECT.md**: Use `validate-project.sh`
 2. **Compare against standards**: Check all `development-agents/framework/standards/` files
 3. **Track overrides**: Distinguish between registered and unregistered overrides
 4. **Assist registration**: Help user register overrides with proper documentation

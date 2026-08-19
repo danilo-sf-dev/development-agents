@@ -23,7 +23,7 @@
 │      └── NO ──► Q2: Is this about SPEC/CODE INCONSISTENCY?                  │
 │                     (e.g., code does X but spec says Y)                      │
 │                     │                                                        │
-│                     ├── YES ──► Use sdd-layer-analyzer                      │
+│                     ├── YES ──► Use sdd-layer-analysis                      │
 │                     │           Purpose: Detect drift, align layers          │
 │                     │                                                        │
 │                     └── NO ──► Q3: Is this a DEEP TECHNICAL BUG?            │
@@ -39,21 +39,26 @@
 
 ### Subagent Reference
 
-| Subagent | When to Use | Example Error |
-|----------|-------------|---------------|
-| **sdd-debugger** | Race conditions, deadlocks | "Request hangs intermittently" |
-| **sdd-debugger** | Memory leaks | "OOM after running for 2 hours" |
-| **sdd-debugger** | Performance regressions | "API now takes 10s instead of 100ms" |
-| **sdd-debugger** | Subtle logic errors | "Wrong result only for edge case X" |
-| **sdd-layer-analyzer** | Spec/code mismatch | "Code returns 400 but spec says 422" |
-| **sdd-layer-analyzer** | Undocumented features | "This API parameter isn't in specs" |
-| **sdd-layer-analyzer** | Missing tasks | "This code exists but no task covers it" |
+| Subagent               | When to Use                | Example Error                            |
+| ---------------------- | -------------------------- | ---------------------------------------- |
+| **sdd-debugger**       | Race conditions, deadlocks | "Request hangs intermittently"           |
+| **sdd-debugger**       | Memory leaks               | "OOM after running for 2 hours"          |
+| **sdd-debugger**       | Performance regressions    | "API now takes 10s instead of 100ms"     |
+| **sdd-debugger**       | Subtle logic errors        | "Wrong result only for edge case X"      |
+| **sdd-layer-analysis** | Spec/code mismatch         | "Code returns 400 but spec says 422"     |
+| **sdd-layer-analysis** | Undocumented features      | "This API parameter isn't in specs"      |
+| **sdd-layer-analysis** | Missing tasks              | "This code exists but no task covers it" |
 
 ### Invocation
 
-```
-Task(subagent_type="sdd-debugger", prompt="Analyze: [error details]")
-Task(subagent_type="sdd-layer-analyzer", prompt="Check: [feature name]")
-```
+`DELEGATE_OFFLOAD` (context-saving delegation to a specialist agent — no bias-protection/isolation
+requirement here, unlike the Validator Independence Protocol; see
+`framework/_shared/harness-capabilities.md`):
+
+- `sdd-debugger` — Analyze: [error details] — `model_role: STRONG` (see its `SKILL.md`)
+- `sdd-layer-analysis` — Check: [feature name] — `model_role: EXECUTION` (see its `SKILL.md`)
+
+Both are Skills, not registered subagent types — see `adapters/<harness>/README.md` for the concrete
+dispatch mechanism on the installed harness.
 
 ---

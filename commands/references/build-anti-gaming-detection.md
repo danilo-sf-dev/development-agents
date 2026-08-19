@@ -4,7 +4,7 @@
 
 > **Rule**: `framework/standards/boundaries.md` — B-07, B-08. This file is **detection procedure only**.
 
-> No OS hard gate (`bash`/`jq`/pre-commit). Enforcement = agent check + `sdd-validator-runner` Process Compliance + human AskUserQuestion.
+> No OS hard gate (`bash`/`jq`/pre-commit). Enforcement = agent check + `sdd-validator` Process Compliance + human AskUserQuestion.
 > Always include **Outros** — see `ask-user-question-outros.md`.
 
 ## Soft detection (run per task, as part of Step 5)
@@ -48,4 +48,4 @@ AskUserQuestion(
 
 ## Validator cross-check
 
-Also invoke `sdd-validator-runner` with Process Compliance enabled (see agent). If verdict is `CANNOT_PROCEED` on process rules → same STOP + AskUserQuestion pattern (incl. Outros).
+Also invoke `sdd-validator` with Process Compliance enabled (see agent). If verdict is `CANNOT_PROCEED` on process rules → same STOP + AskUserQuestion pattern (incl. Outros).

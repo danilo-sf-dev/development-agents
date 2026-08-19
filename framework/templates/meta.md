@@ -51,13 +51,15 @@ user_profile:
 ```
 
 > **Note**: User profile affects how information is displayed and what decisions are automated:
+>
 > - **technical**: Full control - see layers, complexity ratings, project services, code snippets
 > - **non-technical**: Business focus - simplified display, agent handles technical decisions automatically
 >
 > **Source hierarchy** (highest to lowest priority):
+>
 > 1. `feature` - Override in this feature's meta.md
 > 2. `project` - Default from PROJECT.md
-> 3. `global` - User preference in `~/.development-agents/user-profile.yaml`
+> 3. `global` - User preference in `development-agents/framework/user-profile.yaml` (project-local, not global)
 > 4. `selected` - First-time selection during `/sdd.start`
 
 ---
@@ -150,6 +152,7 @@ auto_generated:
 ```
 
 > **Note**: Workflow modes apply only to DEBT and TODO items picked from the backlog:
+>
 > - **full**: Standard pipeline (functional interview → technical interview → plan → build)
 > - **technical-only**: Auto-generates minimal functional spec, user does technical interview
 > - **tasks-only**: Auto-generates both specs, user only approves tasks
@@ -168,6 +171,7 @@ auto_generated:
 -->
 
 **Affected System Specs**:
+
 ```yaml
 affected_specs:
   - path: sdd/specs/architecture.md
@@ -179,6 +183,7 @@ affected_specs:
 ```
 
 **Impact Assessment**:
+
 ```yaml
 impact:
   level: Critical | High | Medium | Low

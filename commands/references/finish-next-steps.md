@@ -7,15 +7,21 @@
 After `/sdd.finish` completes successfully:
 
 1. **Your feature is archived** in `sdd/features/[feature-name]/`
-2. **Telemetry** captured automatically in `~/.claude/logs/` or `~/.cursor/logs/` (when supported)
-3. **Documentation generated** (README.md, implementation-summary.md)
+2. **Documentation generated** (README.md, implementation-summary.md)
 
 ### Interactive Next Steps (After Archive Complete)
 
 > **MANDATORY (Standard mode only)**: Offer interactive selection after archiving.
-> **EXPRESS MODE**: Skip this - show brief completion message only.
+> **EXPRESS MODE**: Skip the AskUserQuestion — show the completion block below only.
 
-**Model advisory** (Standard mode): Read `references/model-suggestion-advisory.md` — full box for `phase_key`: `finish→pr` (user may pick `/sdd.start` → use `finish→start` row if they choose start).
+Before the `AskUserQuestion` (or as the sole output in Express mode), print:
+
+```
+✓ concluído: /sdd.finish
+Pipeline: START → SPEC → PLAN → TEST → BUILD → CHECK → FINISH ✓
+```
+
+**Model Routing (automatic, informational only)**: the next command (`/sdd.pr` or `/sdd.start`, both `model_role: EXECUTION`) is resolved and dispatched automatically — no confirmation needed. Optionally print the one-line observability format from `references/model-suggestion-advisory.md`.
 
 **⛔ INVOKE TOOL (do not print this, CALL the tool)** (only in Standard mode):
 
@@ -25,8 +31,8 @@ AskUserQuestion(
     "question": "Feature arquivada! Qual o próximo passo?",
     "header": "Próximo",
     "options": [
-      {"label": "/sdd.pr (Recomendado)", "description": "Rascunhar o PR a partir dos artefatos SDD → você aprova → publicar — comando em haiku"},
-      {"label": "/sdd.start", "description": "Começar uma nova feature — comando em haiku (sonnet de novo no spec)"},
+      {"label": "/sdd.pr (Recomendado)", "description": "Rascunhar o PR a partir dos artefatos SDD → você aprova → publicar — comando em EXECUTION"},
+      {"label": "/sdd.start", "description": "Começar uma nova feature — comando em EXECUTION (STRONG de novo no spec)"},
       {"label": "/sdd.start --reopen", "description": "Reabrir esta feature depois para iterar"},
       {"label": "Outros", "description": "Descreva o que você vai fazer ou sugira outro caminho (texto livre)"}
     ],
@@ -39,12 +45,12 @@ Shape: `ask-user-question-outros.md` — **Outros** is mandatory on gates.
 
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.pr (Recomendado) | Run `/sdd.pr` for archived or last feature |
-| /sdd.start | `Skill(skill="sdd.start")` |
-| /sdd.start --reopen | Show: "Para reabrir depois: `/sdd.start --reopen [feature-name]`" |
-| Outros | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, PR manual |
+| Selection             | Action                                                              |
+| --------------------- | ------------------------------------------------------------------- |
+| /sdd.pr (Recomendado) | Run `/sdd.pr` for archived or last feature                          |
+| /sdd.start            | `CONTINUE_WORKFLOW("/sdd.start")`                                   |
+| /sdd.start --reopen   | Show: "Para reabrir depois: `/sdd.start --reopen [feature-name]`"   |
+| Outros                | Read user intent — e.g. `/sdd.backlog list`, `/sdd.list`, PR manual |
 
 > **MODE BEHAVIOR**: In Express mode, just show completion message without prompting.
 

@@ -1,6 +1,7 @@
 ﻿---
 name: sdd.hub
 description: Orchestrate multi-app hub features across apps. Coordinates specs, planning, and build across member apps. Use when working in a hub repo with multiple collaborating apps.
+model_role: inherit
 argument-hint: "<action> [args]"
 ---
 
@@ -12,29 +13,35 @@ argument-hint: "<action> [args]"
 > Each app has its own `sdd/` directory and works with standard `/sdd.*` commands.
 > This skill adds the cross-app coordination layer on top.
 
+**Model Routing**: like `/sdd.go`, `/sdd.hub` declares `model_role: inherit` and does not pin one
+model for the whole run — each per-app `/sdd.*` command it routes to keeps its own `model_role` and
+is dispatched as its own isolated, model-resolved execution (same automatic, no-operator-action
+mechanism as `/sdd.go` — see `commands/sdd.go.md` § "Model Routing — automatic per-phase dispatch"
+for the dispatch principle; the same principle applies per app, per sub-command here).
+
 ---
 
 ## Sub-command Routing
 
 Parse the user's input and route to the correct reference file.
 
-| Input | Action |
-|-------|--------|
-| Any `/sdd.hub` action | Read the matching section in `references/hub-workflows.md` and follow it |
-| `/sdd.hub` (no action) | Show help below |
+| Input                  | Action                                                                   |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Any `/sdd.hub` action  | Read the matching section in `references/hub-workflows.md` and follow it |
+| `/sdd.hub` (no action) | Show help below                                                          |
 
 ### Flag parsing
 
 When the user provides flags, parse them and pass to the reference file handler. Supported flags per sub-command:
 
-| Sub-command | Supported flags |
-|-------------|----------------|
-| `spec` | `--approve`, `--summary`, `--audio`, `--iterate "desc"` |
-| `plan` | `--approve` |
-| `build` | `--resume` |
-| `check` | `--sync` |
-| `finish` | `--force` |
-| `sync` | `--pull`, `--members name1,name2` |
+| Sub-command | Supported flags                                         |
+| ----------- | ------------------------------------------------------- |
+| `spec`      | `--approve`, `--summary`, `--audio`, `--iterate "desc"` |
+| `plan`      | `--approve`                                             |
+| `build`     | `--resume`                                              |
+| `check`     | `--sync`                                                |
+| `finish`    | `--force`                                               |
+| `sync`      | `--pull`, `--members name1,name2`                       |
 
 ---
 
@@ -81,7 +88,7 @@ Prerequisite: sdd/PROJECT.md must contain a ## Hub members table.
 
 Before executing ANY sub-command, verify this is a hub:
 
-1. Run: `Bash: bash development-agents/framework/tools/detection/detect-stack.sh --level`
+1. Run: `Bash: bash development-agents/framework/tools/detect-stack.sh --level`
 2. If result is NOT `hub`, stop and show:
    > "This directory is not a hub. A hub requires `sdd/PROJECT.md` with a `## Hub members` table.
    > For single-app features, use `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` (see `framework/PIPELINE.md`)."
@@ -93,16 +100,17 @@ Before executing ANY sub-command, verify this is a hub:
 All sub-commands invoke hooks via `sdd.skill` at defined trigger points.
 Hub phases are:
 
-| Phase | Triggers |
-|-------|----------|
-| `hub-start` | `before-start` |
-| `hub-spec-functional` | `before-start`, `before-approval` |
-| `hub-spec-technical` | `before-start`, `before-approval` |
-| `hub-plan` | `before-start`, `before-approval` |
-| `hub-build` | `before-start`, `after-implementation` |
-| `hub-finish` | `before-start`, `after-implementation` |
+| Phase                 | Triggers                               |
+| --------------------- | -------------------------------------- |
+| `hub-start`           | `before-start`                         |
+| `hub-spec-functional` | `before-start`, `before-approval`      |
+| `hub-spec-technical`  | `before-start`, `before-approval`      |
+| `hub-plan`            | `before-start`, `before-approval`      |
+| `hub-build`           | `before-start`, `after-implementation` |
+| `hub-finish`          | `before-start`, `after-implementation` |
 
 To invoke hooks, check if any skills are connected to the phase:
+
 ```bash
 # Read skill-hooks.json (repo or user layer)
 # If a hook exists for the phase+trigger, invoke that skill

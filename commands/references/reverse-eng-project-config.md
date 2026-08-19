@@ -11,7 +11,8 @@
 ```pseudocode
 # 1. Ensure PROJECT.md exists (needed for language resolution)
 IF NOT EXISTS sdd/PROJECT.md:
-    → Invoke Skill("sdd.project") — runs wizard, creates PROJECT.md with language
+    → CONTINUE_WORKFLOW("/sdd.project") — runs wizard, creates PROJECT.md with language
+    → (/sdd.project is a command, not a skill — see framework/_shared/harness-capabilities.md)
     → Wait for wizard completion before continuing
 
 # 2. Ensure CLAUDE.md exists (Claude Code session bootstrap)
@@ -35,6 +36,7 @@ IF .claude/ directory exists:
 ```
 
 **SDD Kit section** (same template as `/sdd.start` Step 9.5):
+
 ```markdown
 ## SDD Kit
 
@@ -46,7 +48,7 @@ Do not mix languages in specs. Technical terms (API, REST, CRUD) stay in English
 
 ### Quick Reference
 - Framework expert: `Skill("sdd-kit-expert")`
-- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.finish` (canonical: `framework/PIPELINE.md`)
+- Workflow: `/sdd.start` → `/sdd.spec` → `/sdd.plan` → `/sdd.test` → `/sdd.build` → `/sdd.check` → `/sdd.finish` (canonical: `framework/PIPELINE.md`)
 - Project conventions: `sdd/PROJECT.md`
 - Discovered patterns: `sdd/PATTERNS.md`
 

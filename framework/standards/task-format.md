@@ -74,64 +74,67 @@ sdd/wip/[YYYYMMDD-feature-name]/
 
 ### Task Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | ✅ | Format: `TASK-NNN` (e.g., TASK-001) |
-| `title` | string | ✅ | Short descriptive title |
-| `description` | string | ✅ | What the task accomplishes |
-| `priority` | enum | ✅ | `Critical`, `High`, `Medium`, `Low` |
-| `complexity` | enum | ✅ | `High`, `Medium`, `Low` |
-| `phase` | number | ✅ | Execution phase (1, 2, 3...) |
-| `depends_on` | array | ✅ | List of task IDs this depends on |
-| `status` | enum | ✅ | `pending`, `in_progress`, `completed`, `blocked` |
-| `acceptance_criteria` | array | ✅ | List of criteria to mark as complete |
-| `files_affected` | array | ⬚ | Files to create/modify |
-| `tests_required` | array | ⬚ | Tests to write |
+| Field                 | Type   | Required | Description                                      |
+| --------------------- | ------ | -------- | ------------------------------------------------ |
+| `id`                  | string | ✅       | Format: `TASK-NNN` (e.g., TASK-001)              |
+| `title`               | string | ✅       | Short descriptive title                          |
+| `description`         | string | ✅       | What the task accomplishes                       |
+| `priority`            | enum   | ✅       | `Critical`, `High`, `Medium`, `Low`              |
+| `complexity`          | enum   | ✅       | `High`, `Medium`, `Low`                          |
+| `phase`               | number | ✅       | Execution phase (1, 2, 3...)                     |
+| `depends_on`          | array  | ✅       | List of task IDs this depends on                 |
+| `status`              | enum   | ✅       | `pending`, `in_progress`, `completed`, `blocked` |
+| `acceptance_criteria` | array  | ✅       | List of criteria to mark as complete             |
+| `files_affected`      | array  | ⬚        | Files to create/modify                           |
+| `tests_required`      | array  | ⬚        | Tests to write                                   |
 
 ### Status Values
 
-| Status | Description |
-|--------|-------------|
-| `pending` | Not started |
-| `in_progress` | Currently being worked on |
-| `completed` | Done and validated |
-| `blocked` | Waiting on dependency or external factor |
+| Status        | Description                              |
+| ------------- | ---------------------------------------- |
+| `pending`     | Not started                              |
+| `in_progress` | Currently being worked on                |
+| `completed`   | Done and validated                       |
+| `blocked`     | Waiting on dependency or external factor |
 
 ---
 
 ## Commands That Use tasks.json
 
-| Command | Action |
-|---------|--------|
-| `/sdd.plan` | **Creates** tasks.json from specs |
-| `/sdd.build` | **Reads & updates** task status |
-| `/sdd.check` | **Reads** for progress reporting |
-| `/sdd.finish` | **Reads** to verify completion |
+| Command                | Action                             |
+| ---------------------- | ---------------------------------- |
+| `/sdd.plan`            | **Creates** tasks.json from specs  |
+| `/sdd.build`           | **Reads & updates** task status    |
+| `/sdd.check`           | **Reads** for progress reporting   |
+| `/sdd.finish`          | **Reads** to verify completion     |
 | `/sdd.rollback --task` | **Reads** to identify task commits |
 
 ---
 
 ## Agents That Use tasks.json
 
-| Agent | Usage |
-|-------|-------|
-| `sdd-implementer` | Reads tasks during `/sdd.build` |
-| `sdd-layer-analyzer` | Validates task-spec consistency |
-| `genai-analyze-e2e.sh` | Detects E2E scenarios in tasks |
-| `sdd-small-test-writer` | Reads test requirements |
-| `genai-compact-state.sh` | Summarizes task state |
+| Agent                   | Usage                                                                                                                                                                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sdd-implementation`       | Reads tasks during `/sdd.build`                                                                                                                                                                                                                   |
+| `sdd-layer-analysis`    | Validates task-spec consistency, and scans `tasks.json` directly to flag likely E2E scenarios (tasks touching multiple layers/services, or with `tests_required` entries describing cross-component flows) — there is no separate script for this |
+| `sdd-test-writing` | Reads test requirements                                                                                                                                                                                                                           |
+
+> Context-budget compaction (see `mandatory-standards.md` — Context Budget Protocol) also reads `tasks.json` directly to summarize task state when writing a condensed `progress.md`; this is a reasoning step the active agent performs itself, not a separate script.
 
 ---
 
 ## Validation
 
-Run task validation with:
+Run task validation with the optional helper if your setup provides it (not shipped with this pack by default — see `development-agents/framework/tools/`); otherwise apply the checks below manually when reviewing `tasks.json`:
 
 ```bash
-bash ~/.development-agents/tools/validation/validate-tasks.sh sdd/wip/[feature]
+if [ -x "development-agents/framework/tools/validate-tasks.sh" ]; then
+    bash development-agents/framework/tools/validate-tasks.sh sdd/wip/[feature]
+fi
 ```
 
 **Checks performed**:
+
 - All required fields present
 - No circular dependencies
 - Valid status values

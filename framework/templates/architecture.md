@@ -260,9 +260,9 @@ graph TB
     App2 -->  Cache
     App3 -->  Cache
 
-    App1 --> 
-    App2 --> 
-    App3 --> 
+    App1 -->
+    App2 -->
+    App3 -->
 
     App1 --> MercadoPago
     App2 --> MercadoPago
@@ -280,29 +280,34 @@ graph TB
 ## Technology Stack
 
 ### Frontend
+
 - **Framework**: Frontend framework (React) with TypeScript
 - **State**: `frontend-framework/store` (8.16.0+) / Context + useReducer (Zustand as fallback)
 - **UI Library**: design system Web Design System
 - **Testing**: Vitest + React Testing Library
 
 ### Backend
+
 - **Runtime**: Node.js 20+
 - **Framework**: Express or Fastify
 - **Language**: TypeScript
 - **ORM**: Prisma or TypeORM
 
 ### Data Storage
-- **Primary Database**:  MySQL 15+
-- **Caching**:  Cache 7+
-- **Session Store**:  Cache
+
+- **Primary Database**: MySQL 15+
+- **Caching**: Cache 7+
+- **Session Store**: Cache
 
 ### External Services
-- **Auth**:  IAM (OAuth2/JWT)
-- **Messaging**:  Messaging (MessageQueue)
-- **Monitoring**:  DataDog
+
+- **Auth**: IAM (OAuth2/JWT)
+- **Messaging**: Messaging (MessageQueue)
+- **Monitoring**: DataDog
 - **Payments**: MercadoPago REST API
 
 ### DevOps
+
 - **Containers**: Docker
 - **Orchestration**: Kubernetes
 - **CI/CD**: GitHub Actions or GitLab CI
@@ -327,8 +332,9 @@ graph LR
 ```
 
 **Security Layers**:
+
 1. **Transport**: HTTPS/TLS 1.3 end-to-end
-2. **Authentication**:  IAM JWT validation
+2. **Authentication**: IAM JWT validation
 3. **Authorization**: Role-based access control (RBAC)
 4. **Data**: Encryption at rest (AES-256)
 5. **Secrets**: Managed via your org's secrets manager/vault (no hardcoded secrets)
@@ -397,15 +403,15 @@ graph TB
 
 - **API**: Stateless, can scale to N instances
 - **Database**: Read replicas for read-heavy operations
-- **Caching**:  Cache cluster with sharding
+- **Caching**: Cache cluster with sharding
 
 ### Performance Bottlenecks
 
-| Component | Potential Bottleneck | Mitigation |
-|-----------|---------------------|------------|
-| Database writes | High payment volume | Connection pooling, batch writes |
-| External API | Stripe rate limits | Request queuing, retry logic |
-| Cache invalidation | Stale data | TTL + event-driven invalidation |
+| Component          | Potential Bottleneck | Mitigation                       |
+| ------------------ | -------------------- | -------------------------------- |
+| Database writes    | High payment volume  | Connection pooling, batch writes |
+| External API       | Stripe rate limits   | Request queuing, retry logic     |
+| Cache invalidation | Stale data           | TTL + event-driven invalidation  |
 
 ---
 
@@ -413,4 +419,4 @@ graph TB
 
 - Technical Spec: `../technical-spec.md`
 - Functional Spec: `../../1-functional/spec.md`
-- Standards: `../../../~/.development-agents/standards/architecture-patterns.md`
+- Standards: `development-agents/framework/standards/architecture-patterns.md`

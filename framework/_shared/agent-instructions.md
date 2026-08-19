@@ -13,10 +13,19 @@ AskUserQuestion(questions=[{...}])
 
 This is a **tool call** you must execute, not content to display.
 
-| WRONG | CORRECT |
-|-------|---------|
-| Bash(echo "1. Option A") | Directly call the AskUserQuestion tool |
-| Print the JSON to terminal | Pass the parameters shown to the tool |
+> **Capability note (applies to every `AskUserQuestion(...)` block in `commands/`,
+> `skills/`, and `framework/`, whether or not the specific block repeats this pointer)**: this is
+> the conceptual `ASK_USER` capability — structured multi-choice + mandatory free-text "Outros" —
+> not a Claude-Code-only primitive. `AskUserQuestion(...)` is the correct, literal Claude Code
+> implementation; other harnesses translate it per `framework/_shared/harness-capabilities.md`
+> (e.g. numbered-list + free-text on harnesses with no structured choice tool). You do not need to
+> find a per-block "ASK_USER" tag to know this — this file, read at the start of every command, is
+> the blanket rule.
+
+| WRONG                      | CORRECT                                |
+| -------------------------- | -------------------------------------- |
+| Bash(echo "1. Option A")   | Directly call the AskUserQuestion tool |
+| Print the JSON to terminal | Pass the parameters shown to the tool  |
 
 ---
 
@@ -41,14 +50,18 @@ Every **gate** AskUserQuestion (approve / process failure / anti-gaming / ambigu
 
 ---
 
-## Model suggestion advisory (informative)
+## Model Routing (automatic — informative only, never blocking)
 
-At **phase-boundary** gates (interactive next-steps after approve/promote), show the model advisory **before** `AskUserQuestion`. At **command entry** for spec/plan/test/build/finish/reverse-eng/fix, show the compact line once. For **critical switches** `test→build` and `build→finish`, run the **model-confirm** AskUserQuestion (BLOCKING) from the advisory.
+Model selection is automatic on every supported harness (Claude Code, Cursor, Codex) — see
+`framework/_shared/model-routing.md` and each `adapters/<harness>/README.md` § Model Routing. There
+is no model-confirm gate anywhere in the pipeline; the optional one-line observability format
+(`ℹ️ Model Routing: <role> → <resolved model> (auto)`) may be shown at command entry, never wrapped
+in `AskUserQuestion`, never blocking.
 
-> Read `commands/references/model-suggestion-advisory.md` for `phase_key`, pinned frontmatter policy, templates, and AskUserQuestion shapes.
-> Cost lock = command `model:` frontmatter (haiku/sonnet; opus only on `/sdd.fix`). Pauses = awareness + extremo escape, not the primary cost control.
-
-Informative only — never block or require the user to confirm a model switch.
+> Read `commands/references/model-suggestion-advisory.md` for the exact observability format and
+> what was removed (the former manual-confirm apparatus).
+> Model resolution = `model_role:` frontmatter (`STRONG`/`EXECUTION`) → `config/model-routing.yaml`
+> via `framework/tools/resolve-model.sh` → dispatched automatically by the adapter's mechanism.
 
 ---
 
@@ -64,9 +77,22 @@ At the **start of every** `/sdd.*` command:
 
 ---
 
+## Pipeline Transition Observability (print the transition block on successful completion)
+
+At the successful end of each command's final step, BEFORE any `AskUserQuestion`, print the
+pipeline transition block defined in `commands/references/phase-transition-observability.md`.
+Use that file's per-command mapping to fill in `<current>`, `<next>`, and the bracketed pipeline
+string. Do NOT print on error, mid-command, or inside a gate. One block per invocation, max.
+
+This pipeline does not track token/cost usage itself — no per-phase Usage block, no custom
+telemetry capture. Earlier rounds built one (`EMIT_PHASE_OBSERVABILITY`); two consecutive real
+smoke tests on Codex and Claude Code showed it never actually fired in practice, so it was
+removed. For usage/cost visibility, use your harness's own native tooling — outside this pipeline.
+
 ## Single delivery path (mandatory)
 
-There is **one** feature pipeline: `start → spec → plan → test → build → finish → pr`.
+There is **one** feature pipeline: `start → spec → plan → test → build → check → finish → pr`
+(canonical: `framework/PIPELINE.md`).
 
 - Do **not** invent, ask for, or honor prototype / MVP / production “project types”.
 - Do **not** skip `/sdd.test`, security validation, or quality gates because work “feels experimental”.

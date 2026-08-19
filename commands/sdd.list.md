@@ -1,7 +1,7 @@
 ﻿---
 name: sdd.list
 description: List all features in the project workspace with their status and phase. Use when user wants to see current features.
-model: haiku
+model_role: EXECUTION
 ---
 
 > **Shared agent instructions**: Read `development-agents/framework/_shared/agent-instructions.md` before executing this command.
@@ -20,13 +20,14 @@ model: haiku
 
 **Syntax**: `/sdd.list [flags]`
 
-| Flag | Description |
-|------|-------------|
-| (none) | List all features (WIP + completed) |
-| `--status <S>` | Filter by status |
-| `--format <F>` | Output format (table/json) |
+| Flag           | Description                         |
+| -------------- | ----------------------------------- |
+| (none)         | List all features (WIP + completed) |
+| `--status <S>` | Filter by status                    |
+| `--format <F>` | Output format (table/json)          |
 
 **Example**:
+
 ```bash
 /sdd.list                # List all features
 ```
@@ -38,6 +39,7 @@ model: haiku
 ## Purpose
 
 Shows overview of all features in the project:
+
 - Features in progress (from `sdd/wip/`)
 - Completed features (from `sdd/features/`)
 - Quick stats for each
@@ -59,6 +61,7 @@ unnumbered_features=$(ls -1 sdd/features/ 2>/dev/null | grep -vE '^[0-9]{8}-')
 **If legacy features are found**: Display them normally in the list. Do NOT rename or migrate them automatically. Legacy NNN-prefixed features continue to work with all commands.
 
 Show a one-line note at the end of the output:
+
 ```
 ℹ️  Some features use legacy numbering (NNN-). New features use date prefix (YYYYMMDD-). Both formats are supported.
 ```
@@ -86,6 +89,7 @@ echo "📊 Features scanned: $total_count total ($wip_count WIP, $completed_coun
 ```
 
 **Feature metadata extracted**:
+
 - Feature number and name
 - Current stage (functional/technical/tasks/implementation)
 - Task progress (completed/total)
@@ -107,6 +111,7 @@ echo "   Approved: $approved_count, Pending: $pending_count"
 ```
 
 **Spec metadata extracted**:
+
 - Spec type (functional/technical)
 - Approval status
 - User story count
@@ -118,6 +123,7 @@ echo "   Approved: $approved_count, Pending: $pending_count"
 ### 4. Display WIP Features
 
 For each feature in `sdd/wip/`:
+
 - Extract feature date and name from directory name
 - Read `meta.md` for current stage
 - Read task progress if in implementation
@@ -144,6 +150,7 @@ Total WIP: 3 features
 ### 5. Display Completed Features
 
 For each feature in `sdd/features/`:
+
 - Extract feature date and name from directory name
 - Read `meta.md` for completion date
 - Show key metrics
@@ -241,6 +248,7 @@ Full tables with statistics (shown above).
 ## Context Loading
 
 Read:
+
 - All `meta.md` files in `sdd/wip/*/`
 - All `meta.md` files in `sdd/features/*/`
 - Progress files if in implementation
@@ -257,15 +265,16 @@ Read:
 
 ## AI Agent Instructions
 
-
 ### Help Flag Detection
 
 **WHEN** the user runs `/sdd.list help`:
+
 1. Output ONLY the "Quick Help" section (not full documentation)
 2. Do NOT execute list logic
 3. Keep response concise (~15 lines)
 
 ### Key Rules
+
 1. **Say "I don't know"** when uncertain - Don't make up information
 2. **Offer options** instead of assuming - Present 2-4 alternatives when valid approaches exist
 3. **Think before acting** - Use `<thinking>` blocks for complex decisions
@@ -276,7 +285,7 @@ Read:
 
 > **MANDATORY**: Always offer interactive selection after displaying the list.
 
-**⛔ INVOKE TOOL (do not print this, CALL the tool):**
+**⛔ INVOKE TOOL (do not print this, CALL the tool):** — `ASK_USER` gate (see `framework/_shared/harness-capabilities.md`); fixed to include the mandatory **Outros** option per `references/ask-user-question-outros.md` — it was missing here.
 
 ```
 AskUserQuestion(
@@ -286,7 +295,8 @@ AskUserQuestion(
     "options": [
       {"label": "/sdd.start", "description": "Create a new feature"},
       {"label": "/sdd.check <feature>", "description": "Check specific feature status"},
-      {"label": "/sdd.backlog", "description": "View backlog items"}
+      {"label": "/sdd.backlog", "description": "View backlog items"},
+      {"label": "Outros", "description": "Describe what you'll do or suggest another path (free text)"}
     ],
     "multiSelect": false
   }]
@@ -295,12 +305,12 @@ AskUserQuestion(
 
 **On user selection**:
 
-| Selection | Action |
-|-----------|--------|
-| /sdd.start | `Skill(skill="sdd.start")` |
-| /sdd.check <feature> | Ask which feature, then `Skill(skill="sdd.check", args="<feature>")` |
-| /sdd.backlog | `Skill(skill="sdd.backlog")` |
-| Other | User types custom input |
+| Selection            | Action                                                              |
+| -------------------- | ------------------------------------------------------------------- |
+| /sdd.start           | `CONTINUE_WORKFLOW("/sdd.start")`                                   |
+| /sdd.check <feature> | Ask which feature, then `CONTINUE_WORKFLOW("/sdd.check <feature>")` |
+| /sdd.backlog         | `CONTINUE_WORKFLOW("/sdd.backlog")`                                 |
+| Other                | User types custom input                                             |
 
 > **NOTE**: For "/sdd.check <feature>", if user selects this option, prompt them to select which feature from the displayed list before invoking.
 

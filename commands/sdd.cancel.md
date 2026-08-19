@@ -1,7 +1,7 @@
 ---
 name: sdd.cancel
 description: Gracefully cancel a feature in progress, preserving work for potential future resumption. Use when user wants to abandon or pause a feature.
-model: haiku
+model_role: EXECUTION
 argument-hint: "[feature-name] [reason]"
 ---
 
@@ -253,8 +253,6 @@ Files preserved:
   • Task List: ✓
   • Progress Notes: ✓
   • Partial Implementation: ✓
-  • Token Logs (logs/): ✓
-  • Telemetry Data: ✓
 
 ⚠️  Action Required:
   • Notify stakeholders of cancellation
@@ -334,8 +332,6 @@ mv sdd/cancelled/[feature-name]_YYYYMMDD sdd/wip/[feature-name]
 2. **Preserve all work** - Never delete, always archive
 3. **Generate report** - Create comprehensive cancellation report
 4. **Suggest alternatives** - Consider if split/pause is better
-
-> **Telemetry**: Data is captured automatically by hooks in `~/.claude/logs/` (Claude Code) or `~/.cursor/logs/` (Cursor). Not available for optional Agent CLI.
 
 ---
 
